@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-    <meta charset="UTF-8">
     <base target="_top">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Chef Perso</title>
@@ -11,19 +10,9 @@
       .input-error { border-color: #ef4444 !important; border-width: 2px !important; }
       * { word-wrap: break-word; }
     </style>
-    <link rel="icon" type="image/png" href="https://images.postimages.cc/2361013832280267474.png">
-    <link rel="apple-touch-icon" href="https://images.postimages.cc/2361013832280267474.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Chef Perso">
   </head>
   <body class="bg-slate-100 p-2 sm:p-4 min-h-screen text-slate-800 font-sans w-full overflow-x-hidden box-border">
     
-    <div id="debug_alert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl max-w-md mx-auto mb-4 text-xs font-mono relative">
-      <strong class="font-bold block mb-1">⚠️ Erreur de synchronisation :</strong>
-      <span id="debug_msg"></span>
-    </div>
-
     <div id="menu_principal" class="etape flex flex-col gap-4 w-full max-w-md mx-auto">
       <h1 class="text-2xl font-black text-center text-slate-700 mt-4 mb-2 uppercase tracking-wider">Chef Perso</h1>
       
@@ -66,7 +55,7 @@
       </div>
       <button type="button" id="btn_suivant" onclick="genForm()" disabled
               class="w-full min-h-[50px] bg-slate-400 text-white font-bold text-base rounded-xl shadow-md transition-all">
-        Chargement des recettes...
+        Chargement de la base...
       </button>
     </div>
     
@@ -78,11 +67,11 @@
 
       <div class="flex gap-2 mt-1">
         <button type="button" onclick="changerVue('etape1')" 
-                class="w-1/3 min-h-[50px] bg-slate-200 text-slate-700 font-bold text-base rounded-xl active:bg-slate-300 transition-all">
+                class="w-1/3 min-h-[50px] bg-slate-200 text-slate-700 font-bold text-base rounded-xl active:bg-slate-300 active:scale-[0.98] transition-all">
           Retour
         </button>
         <button type="button" onclick="calcul()" 
-                class="w-2/3 min-h-[50px] bg-blue-500 text-white font-bold text-base rounded-xl shadow-md active:bg-blue-600 transition-all">
+                class="w-2/3 min-h-[50px] bg-blue-500 text-white font-bold text-base rounded-xl shadow-md active:bg-blue-600 active:scale-[0.98] transition-all">
           Générer & Sauvegarder
         </button>
       </div>
@@ -105,18 +94,18 @@
       </div>
       
       <div class="flex gap-2 mt-1 w-full">
-        <button type="button" onclick="partage('Menu')" class="w-1/2 min-h-[56px] bg-blue-500 text-white font-bold rounded-xl shadow-md flex flex-col items-center justify-center p-2">
+        <button type="button" onclick="partage('Menu')" class="w-1/2 min-h-[56px] bg-blue-500 text-white font-bold rounded-xl shadow-md active:bg-blue-600 active:scale-[0.98] transition-all flex flex-col items-center justify-center p-2">
           <span class="text-lg leading-none mb-1">🍽️</span>
           <span class="text-xs sm:text-sm">Le Menu</span>
         </button>
-        <button type="button" onclick="partage('Courses')" class="w-1/2 min-h-[56px] bg-green-500 text-white font-bold rounded-xl shadow-md flex flex-col items-center justify-center p-2">
+        <button type="button" onclick="partage('Courses')" class="w-1/2 min-h-[56px] bg-green-500 text-white font-bold rounded-xl shadow-md active:bg-green-600 active:scale-[0.98] transition-all flex flex-col items-center justify-center p-2">
           <span class="text-lg leading-none mb-1">🛒</span>
           <span class="text-xs sm:text-sm">Les Courses</span>
         </button>
       </div>
 
       <div class="flex gap-2 mt-1 w-full">
-        <button type="button" onclick="changerVue('menu_principal')" class="w-full min-h-[50px] bg-slate-800 text-white font-bold text-base rounded-xl">
+        <button type="button" onclick="changerVue('menu_principal')" class="w-full min-h-[50px] bg-slate-800 text-white font-bold text-base rounded-xl active:bg-slate-900 active:scale-[0.98] transition-all">
           Menu principal
         </button>
       </div>
@@ -129,7 +118,7 @@
         <select id="select_consult" class="w-full h-12 border rounded-lg p-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="afficherDetails()"></select>
         <div class="flex items-center justify-between gap-4">
           <label class="font-bold text-sm text-slate-600">Nombre de parts :</label>
-          <input type="number" id="parts_consult" value="5" min="1" class="w-20 h-10 text-center border border-slate-300 rounded-lg bg-slate-50" onchange="afficherDetails()">
+          <input type="number" id="parts_consult" value="5" min="1" class="w-20 h-10 text-center border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="afficherDetails()">
         </div>
       </div>
       <div id="details_recette" class="bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[100px] overflow-hidden">
@@ -145,11 +134,11 @@
       
       <div id="new_ingredients_list" class="flex flex-col gap-2"></div>
       
-      <button type="button" onclick="addIngRow()" class="h-12 bg-orange-50 text-orange-700 font-bold rounded-xl border-2 border-dashed border-orange-300 transition-all">
+      <button type="button" onclick="addIngRow()" class="h-12 bg-orange-50 text-orange-700 font-bold rounded-xl border-2 border-dashed border-orange-300 active:bg-orange-100 transition-all">
         ➕ Ajouter un ingrédient
       </button>
       
-      <button type="button" id="btn_save" onclick="sauverRecette()" class="h-14 bg-orange-500 text-white font-bold text-lg rounded-xl shadow-md mt-2">
+      <button type="button" id="btn_save" onclick="sauverRecette()" class="h-14 bg-orange-500 text-white font-bold text-lg rounded-xl shadow-md mt-2 active:bg-orange-600 active:scale-[0.98] transition-all">
         💾 Enregistrer
       </button>
     </div>
@@ -158,410 +147,89 @@
       const STEIN_API_URL = "https://api.steinhq.com/v1/storages/6a40132d92b1163e971007d3";
       let baseData = [], recs = [], plan = [];
 
+      // Fonction utilitaire pour éviter les soucis de casse avec les noms de colonnes
       function valChamp(obj, propName) {
         if (!obj) return "";
         let key = Object.keys(obj).find(k => k.trim().toLowerCase() === propName.trim().toLowerCase());
         return key ? obj[key] : "";
       }
 
-      function masquerErreur() {
-        document.getElementById('debug_alert').classList.add('hidden');
-      }
-
-      function afficherErreur(msg) {
-        document.getElementById('debug_msg').innerText = msg;
-        document.getElementById('debug_alert').classList.remove('hidden');
-      }
-
-      // --- INITIALISATION DES DONNÉES RECETTES ---
+      // --- INITIALISATION ---
       document.addEventListener('DOMContentLoaded', function() {
         chargerBaseRecettes();
       });
 
       function chargerBaseRecettes() {
         let btn = document.getElementById('btn_suivant');
-        if(btn) btn.innerText = "Chargement des recettes...";
-        masquerErreur();
-
+        btn.innerText = "Chargement des recettes...";
+        
         fetch(`${STEIN_API_URL}/Data`)
-          .then(response => {
-            if (!response.ok) throw new Error("Statut HTTP " + response.status);
-            return response.json();
-          })
+          .then(res => res.json())
           .then(data => {
-            if (Array.isArray(data)) {
+            if(Array.isArray(data)) {
               baseData = data;
+              // Récupération dynamique de la liste des recettes (équivalent de getListeRecettes en GAS)
               recs = [...new Set(data.map(item => valChamp(item, 'Titre')).filter(t => t))];
               
-              if(btn && recs.length > 0) {
+              if(recs.length > 0) {
                 btn.disabled = false;
                 btn.classList.remove('bg-slate-400');
-                btn.classList.add('bg-blue-500');
+                btn.classList.add('bg-blue-500', 'active:bg-blue-600');
                 btn.innerText = 'Suivant';
-              } else if (btn) {
-                btn.innerText = "Aucune recette (Données vides)";
               }
-            } else {
-              throw new Error("Le serveur n'a pas renvoyé un tableau valide.");
             }
           })
-          .catch(err => {
-            if(btn) btn.innerText = "Échec de la synchronisation";
-            afficherErreur("Impossible de charger l'onglet 'Data'. Détails : " + err.message);
-          });
+          .catch(err => console.error("Erreur de chargement de la base:", err));
       }
 
       function changerVue(id) {
-        masquerErreur();
         document.querySelectorAll('.etape').forEach(e => e.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         
-        if(id === 'etape1' && recs.length === 0) {
-          chargerBaseRecettes();
-        }
-        
         if(id === 'vue_consult') {
           let optionsSafe = (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
+          let currentSelect = document.getElementById('select_consult').value;
           document.getElementById('select_consult').innerHTML = '<option value="">Sélectionner une recette...</option>' + optionsSafe;
+          if (currentSelect) document.getElementById('select_consult').value = currentSelect;
         }
       }
 
-      // --- HISTORIQUE (Menus_Sauvegardes) ---
+      // --- HISTORIQUE DES MENUS ---
       function chargerMenus() {
         changerVue('vue_menus');
-        document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
+        document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement...</p>';
         
         fetch(`${STEIN_API_URL}/Menus_Sauvegardes`)
-          .then(response => {
-            if (!response.ok) throw new Error("Statut HTTP " + response.status);
-            return response.json();
-          })
+          .then(res => res.json())
           .then(data => {
             let box = document.getElementById('conteneur_menus');
             if(!Array.isArray(data) || data.length === 0) {
-              box.innerHTML = '<p class="text-center text-slate-500 mt-4">Aucun menu enregistré dans l\'historique.</p>';
+              box.innerHTML = '<p class="text-center text-slate-500 mt-4">Aucun menu planifié.</p>';
               return;
             }
 
+            // Regroupement par ID comme dans ton GAS (getMenusSauvegardes)
             let groupes = {};
             data.forEach(row => {
-              let idMenu = valChamp(row, 'id_menu');
-              if(!idMenu) return;
-              
-              if(!groupes[idMenu]) {
-                groupes[idMenu] = { date: valChamp(row, 'date_creation'), repas: [] };
+              let id = valChamp(row, 'id_menu');
+              if(!id) return;
+              if(!groupes[id]) {
+                groupes[id] = { id: id, date: valChamp(row, 'date_creation'), repas: [] };
               }
-              groupes[idMenu].repas.push({
+              groupes[id].repas.push({
                 titre: valChamp(row, 'titre_repas'),
                 recette: valChamp(row, 'recette'),
                 couverts: valChamp(row, 'couverts')
               });
             });
 
-            let lots = Object.values(groupes).reverse();
+            // Tri par ID décroissant (le plus récent en premier) et conservation visuelle des 2 derniers
+            let lots = Object.values(groupes).sort((a, b) => b.id - a.id).slice(0, 2);
 
             let html = '';
             lots.forEach((lot, index) => {
-              let titreBloc = (index === 0 && lots.length > 1) ? "🔵 Semaine prochaine" : (index === 1 ? "🟢 Semaine en cours" : "Planification précédente");
+              let titreBloc = (index === 0) ? "🟢 Semaine en cours" : "🔵 Semaine précédente";
               
               html += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-black text-slate-700 border-b pb-2 mb-3 text-sm">${titreBloc} <span class="text-xs font-normal text-slate-400 block mt-1">Créé le ${lot.date}</span></h3>
                         <div class="flex flex-col gap-2">`;
-              
-              lot.repas.forEach(r => {
-                let recSafe = String(r.recette).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                html += `
-                  <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 p-3 rounded-xl border border-slate-100 active:bg-slate-100 transition-all cursor-pointer">
-                    <p class="font-bold text-indigo-700 text-sm mb-1">${r.titre}</p>
-                    <p class="text-slate-600 text-sm flex justify-between items-center">
-                      <span>🍲 ${r.recette} <span class="text-xs opacity-70">(${r.couverts} p.)</span></span>
-                      <span class="text-xs bg-white border px-2 py-1 rounded-md shadow-sm">👉 Cuisiner</span>
-                    </p>
-                  </div>`;
-              });
-              html += `</div></div>`;
-            });
-            box.innerHTML = html;
-          })
-          .catch(err => {
-            document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4">Échec de lecture de l\'historique.</p>';
-            afficherErreur("Impossible d'accéder à l'onglet 'Menus_Sauvegardes'. Détails : " + err.message);
-          });
-      }
-
-      function cuisinerRaccourci(recette, couverts) {
-        changerVue('vue_consult');
-        document.getElementById('select_consult').value = recette;
-        document.getElementById('parts_consult').value = couverts;
-        afficherDetails();
-      }
-
-      // --- FORMULAIRE PLANIFICATION ---
-      function genForm() {
-        let n = document.getElementById('nb_repas').value;
-        let h = '';
-        let optionsHTML = '<option value="">Sélectionne un menu</option>' + (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
-
-        const joursData = [
-          { label: 'Lu', val: 'lundi' }, { label: 'Ma', val: 'mardi' }, { label: 'Me', val: 'mercredi' },
-          { label: 'Je', val: 'jeudi' }, { label: 'Ve', val: 'vendredi' }, { label: 'Sa', val: 'samedi' }, { label: 'Di', val: 'dimanche' }
-        ];
-
-        for(let i=1; i<=n; i++) {
-          let gridHTML = '<div class="grid grid-cols-7 gap-1 mt-3 mb-2">';
-          joursData.forEach(j => {
-            gridHTML += `
-              <div class="flex flex-col gap-1 items-center">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${j.label}</span>
-                <button type="button" class="slot-btn w-full aspect-square min-h-[44px] rounded-lg bg-slate-100 text-slate-400 text-lg border border-slate-200 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} midi" onclick="toggleSlot(this)">☀️</button>
-                <button type="button" class="slot-btn w-full aspect-square min-h-[44px] rounded-lg bg-slate-100 text-slate-400 text-lg border border-slate-200 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} soir" onclick="toggleSlot(this)">🌙</button>
-              </div>`;
-          });
-          gridHTML += '</div>';
-
-          h += `
-            <div class="repas-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-blue-500 flex flex-col gap-2">
-              <div class="flex flex-col mb-1 border-b border-dashed border-slate-200 pb-2">
-                <span class="titre-display text-base font-bold text-slate-400 leading-tight">Sélectionne les jours 👇</span>
-                <input type="hidden" class="titre" value="Repas non défini">
-              </div>
-              ${gridHTML}
-              <div class="flex items-center justify-between gap-2 mt-2">
-                <label class="font-semibold text-slate-600 text-xs whitespace-nowrap">Personnes :</label>
-                <input type="number" class="couverts w-16 min-h-[44px] text-sm text-center border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500" value="5" min="1" inputmode="numeric">
-              </div>
-              <select class="recette w-full min-h-[44px] text-sm p-2 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                ${optionsHTML}
-              </select>
-            </div>`;
-        }
-        document.getElementById('form_repas').innerHTML = h;
-        changerVue('etape2');
-      }
-
-      function toggleSlot(btn) {
-        btn.classList.toggle('bg-blue-100');
-        btn.classList.toggle('border-blue-400');
-        btn.classList.toggle('bg-slate-100');
-        btn.classList.toggle('border-slate-200');
-        
-        let card = btn.closest('.repas-card');
-        let actives = card.querySelectorAll('.slot-btn.bg-blue-100');
-        let titleDisplay = card.querySelector('.titre-display');
-        let titleInput = card.querySelector('.titre');
-        
-        if (actives.length > 0) {
-            let slotsArr = Array.from(actives).map(b => b.getAttribute('data-val'));
-            let slotsFormates = "";
-            
-            if (slotsArr.length === 1) {
-              slotsFormates = slotsArr[0];
-            } else {
-              let dernier = slotsArr.pop();
-              slotsFormates = slotsArr.join(', ') + ' et ' + dernier;
-            }
-
-            slotsFormates = slotsFormates.charAt(0).toUpperCase() + slotsFormates.slice(1);
-            titleDisplay.innerText = slotsFormates;
-            titleInput.value = slotsFormates;
-            titleDisplay.classList.remove('text-slate-400');
-            titleDisplay.classList.add('text-blue-700');
-        } else {
-            titleDisplay.innerText = "Sélectionne les jours 👇";
-            titleInput.value = "Repas non défini";
-            titleDisplay.classList.add('text-slate-400');
-            titleDisplay.classList.remove('text-blue-700');
-        }
-      }
-
-      // --- CALCUL ET ENREGISTREMENT ---
-      function calcul() {
-        let blocks = document.querySelectorAll('.repas-card');
-        let err = false;
-        plan = [];
-        
-        blocks.forEach(b => {
-          let sel = b.querySelector('.recette');
-          let couv = b.querySelector('.couverts');
-          if(!sel || !sel.value) { 
-            if(sel) sel.classList.add('input-error'); 
-            err = true; 
-          } else { 
-            if(sel) sel.classList.remove('input-error'); 
-            plan.push({ nom: b.querySelector('.titre').value, recette: sel.value, couverts: parseInt(couv.value) || 1 }); 
-          }
-        });
-        
-        let msgBox = document.getElementById('msg_erreur');
-        if(err) { msgBox.classList.remove('hidden'); return; } else { msgBox.classList.add('hidden'); }
-        
-        changerVue('etape3');
-        document.getElementById('liste').innerHTML = '<li class="p-4 text-center text-slate-500 animate-pulse text-sm">Calcul et sauvegarde en cours...</li>';
-        
-        let idMenu = Date.now();
-        let dateStr = new Date().toLocaleDateString('fr-FR') + ' à ' + new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-        
-        let payloadMenu = plan.map(p => ({
-          id_menu: idMenu,
-          date_creation: dateStr,
-          titre_repas: p.nom,
-          recette: p.recette,
-          couverts: p.couverts
-        }));
-
-        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadMenu)
-        }).catch(e => console.error(e));
-
-        let mapCourses = {};
-        baseData.forEach(ligne => {
-          let recTitre = valChamp(ligne, 'Titre');
-          if(!recTitre) return;
-          
-          let titre = String(recTitre).trim().toLowerCase();
-          plan.forEach(repas => {
-            if (String(repas.recette).trim().toLowerCase() === titre) {
-              let qteBase = valChamp(ligne, 'Quantite_Base');
-              let qteTotale = (parseFloat(String(qteBase).replace(',', '.')) || 0) * repas.couverts;
-              let ing = valChamp(ligne, 'Ingredient');
-              
-              if (mapCourses[ing]) {
-                mapCourses[ing].quantite += qteTotale;
-              } else {
-                mapCourses[ing] = { quantite: qteTotale, unite: valChamp(ligne, 'Unite') || "" };
-              }
-            }
-          });
-        });
-
-        let htmlContent = '';
-        for (let ing in mapCourses) {
-          let qte = mapCourses[ing].quantite > 0 ? Number(mapCourses[ing].quantite.toFixed(2)) : "";
-          htmlContent += `
-            <li class="flex items-center justify-between p-3 bg-white hover:bg-slate-50 transition-colors w-full">
-              <div class="flex-grow pr-2 min-w-0">
-                <span class="font-bold text-slate-800 text-sm break-words">${ing}</span> 
-                <span class="text-blue-600 font-semibold ml-1 text-sm whitespace-nowrap">${qte} ${mapCourses[ing].unite}</span>
-              </div>
-              <button type="button" class="delete min-w-[40px] min-h-[40px] w-10 flex items-center justify-center bg-red-100 text-red-600 rounded-lg" onclick="this.parentElement.remove()">🗑️</button>
-            </li>`;
-        }
-        
-        if (!htmlContent) htmlContent = '<li class="p-4 text-center text-slate-500 text-sm">Aucun ingrédient trouvé.</li>';
-        document.getElementById('liste').innerHTML = htmlContent;
-      }
-
-      function ajouterIngredient() {
-        let input = document.getElementById('ajout_manuel');
-        let valeur = input.value.trim();
-        if(valeur !== "") {
-          let liste = document.getElementById('liste');
-          if(liste.innerHTML.includes("Aucun ingrédient") || liste.innerHTML.includes("Calcul et sauvegarde")) liste.innerHTML = '';
-          liste.insertAdjacentHTML('beforeend', `
-            <li class="flex items-center justify-between p-3 bg-white w-full">
-              <span class="font-bold text-slate-800 text-sm">${valeur}</span>
-              <button type="button" class="min-w-[40px] min-h-[40px] w-10 flex items-center justify-center bg-red-100 text-red-600 rounded-lg" onclick="this.parentElement.remove()">🗑️</button>
-            </li>`);
-          input.value = ""; 
-        }
-      }
-      
-      function partage(type) {
-        let txt = type === 'Menu' ? "🍽️ MENU DE LA SEMAINE :\n\n" : "🛒 LISTE DE COURSES :\n\n";
-        if (type === 'Menu') {
-          plan.forEach(p => txt += `🗓️ ${p.nom}\n👉 ${p.recette} (${p.couverts} p.)\n\n`);
-        } else {
-          Array.from(document.querySelectorAll('#liste li')).forEach(l => {
-            let texte = l.innerText.replace('🗑️', '').trim();
-            if(texte && !texte.startsWith("⚠️")) txt += "- " + texte + "\n";
-          });
-        }
-        navigator.share ? navigator.share({ title: "Chef Perso", text: txt }) : navigator.clipboard.writeText(txt).then(() => alert("Copié !"));
-      }
-
-      // --- VUE DETAILS RECETTE ---
-      function afficherDetails() {
-        let r = document.getElementById('select_consult').value;
-        let p = parseInt(document.getElementById('parts_consult').value) || 5;
-        if(!r) return;
-        
-        let h = '<ul class="divide-y divide-slate-100">';
-        let trouve = false;
-        
-        baseData.forEach(it => {
-          let t = valChamp(it, 'Titre');
-          if(t && String(t).trim() === r) {
-            trouve = true;
-            let qteRaw = (parseFloat(String(valChamp(it, 'Quantite_Base')).replace(',', '.')) || 0) * p;
-            let qte = qteRaw > 0 ? Number(qteRaw.toFixed(2)) : "";
-            h += `<li class="p-3 flex justify-between bg-white"><span class="font-bold text-slate-800 text-sm">${valChamp(it, 'Ingredient')}</span><span class="text-emerald-600 font-semibold text-sm">${qte} ${valChamp(it, 'Unite') || ""}</span></li>`;
-          }
-        });
-        
-        if (!trouve) h = '<p class="p-4 text-center text-slate-500">Aucun ingrédient trouvé.</p>';
-        else h += '</ul>';
-        
-        document.getElementById('details_recette').innerHTML = h;
-      }
-
-      // --- INTERFACE AJOUT RECETTE ---
-      function addIngRow() {
-        let div = document.createElement('div');
-        div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-orange-200";
-        div.innerHTML = `
-          <input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 border-b outline-none text-sm bg-transparent">
-          <input type="text" placeholder="Qté" class="ing-qte w-16 h-10 border-b outline-none text-sm text-center bg-transparent">
-          <input type="text" placeholder="Unité" class="ing-unite w-16 h-10 border-b outline-none text-sm text-center bg-transparent">
-          <button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 bg-red-50 rounded-lg">🗑️</button>
-        `;
-        document.getElementById('new_ingredients_list').appendChild(div);
-      }
-
-      function sauverRecette() {
-        let nom = document.getElementById('new_nom').value.trim();
-        let rawPayload = [];
-        
-        document.querySelectorAll('#new_ingredients_list > div').forEach(l => {
-          let n = l.querySelector('.ing-nom').value.trim();
-          let q = l.querySelector('.ing-qte').value.trim().replace(',', '.');
-          let u = l.querySelector('.ing-unite').value.trim();
-          if(n) {
-            rawPayload.push({ 
-              Titre: nom, 
-              Ingredient: n, 
-              Quantite_Base: q, 
-              Unite: u 
-            });
-          }
-        });
-        
-        if(!nom || rawPayload.length === 0) return alert("⚠️ Nom et ingrédients requis.");
-        
-        let btn = document.getElementById('btn_save');
-        btn.innerText = "⏳ Enregistrement..."; btn.disabled = true;
-
-        fetch(`${STEIN_API_URL}/Data`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(rawPayload)
-        })
-        .then(response => {
-          if(!response.ok) throw new Error("Erreur HTTP " + response.status);
-          alert("✅ Recette enregistrée avec succès dans l'onglet Data !"); 
-          chargerBaseRecettes(); 
-          changerVue('menu_principal');
-          document.getElementById('new_nom').value = '';
-          document.getElementById('new_ingredients_list').innerHTML = '';
-          btn.innerText = "💾 Enregistrer"; btn.disabled = false;
-        })
-        .catch(err => {
-          alert("Erreur de communication avec l'API.");
-          btn.innerText = "💾 Enregistrer"; 
-          btn.disabled = false;
-        });
-      }
-    </script>
-  </body>
-</html>
