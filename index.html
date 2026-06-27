@@ -5,6 +5,11 @@
     <base target="_top">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Chef Perso</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       button, input, select { touch-action: manipulation; }
@@ -153,15 +158,14 @@
       const STEIN_API_URL = "https://api.steinhq.com/v1/storages/6a40132d92b1163e971007d3";
       let baseData = [], recs = [], plan = [];
       
-      // --- INITIALISATION CONFIGURÉE SUR L'ONGLET 'Data' ---
+      // --- INITIALISATION : FORCE LE RESPONDANT SANS CACHE ---
       document.addEventListener('DOMContentLoaded', function() {
         let btn = document.getElementById('btn_suivant');
         
-        fetch(`${STEIN_API_URL}/Data`)
+        fetch(`${STEIN_API_URL}/Data`, { cache: "no-store" })
           .then(response => response.json())
           .then(data => {
             baseData = data;
-            // Extraction des titres uniques (Respect strict de la majuscule 'Titre')
             recs = [...new Set(data.map(item => item.Titre).filter(t => t))];
             
             if(recs.length > 0) {
@@ -189,13 +193,12 @@
         }
       }
 
-      // --- HISTORIQUE ALIGNÉ SUR L'ONGLET 'Menus_Sauvegardes' ---
-      // --- HISTORIQUE ALIGNÉ SUR L'ONGLET 'Menus_Sauvegardes' ---
+      // --- HISTORIQUE ALIGNÉ ET SANS CACHE ---
       function chargerMenus() {
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
         
-        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`)
+        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, { cache: "no-store" })
           .then(response => response.json())
           .then(data => {
             let box = document.getElementById('conteneur_menus');
@@ -204,7 +207,6 @@
               return;
             }
 
-            // Regroupement par id_menu
             let groupes = {};
             data.forEach(row => {
               if(!row.id_menu) return;
@@ -218,12 +220,10 @@
               });
             });
 
-            // Conversion en tableau inversé pour avoir les plus récents d'abord
             let lots = Object.values(groupes).reverse();
 
             let html = '';
             lots.forEach((lot, index) => {
-              // CORRECTION : Le lot le plus récent (index 0) est la semaine prochaine, le précédent (index 1) est la semaine en cours
               let titreBloc = (index === 0 && lots.length > 1) ? "🔵 Semaine prochaine" : (index === 1 ? "🟢 Semaine en cours" : "Semaine");
               
               html += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
@@ -335,7 +335,6 @@
         }
       }
 
-      // --- CALCUL ET SAUVEGARDE UNITAIRE PAR LIGNE SUR 'Menus_Sauvegardes' ---
       function calcul() {
         let blocks = document.querySelectorAll('.repas-card');
         let err = false;
@@ -359,7 +358,6 @@
         changerVue('etape3');
         document.getElementById('liste').innerHTML = '<li class="p-4 text-center text-slate-500 animate-pulse text-sm">Calcul et sauvegarde en cours...</li>';
         
-        // 1. Sauvegarde au format ligne par ligne (Structure exacte de ton classeur)
         let idMenu = Date.now();
         let dateStr = new Date().toLocaleDateString('fr-FR') + ' à ' + new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
         
@@ -377,13 +375,11 @@
           body: JSON.stringify(payloadMenu)
         }).catch(e => console.log("Erreur de transmission historique", e));
 
-        // 2. Traitement local immédiat de la liste de courses
         let mapCourses = {};
         baseData.forEach(ligne => {
           let titre = String(ligne.Titre).trim();
           plan.forEach(repas => {
             if (String(repas.recette).trim() === titre) {
-              // Correspondance exacte avec 'Quantite_Base' et 'Unite' de ton onglet Data
               let qteTotale = (parseFloat(ligne.Quantite_Base) || 0) * repas.couverts;
               if (mapCourses[ligne.Ingredient]) {
                 mapCourses[ligne.Ingredient].quantite += qteTotale;
@@ -411,7 +407,6 @@
         document.getElementById('liste').innerHTML = htmlContent;
       }
 
-      // --- AJOUTS MANUELS & EXPORTS ---
       function ajouterIngredient() {
         let input = document.getElementById('ajout_manuel');
         let valeur = input.value.trim();
@@ -440,7 +435,6 @@
         navigator.share ? navigator.share({ title: "Chef Perso", text: txt }) : navigator.clipboard.writeText(txt).then(() => alert("Copié !"));
       }
 
-      // --- CONSULTATION UNITAIRE RECETTE ---
       function afficherDetails() {
         let r = document.getElementById('select_consult').value;
         let p = parseInt(document.getElementById('parts_consult').value) || 5;
@@ -463,11 +457,10 @@
         document.getElementById('details_recette').innerHTML = h;
       }
 
-      // --- ENREGISTREMENT AU FORMAT DE L'ONGLET 'Brut' ---
       function addIngRow() {
         let div = document.createElement('div');
         div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-orange-200";
-        div.innerHTML = `<input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 outline-none text-sm bg-transparent"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 outline-none text-sm text-center bg-transparent"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 bg-red-50 rounded-lg">🗑️</button>`;
+        div.innerHTML = `<input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 border-b outline-none text-sm bg-transparent"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 border-b outline-none text-sm text-center bg-transparent"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 bg-red-50 rounded-lg">🗑️</button>`;
         document.getElementById('new_ingredients_list').appendChild(div);
       }
 
@@ -478,7 +471,6 @@
         document.querySelectorAll('#new_ingredients_list > div').forEach(l => {
           let n = l.querySelector('.ing-nom').value.trim();
           let q = l.querySelector('.ing-qte').value.trim();
-          // Alignement strict avec l'onglet Brut : titre_recette, Ingredient, quantite
           if(n) rawPayload.push({ titre_recette: nom, Ingredient: n, quantite: q });
         });
         
