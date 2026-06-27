@@ -66,7 +66,7 @@
       </div>
       <button type="button" id="btn_suivant" onclick="genForm()" disabled
               class="w-full min-h-[50px] bg-slate-400 text-white font-bold text-base rounded-xl shadow-md transition-all">
-        Connexion à l'API Stein...
+        Chargement des recettes...
       </button>
     </div>
     
@@ -158,29 +158,42 @@
       const STEIN_API_URL = "https://api.steinhq.com/v1/storages/6a40132d92b1163e971007d3";
       let baseData = [], recs = [], plan = [];
       
-      // --- INITIALISATION : FORCE LE RESPONDANT SANS CACHE ---
+      // Extraction de l'URL avec buster de cache pour éviter l'ancien stockage mobile
+      function getFreshUrl(sheet) {
+        return `${STEIN_API_URL}/${sheet}?_nocache=${Date.now()}`;
+      }
+
+      // --- INITIALISATION AUTOMATIQUE ---
       document.addEventListener('DOMContentLoaded', function() {
+        chargerBaseRecettes();
+      });
+
+      function chargerBaseRecettes() {
         let btn = document.getElementById('btn_suivant');
-        
-        fetch(`${STEIN_API_URL}/Data`, { cache: "no-store" })
+        if(btn) btn.innerText = "Chargement des recettes...";
+
+        fetch(getFreshUrl('Data'), { cache: "no-store" })
           .then(response => response.json())
           .then(data => {
-            baseData = data;
-            recs = [...new Set(data.map(item => item.Titre).filter(t => t))];
-            
-            if(recs.length > 0) {
-              btn.disabled = false;
-              btn.classList.remove('bg-slate-400');
-              btn.classList.add('bg-blue-500');
-              btn.innerText = 'Suivant';
+            if (Array.isArray(data)) {
+              baseData = data;
+              recs = [...new Set(data.map(item => item && item.Titre).filter(t => t))];
+              
+              if(btn && recs.length > 0) {
+                btn.disabled = false;
+                btn.classList.remove('bg-slate-400');
+                btn.classList.add('bg-blue-500');
+                btn.innerText = 'Suivant';
+              }
             }
           })
           .catch(err => {
-            btn.innerText = "Erreur API (Vérifie la connexion)";
-            btn.classList.add('bg-red-500');
+            if(btn) btn.innerText = "Erreur de synchronisation Data";
+            console.error(err);
           });
-      });
+      }
 
+      // Changement de vue sécurisé (ne dépend pas du succès des requêtes)
       function changerVue(id) {
         document.querySelectorAll('.etape').forEach(e => e.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
@@ -193,23 +206,23 @@
         }
       }
 
-      // --- HISTORIQUE ALIGNÉ ET SANS CACHE ---
+      // --- HISTORIQUE ALIGNÉ SUR L'ONGLET 'Menus_Sauvegardes' ---
       function chargerMenus() {
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
         
-        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, { cache: "no-store" })
+        fetch(getFreshUrl('Menus_Sauvegardes'), { cache: "no-store" })
           .then(response => response.json())
           .then(data => {
             let box = document.getElementById('conteneur_menus');
-            if(!data || data.length === 0) {
+            if(!Array.isArray(data) || data.length === 0) {
               box.innerHTML = '<p class="text-center text-slate-500 mt-4">Aucun menu planifié.</p>';
               return;
             }
 
             let groupes = {};
             data.forEach(row => {
-              if(!row.id_menu) return;
+              if(!row || !row.id_menu) return;
               if(!groupes[row.id_menu]) {
                 groupes[row.id_menu] = { date: row.date_creation, repas: [] };
               }
@@ -369,18 +382,19 @@
           couverts: p.couverts
         }));
 
-        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, {
+        fetch(getFreshUrl('Menus_Sauvegardes'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payloadMenu)
-        }).catch(e => console.log("Erreur de transmission historique", e));
+        }).catch(e => console.error("Erreur d'écriture historique", e));
 
         let mapCourses = {};
         baseData.forEach(ligne => {
-          let titre = String(ligne.Titre).trim();
+          if(!ligne || !ligne.Titre) return;
+          let titre = String(ligne.Titre).trim().toLowerCase();
           plan.forEach(repas => {
-            if (String(repas.recette).trim() === titre) {
-              let qteTotale = (parseFloat(ligne.Quantite_Base) || 0) * repas.couverts;
+            if (String(repas.recette).trim().toLowerCase() === titre) {
+              let qteTotale = (parseFloat(String(ligne.Quantite_Base).replace(',', '.')) || 0) * repas.couverts;
               if (mapCourses[ligne.Ingredient]) {
                 mapCourses[ligne.Ingredient].quantite += qteTotale;
               } else {
@@ -392,7 +406,7 @@
 
         let htmlContent = '';
         for (let ing in mapCourses) {
-          let qte = mapCourses[ing].quantite > 0 ? mapCourses[ing].quantite : "";
+          let qte = mapCourses[ing].quantite > 0 ? Number(mapCourses[ing].quantite.toFixed(2)) : "";
           htmlContent += `
             <li class="flex items-center justify-between p-3 bg-white hover:bg-slate-50 transition-colors w-full">
               <div class="flex-grow pr-2 min-w-0">
@@ -435,6 +449,7 @@
         navigator.share ? navigator.share({ title: "Chef Perso", text: txt }) : navigator.clipboard.writeText(txt).then(() => alert("Copié !"));
       }
 
+      // --- CONSULTATION UNITAIRE RECETTE ---
       function afficherDetails() {
         let r = document.getElementById('select_consult').value;
         let p = parseInt(document.getElementById('parts_consult').value) || 5;
@@ -444,10 +459,11 @@
         let trouve = false;
         
         baseData.forEach(it => {
-          if(String(it.Titre).trim() === r) {
+          if(it && it.Titre && String(it.Titre).trim() === r) {
             trouve = true;
-            let qte = (parseFloat(it.Quantite_Base) || 0) * p;
-            h += `<li class="p-3 flex justify-between bg-white"><span class="font-bold text-slate-800 text-sm">${it.Ingredient}</span><span class="text-emerald-600 font-semibold text-sm">${qte > 0 ? qte : ""} ${it.Unite || ""}</span></li>`;
+            let qteRaw = (parseFloat(String(it.Quantite_Base).replace(',', '.')) || 0) * p;
+            let qte = qteRaw > 0 ? Number(qteRaw.toFixed(2)) : "";
+            h += `<li class="p-3 flex justify-between bg-white"><span class="font-bold text-slate-800 text-sm">${it.Ingredient}</span><span class="text-emerald-600 font-semibold text-sm">${qte} ${it.Unite || ""}</span></li>`;
           }
         });
         
@@ -457,6 +473,7 @@
         document.getElementById('details_recette').innerHTML = h;
       }
 
+      // --- FORMULAIRE ET ENREGISTREMENT AJOUTS ---
       function addIngRow() {
         let div = document.createElement('div');
         div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-orange-200";
@@ -479,14 +496,18 @@
         let btn = document.getElementById('btn_save');
         btn.innerText = "⏳ Enregistrement..."; btn.disabled = true;
 
-        fetch(`${STEIN_API_URL}/Brut`, {
+        fetch(getFreshUrl('Brut'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(rawPayload)
         })
         .then(() => {
-          alert("✅ Recette enregistrée dans l'onglet Brut !"); 
-          location.reload(); 
+          alert("✅ Recette enregistrée avec succès dans l'onglet Brut !"); 
+          chargerBaseRecettes(); // Rechargement forcé en arrière-plan
+          changerVue('menu_principal');
+          document.getElementById('new_nom').value = '';
+          document.getElementById('new_ingredients_list').innerHTML = '';
+          btn.innerText = "💾 Enregistrer"; btn.disabled = false;
         })
         .catch(err => {
           alert("Erreur de communication avec l'API Stein.");
