@@ -61,7 +61,7 @@
       </div>
       <button type="button" id="btn_suivant" onclick="genForm()" disabled
               class="w-full min-h-[50px] bg-slate-400 text-white font-bold text-base rounded-xl shadow-md transition-all">
-        Chargement de la base...
+        Connexion à l'API Stein...
       </button>
     </div>
     
@@ -73,11 +73,11 @@
 
       <div class="flex gap-2 mt-1">
         <button type="button" onclick="changerVue('etape1')" 
-                class="w-1/3 min-h-[50px] bg-slate-200 text-slate-700 font-bold text-base rounded-xl active:bg-slate-300 active:scale-[0.98] transition-all">
+                class="w-1/3 min-h-[50px] bg-slate-200 text-slate-700 font-bold text-base rounded-xl active:bg-slate-300 transition-all">
           Retour
         </button>
         <button type="button" onclick="calcul()" 
-                class="w-2/3 min-h-[50px] bg-blue-500 text-white font-bold text-base rounded-xl shadow-md active:bg-blue-600 active:scale-[0.98] transition-all">
+                class="w-2/3 min-h-[50px] bg-blue-500 text-white font-bold text-base rounded-xl shadow-md active:bg-blue-600 transition-all">
           Générer & Sauvegarder
         </button>
       </div>
@@ -100,18 +100,18 @@
       </div>
       
       <div class="flex gap-2 mt-1 w-full">
-        <button type="button" onclick="partage('Menu')" class="w-1/2 min-h-[56px] bg-blue-500 text-white font-bold rounded-xl shadow-md active:bg-blue-600 active:scale-[0.98] transition-all flex flex-col items-center justify-center p-2">
+        <button type="button" onclick="partage('Menu')" class="w-1/2 min-h-[56px] bg-blue-500 text-white font-bold rounded-xl shadow-md flex flex-col items-center justify-center p-2">
           <span class="text-lg leading-none mb-1">🍽️</span>
           <span class="text-xs sm:text-sm">Le Menu</span>
         </button>
-        <button type="button" onclick="partage('Courses')" class="w-1/2 min-h-[56px] bg-green-500 text-white font-bold rounded-xl shadow-md active:bg-green-600 active:scale-[0.98] transition-all flex flex-col items-center justify-center p-2">
+        <button type="button" onclick="partage('Courses')" class="w-1/2 min-h-[56px] bg-green-500 text-white font-bold rounded-xl shadow-md flex flex-col items-center justify-center p-2">
           <span class="text-lg leading-none mb-1">🛒</span>
           <span class="text-xs sm:text-sm">Les Courses</span>
         </button>
       </div>
 
       <div class="flex gap-2 mt-1 w-full">
-        <button type="button" onclick="changerVue('menu_principal')" class="w-full min-h-[50px] bg-slate-800 text-white font-bold text-base rounded-xl active:bg-slate-900 active:scale-[0.98] transition-all">
+        <button type="button" onclick="changerVue('menu_principal')" class="w-full min-h-[50px] bg-slate-800 text-white font-bold text-base rounded-xl">
           Menu principal
         </button>
       </div>
@@ -124,7 +124,7 @@
         <select id="select_consult" class="w-full h-12 border rounded-lg p-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="afficherDetails()"></select>
         <div class="flex items-center justify-between gap-4">
           <label class="font-bold text-sm text-slate-600">Nombre de parts :</label>
-          <input type="number" id="parts_consult" value="5" min="1" class="w-20 h-10 text-center border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="afficherDetails()">
+          <input type="number" id="parts_consult" value="5" min="1" class="w-20 h-10 text-center border border-slate-300 rounded-lg bg-slate-50" onchange="afficherDetails()">
         </div>
       </div>
       <div id="details_recette" class="bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[100px] overflow-hidden">
@@ -136,15 +136,15 @@
       <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit">⬅ Retour</button>
       <h2 class="text-xl font-bold text-orange-600 text-center">Nouvelle Recette</h2>
       
-      <input type="text" id="new_nom" placeholder="Titre de la recette..." class="h-14 border border-slate-300 rounded-xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+      <input type="text" id="new_nom" placeholder="Titre de la recette..." class="h-14 border border-slate-300 rounded-xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 w-full">
       
       <div id="new_ingredients_list" class="flex flex-col gap-2"></div>
       
-      <button type="button" onclick="addIngRow()" class="h-12 bg-orange-50 text-orange-700 font-bold rounded-xl border-2 border-dashed border-orange-300 active:bg-orange-100 transition-all">
+      <button type="button" onclick="addIngRow()" class="h-12 bg-orange-50 text-orange-700 font-bold rounded-xl border-2 border-dashed border-orange-300 transition-all">
         ➕ Ajouter un ingrédient
       </button>
       
-      <button type="button" id="btn_save" onclick="sauverRecette()" class="h-14 bg-orange-500 text-white font-bold text-lg rounded-xl shadow-md mt-2 active:bg-orange-600 active:scale-[0.98] transition-all">
+      <button type="button" id="btn_save" onclick="sauverRecette()" class="h-14 bg-orange-500 text-white font-bold text-lg rounded-xl shadow-md mt-2">
         💾 Enregistrer
       </button>
     </div>
@@ -153,7 +153,7 @@
       const STEIN_API_URL = "https://api.steinhq.com/v1/storages/6a40132d92b1163e971007d3";
       let baseData = [], recs = [], plan = [];
       
-      // --- INITIALISATION API ---
+      // --- INITIALISATION CONFIGURÉE SUR L'ONGLET 'Data' ---
       document.addEventListener('DOMContentLoaded', function() {
         let btn = document.getElementById('btn_suivant');
         
@@ -161,17 +161,18 @@
           .then(response => response.json())
           .then(data => {
             baseData = data;
+            // Extraction des titres uniques (Respect strict de la majuscule 'Titre')
             recs = [...new Set(data.map(item => item.Titre).filter(t => t))];
             
             if(recs.length > 0) {
               btn.disabled = false;
               btn.classList.remove('bg-slate-400');
-              btn.classList.add('bg-blue-500', 'active:bg-blue-600');
+              btn.classList.add('bg-blue-500');
               btn.innerText = 'Suivant';
             }
           })
           .catch(err => {
-            btn.innerText = "Erreur de chargement";
+            btn.innerText = "Erreur API (Vérifie la connexion)";
             btn.classList.add('bg-red-500');
           });
       });
@@ -188,12 +189,12 @@
         }
       }
 
-      // --- GESTION DES MENUS SAUVEGARDÉS (API STEIN) ---
+      // --- HISTORIQUE ALIGNÉ SUR L'ONGLET 'Menus_Sauvegardes' ---
       function chargerMenus() {
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
         
-        fetch(`${STEIN_API_URL}/Menus`)
+        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`)
           .then(response => response.json())
           .then(data => {
             let box = document.getElementById('conteneur_menus');
@@ -202,15 +203,26 @@
               return;
             }
 
-            // Inverser pour avoir les plus récents en premier
-            let menus = data.reverse().map(d => {
-              try { return { date: d.Date, repas: JSON.parse(d.Contenu) }; } 
-              catch(e) { return null; }
-            }).filter(Boolean);
+            // Regroupement par id_menu
+            let groupes = {};
+            data.forEach(row => {
+              if(!row.id_menu) return;
+              if(!groupes[row.id_menu]) {
+                groupes[row.id_menu] = { date: row.date_creation, repas: [] };
+              }
+              groupes[row.id_menu].repas.push({
+                titre: row.titre_repas,
+                recette: row.recette,
+                couverts: row.couverts
+              });
+            });
+
+            // Conversion en tableau inversé pour afficher les plus récents d'abord
+            let lots = Object.values(groupes).reverse();
 
             let html = '';
-            menus.forEach((lot, index) => {
-              let titreBloc = (index === 0 && menus.length > 1) ? "🟢 Semaine en cours" : (index === 1 ? "🔵 Semaine prochaine" : "Semaine");
+            lots.forEach((lot, index) => {
+              let titreBloc = (index === 0 && lots.length > 1) ? "🟢 Semaine en cours" : (index === 1 ? "🔵 Semaine prochaine" : "Semaine");
               
               html += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-black text-slate-700 border-b pb-2 mb-3 text-sm">${titreBloc} <span class="text-xs font-normal text-slate-400 block mt-1">Créé le ${lot.date}</span></h3>
@@ -219,7 +231,7 @@
               lot.repas.forEach(r => {
                 let recSafe = String(r.recette).replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 html += `
-                  <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 p-3 rounded-xl border border-slate-100 active:bg-slate-100 active:scale-95 transition-all cursor-pointer">
+                  <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 p-3 rounded-xl border border-slate-100 active:bg-slate-100 transition-all cursor-pointer">
                     <p class="font-bold text-indigo-700 text-sm mb-1">${r.titre}</p>
                     <p class="text-slate-600 text-sm flex justify-between items-center">
                       <span>🍲 ${r.recette} <span class="text-xs opacity-70">(${r.couverts} p.)</span></span>
@@ -232,7 +244,7 @@
             box.innerHTML = html;
           })
           .catch(err => {
-            document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4">Erreur : Vérifie que l\'onglet "Menus" existe.</p>';
+            document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4">Erreur lors de la récupération de l\'historique.</p>';
           });
       }
 
@@ -277,7 +289,7 @@
                 <label class="font-semibold text-slate-600 text-xs whitespace-nowrap">Personnes :</label>
                 <input type="number" class="couverts w-16 min-h-[44px] text-sm text-center border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none" value="5" min="1" inputmode="numeric">
               </div>
-              <select class="recette w-full min-h-[44px] text-sm p-2 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+              <select class="recette w-full min-h-[44px] text-sm p-2 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 ${optionsHTML}
               </select>
             </div>`;
@@ -321,6 +333,7 @@
         }
       }
 
+      // --- CALCUL ET SAUVEGARDE UNITAIRE PAR LIGNE SUR 'Menus_Sauvegardes' ---
       function calcul() {
         let blocks = document.querySelectorAll('.repas-card');
         let err = false;
@@ -344,20 +357,31 @@
         changerVue('etape3');
         document.getElementById('liste').innerHTML = '<li class="p-4 text-center text-slate-500 animate-pulse text-sm">Calcul et sauvegarde en cours...</li>';
         
-        // 1. Sauvegarde silencieuse via Stein API
-        let payloadMenu = [{ Date: new Date().toLocaleDateString('fr-FR'), Contenu: JSON.stringify(plan) }];
-        fetch(`${STEIN_API_URL}/Menus`, {
+        // 1. Sauvegarde au format ligne par ligne (Structure exacte de ton classeur)
+        let idMenu = Date.now();
+        let dateStr = new Date().toLocaleDateString('fr-FR') + ' à ' + new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+        
+        let payloadMenu = plan.map(p => ({
+          id_menu: idMenu,
+          date_creation: dateStr,
+          titre_repas: p.nom,
+          recette: p.recette,
+          couverts: p.couverts
+        }));
+
+        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payloadMenu)
-        }).catch(e => console.log("Erreur sauvegarde menu", e));
+        }).catch(e => console.log("Erreur de transmission historique", e));
 
-        // 2. Calcul local des courses
+        // 2. Traitement local immédiat de la liste de courses
         let mapCourses = {};
         baseData.forEach(ligne => {
           let titre = String(ligne.Titre).trim();
           plan.forEach(repas => {
             if (String(repas.recette).trim() === titre) {
+              // Correspondance exacte avec 'Quantite_Base' et 'Unite' de ton onglet Data
               let qteTotale = (parseFloat(ligne.Quantite_Base) || 0) * repas.couverts;
               if (mapCourses[ligne.Ingredient]) {
                 mapCourses[ligne.Ingredient].quantite += qteTotale;
@@ -377,7 +401,7 @@
                 <span class="font-bold text-slate-800 text-sm break-words">${ing}</span> 
                 <span class="text-blue-600 font-semibold ml-1 text-sm whitespace-nowrap">${qte} ${mapCourses[ing].unite}</span>
               </div>
-              <button type="button" class="delete min-w-[40px] min-h-[40px] w-10 flex items-center justify-center bg-red-100 text-red-600 rounded-lg active:scale-90" onclick="this.parentElement.remove()">🗑️</button>
+              <button type="button" class="delete min-w-[40px] min-h-[40px] w-10 flex items-center justify-center bg-red-100 text-red-600 rounded-lg" onclick="this.parentElement.remove()">🗑️</button>
             </li>`;
         }
         
@@ -385,7 +409,7 @@
         document.getElementById('liste').innerHTML = htmlContent;
       }
 
-      // --- AJOUTS & PARTAGE ---
+      // --- AJOUTS MANUELS & EXPORTS ---
       function ajouterIngredient() {
         let input = document.getElementById('ajout_manuel');
         let valeur = input.value.trim();
@@ -414,7 +438,7 @@
         navigator.share ? navigator.share({ title: "Chef Perso", text: txt }) : navigator.clipboard.writeText(txt).then(() => alert("Copié !"));
       }
 
-      // --- CONSULTATION RECETTE (CALCUL LOCAL) ---
+      // --- CONSULTATION UNITAIRE RECETTE ---
       function afficherDetails() {
         let r = document.getElementById('select_consult').value;
         let p = parseInt(document.getElementById('parts_consult').value) || 5;
@@ -437,11 +461,11 @@
         document.getElementById('details_recette').innerHTML = h;
       }
 
-      // --- AJOUT RECETTE VIA API ---
+      // --- ENREGISTREMENT AU FORMAT DE L'ONGLET 'Brut' ---
       function addIngRow() {
         let div = document.createElement('div');
         div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-orange-200";
-        div.innerHTML = `<input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 border-b outline-none text-sm bg-transparent"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 border-b outline-none text-sm text-center bg-transparent"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 bg-red-50 rounded-lg">🗑️</button>`;
+        div.innerHTML = `<input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 outline-none text-sm bg-transparent"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 outline-none text-sm text-center bg-transparent"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 bg-red-50 rounded-lg">🗑️</button>`;
         document.getElementById('new_ingredients_list').appendChild(div);
       }
 
@@ -452,6 +476,7 @@
         document.querySelectorAll('#new_ingredients_list > div').forEach(l => {
           let n = l.querySelector('.ing-nom').value.trim();
           let q = l.querySelector('.ing-qte').value.trim();
+          // Alignement strict avec l'onglet Brut : titre_recette, Ingredient, quantite
           if(n) rawPayload.push({ titre_recette: nom, Ingredient: n, quantite: q });
         });
         
@@ -466,11 +491,11 @@
           body: JSON.stringify(rawPayload)
         })
         .then(() => {
-          alert("✅ Recette enregistrée !"); 
+          alert("✅ Recette enregistrée dans l'onglet Brut !"); 
           location.reload(); 
         })
         .catch(err => {
-          alert("Erreur réseau.");
+          alert("Erreur de communication avec l'API Stein.");
           btn.innerText = "💾 Enregistrer"; 
           btn.disabled = false;
         });
