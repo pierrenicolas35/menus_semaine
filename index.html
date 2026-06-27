@@ -190,6 +190,7 @@
       }
 
       // --- HISTORIQUE ALIGNÉ SUR L'ONGLET 'Menus_Sauvegardes' ---
+      // --- HISTORIQUE ALIGNÉ SUR L'ONGLET 'Menus_Sauvegardes' ---
       function chargerMenus() {
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
@@ -217,12 +218,13 @@
               });
             });
 
-            // Conversion en tableau inversé pour afficher les plus récents d'abord
+            // Conversion en tableau inversé pour avoir les plus récents d'abord
             let lots = Object.values(groupes).reverse();
 
             let html = '';
             lots.forEach((lot, index) => {
-              let titreBloc = (index === 0 && lots.length > 1) ? "🟢 Semaine en cours" : (index === 1 ? "🔵 Semaine prochaine" : "Semaine");
+              // CORRECTION : Le lot le plus récent (index 0) est la semaine prochaine, le précédent (index 1) est la semaine en cours
+              let titreBloc = (index === 0 && lots.length > 1) ? "🔵 Semaine prochaine" : (index === 1 ? "🟢 Semaine en cours" : "Semaine");
               
               html += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-black text-slate-700 border-b pb-2 mb-3 text-sm">${titreBloc} <span class="text-xs font-normal text-slate-400 block mt-1">Créé le ${lot.date}</span></h3>
