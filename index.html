@@ -158,7 +158,6 @@
       const STEIN_API_URL = "https://api.steinhq.com/v1/storages/6a40132d92b1163e971007d3";
       let baseData = [], recs = [], plan = [];
 
-      // Fonction utilitaire insensible à la casse
       function valChamp(obj, propName) {
         if (!obj) return "";
         let key = Object.keys(obj).find(k => k.trim().toLowerCase() === propName.trim().toLowerCase());
@@ -184,7 +183,6 @@
         if(btn) btn.innerText = "Chargement des recettes...";
         masquerErreur();
 
-        // Ajout du paramètre cache-busting (?v=timestamp) pour contourner la mise en cache
         fetch(`${STEIN_API_URL}/Data?v=${Date.now()}`)
           .then(response => {
             if (!response.ok) throw new Error("Statut HTTP " + response.status);
@@ -233,7 +231,6 @@
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
         
-        // Ajout du cache-busting ici également
         fetch(`${STEIN_API_URL}/Menus_Sauvegardes?v=${Date.now()}`)
           .then(response => {
             if (!response.ok) throw new Error("Statut HTTP " + response.status);
@@ -513,7 +510,12 @@
       function addIngRow() {
         let div = document.createElement('div');
         div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-orange-200";
-        div.innerHTML = `<input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 border-b outline-none text-sm bg-transparent"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 border-b outline-none text-sm text-center bg-transparent"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 bg-red-50 rounded-lg">🗑️</button>`;
+        div.innerHTML = `
+          <input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 border-b outline-none text-sm bg-transparent">
+          <input type="text" placeholder="Qté" class="ing-qte w-16 h-10 border-b outline-none text-sm text-center bg-transparent">
+          <input type="text" placeholder="Unité" class="ing-unite w-16 h-10 border-b outline-none text-sm text-center bg-transparent">
+          <button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 bg-red-50 rounded-lg">🗑️</button>
+        `;
         document.getElementById('new_ingredients_list').appendChild(div);
       }
 
@@ -523,8 +525,16 @@
         
         document.querySelectorAll('#new_ingredients_list > div').forEach(l => {
           let n = l.querySelector('.ing-nom').value.trim();
-          let q = l.querySelector('.ing-qte').value.trim();
-          if(n) rawPayload.push({ titre_recette: nom, Ingredient: n, quantite: q });
+          let q = l.querySelector('.ing-qte').value.trim().replace(',', '.');
+          let u = l.querySelector('.ing-unite').value.trim();
+          if(n) {
+            rawPayload.push({ 
+              Titre: nom, 
+              Ingredient: n, 
+              Quantite_Base: q, 
+              Unite: u 
+            });
+          }
         });
         
         if(!nom || rawPayload.length === 0) return alert("⚠️ Nom et ingrédients requis.");
@@ -532,14 +542,15 @@
         let btn = document.getElementById('btn_save');
         btn.innerText = "⏳ Enregistrement..."; btn.disabled = true;
 
-        fetch(`${STEIN_API_URL}/Brut`, {
+        // Écriture directe dans /Data au lieu de /Brut
+        fetch(`${STEIN_API_URL}/Data`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(rawPayload)
         })
         .then(response => {
           if(!response.ok) throw new Error("Erreur HTTP " + response.status);
-          alert("✅ Recette enregistrée avec succès dans l'onglet Brut !"); 
+          alert("✅ Recette enregistrée avec succès dans l'onglet Data !"); 
           chargerBaseRecettes(); 
           changerVue('menu_principal');
           document.getElementById('new_nom').value = '';
