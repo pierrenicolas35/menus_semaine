@@ -183,7 +183,7 @@
         if(btn) btn.innerText = "Chargement des recettes...";
         masquerErreur();
 
-        fetch(`${STEIN_API_URL}/Data?v=${Date.now()}`)
+        fetch(`${STEIN_API_URL}/Data`)
           .then(response => {
             if (!response.ok) throw new Error("Statut HTTP " + response.status);
             return response.json();
@@ -231,7 +231,7 @@
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
         
-        fetch(`${STEIN_API_URL}/Menus_Sauvegardes?v=${Date.now()}`)
+        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`)
           .then(response => {
             if (!response.ok) throw new Error("Statut HTTP " + response.status);
             return response.json();
@@ -542,7 +542,6 @@
         let btn = document.getElementById('btn_save');
         btn.innerText = "⏳ Enregistrement..."; btn.disabled = true;
 
-        // Écriture directe dans /Data au lieu de /Brut
         fetch(`${STEIN_API_URL}/Data`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
