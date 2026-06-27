@@ -5,11 +5,6 @@
     <base target="_top">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Chef Perso</title>
-    
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       button, input, select { touch-action: manipulation; }
@@ -24,6 +19,11 @@
   </head>
   <body class="bg-slate-100 p-2 sm:p-4 min-h-screen text-slate-800 font-sans w-full overflow-x-hidden box-border">
     
+    <div id="debug_alert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl max-w-md mx-auto mb-4 text-xs font-mono relative">
+      <strong class="font-bold block mb-1">⚠️ Erreur de synchronisation :</strong>
+      <span id="debug_msg"></span>
+    </div>
+
     <div id="menu_principal" class="etape flex flex-col gap-4 w-full max-w-md mx-auto">
       <h1 class="text-2xl font-black text-center text-slate-700 mt-4 mb-2 uppercase tracking-wider">Chef Perso</h1>
       
@@ -157,25 +157,30 @@
     <script>
       const STEIN_API_URL = "https://api.steinhq.com/v1/storages/6a40132d92b1163e971007d3";
       let baseData = [], recs = [], plan = [];
-      
-      // Configuration des requêtes avec en-têtes de désactivation du cache
+
+      // Gestion native de la désactivation du cache (sans en-têtes ni paramètres d'URL polluants)
       const fetchOptions = {
         method: 'GET',
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+        cache: 'no-cache'
       };
 
-      // Lecture insensible à la casse pour parer les modifications d'en-têtes de Stein
+      // Lecture insensible à la casse pour parer les modifications d'en-têtes opérées par Stein
       function valChamp(obj, propName) {
         if (!obj) return "";
         let key = Object.keys(obj).find(k => k.trim().toLowerCase() === propName.trim().toLowerCase());
         return key ? obj[key] : "";
       }
 
-      // --- INITIALISATION DES RECETTES ---
+      function masquerErreur() {
+        document.getElementById('debug_alert').classList.add('hidden');
+      }
+
+      function afficherErreur(msg) {
+        document.getElementById('debug_msg').innerText = msg;
+        document.getElementById('debug_alert').classList.remove('hidden');
+      }
+
+      // --- INITIALISATION DES DONNÉES RECETTES ---
       document.addEventListener('DOMContentLoaded', function() {
         chargerBaseRecettes();
       });
@@ -183,9 +188,13 @@
       function chargerBaseRecettes() {
         let btn = document.getElementById('btn_suivant');
         if(btn) btn.innerText = "Chargement des recettes...";
+        masquerErreur();
 
         fetch(`${STEIN_API_URL}/Data`, fetchOptions)
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) throw new Error("Statut HTTP " + response.status);
+            return response.json();
+          })
           .then(data => {
             if (Array.isArray(data)) {
               baseData = data;
@@ -196,16 +205,21 @@
                 btn.classList.remove('bg-slate-400');
                 btn.classList.add('bg-blue-500');
                 btn.innerText = 'Suivant';
+              } else if (btn) {
+                btn.innerText = "Aucune recette (Données vides)";
               }
+            } else {
+              throw new Error("Le serveur n'a pas renvoyé un tableau valide.");
             }
           })
           .catch(err => {
-            if(btn) btn.innerText = "Erreur d'accès à l'onglet Data";
-            console.error(err);
+            if(btn) btn.innerText = "Échec de la synchronisation";
+            afficherErreur("Impossible de charger l'onglet 'Data'. Détails : " + err.message);
           });
       }
 
       function changerVue(id) {
+        masquerErreur();
         document.querySelectorAll('.etape').forEach(e => e.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         
@@ -215,9 +229,7 @@
         
         if(id === 'vue_consult') {
           let optionsSafe = (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
-          let currentSelect = document.getElementById('select_consult').value; 
           document.getElementById('select_consult').innerHTML = '<option value="">Sélectionner une recette...</option>' + optionsSafe;
-          if (currentSelect) document.getElementById('select_consult').value = currentSelect;
         }
       }
 
@@ -227,11 +239,14 @@
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
         
         fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, fetchOptions)
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) throw new Error("Statut HTTP " + response.status);
+            return response.json();
+          })
           .then(data => {
             let box = document.getElementById('conteneur_menus');
             if(!Array.isArray(data) || data.length === 0) {
-              box.innerHTML = '<p class="text-center text-slate-500 mt-4">Aucun menu planifié.</p>';
+              box.innerHTML = '<p class="text-center text-slate-500 mt-4">Aucun menu enregistré dans l\'historique.</p>';
               return;
             }
 
@@ -254,8 +269,7 @@
 
             let html = '';
             lots.forEach((lot, index) => {
-              // Alignement de l'ordre d'affichage (Index 0 = Dernière planification effectuée)
-              let titreBloc = (index === 0 && lots.length > 1) ? "🟢 Planification la plus récente" : "⚪ Planification précédente";
+              let titreBloc = (index === 0 && lots.length > 1) ? "🔵 Semaine prochaine" : (index === 1 ? "🟢 Semaine en cours" : "Planification précédente");
               
               html += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-black text-slate-700 border-b pb-2 mb-3 text-sm">${titreBloc} <span class="text-xs font-normal text-slate-400 block mt-1">Créé le ${lot.date}</span></h3>
@@ -277,7 +291,8 @@
             box.innerHTML = html;
           })
           .catch(err => {
-            document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4">Erreur lors du chargement de l\'historique.</p>';
+            document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4">Échec de lecture de l\'historique.</p>';
+            afficherErreur("Impossible d'accéder à l'onglet 'Menus_Sauvegardes'. Détails : " + err.message);
           });
       }
 
@@ -288,7 +303,7 @@
         afficherDetails();
       }
 
-      // --- FORMULAIRE DE PLANIFICATION ---
+      // --- FORMULAIRE PLANIFICATION ---
       function genForm() {
         let n = document.getElementById('nb_repas').value;
         let h = '';
@@ -320,7 +335,7 @@
               ${gridHTML}
               <div class="flex items-center justify-between gap-2 mt-2">
                 <label class="font-semibold text-slate-600 text-xs whitespace-nowrap">Personnes :</label>
-                <input type="number" class="couverts w-16 min-h-[44px] text-sm text-center border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none" value="5" min="1" inputmode="numeric">
+                <input type="number" class="couverts w-16 min-h-[44px] text-sm text-center border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500" value="5" min="1" inputmode="numeric">
               </div>
               <select class="recette w-full min-h-[44px] text-sm p-2 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 ${optionsHTML}
@@ -366,7 +381,7 @@
         }
       }
 
-      // --- CALCUL ET SYNCHRONISATION ---
+      // --- CALCUL ET ENREGISTREMENT ---
       function calcul() {
         let blocks = document.querySelectorAll('.repas-card');
         let err = false;
@@ -498,7 +513,7 @@
         document.getElementById('details_recette').innerHTML = h;
       }
 
-      // --- SAUVEGARDE AJOUT RECETTE ---
+      // --- INTERFACE AJOUT RECETTE ---
       function addIngRow() {
         let div = document.createElement('div');
         div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-orange-200";
@@ -526,11 +541,10 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(rawPayload)
         })
-        .then(() => {
-          alert("✅ Recette enregistrée dans l'onglet Brut !"); 
-          fetch(`${STEIN_API_URL}/Data`, fetchOptions)
-            .then(res => res.json())
-            .then(data => { baseData = data; recs = [...new Set(data.map(item => valChamp(item, 'Titre')).filter(t => t))]; });
+        .then(response => {
+          if(!response.ok) throw new Error("Erreur HTTP " + response.status);
+          alert("✅ Recette enregistrée avec succès dans l'onglet Brut !"); 
+          chargerBaseRecettes(); 
           changerVue('menu_principal');
           document.getElementById('new_nom').value = '';
           document.getElementById('new_ingredients_list').innerHTML = '';
