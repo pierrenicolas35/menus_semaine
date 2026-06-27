@@ -158,13 +158,7 @@
       const STEIN_API_URL = "https://api.steinhq.com/v1/storages/6a40132d92b1163e971007d3";
       let baseData = [], recs = [], plan = [];
 
-      // Gestion native de la désactivation du cache (sans en-têtes ni paramètres d'URL polluants)
-      const fetchOptions = {
-        method: 'GET',
-        cache: 'no-cache'
-      };
-
-      // Lecture insensible à la casse pour parer les modifications d'en-têtes opérées par Stein
+      // Fonction utilitaire insensible à la casse
       function valChamp(obj, propName) {
         if (!obj) return "";
         let key = Object.keys(obj).find(k => k.trim().toLowerCase() === propName.trim().toLowerCase());
@@ -190,7 +184,8 @@
         if(btn) btn.innerText = "Chargement des recettes...";
         masquerErreur();
 
-        fetch(`${STEIN_API_URL}/Data`, fetchOptions)
+        // Ajout du paramètre cache-busting (?v=timestamp) pour contourner la mise en cache
+        fetch(`${STEIN_API_URL}/Data?v=${Date.now()}`)
           .then(response => {
             if (!response.ok) throw new Error("Statut HTTP " + response.status);
             return response.json();
@@ -238,7 +233,8 @@
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
         
-        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, fetchOptions)
+        // Ajout du cache-busting ici également
+        fetch(`${STEIN_API_URL}/Menus_Sauvegardes?v=${Date.now()}`)
           .then(response => {
             if (!response.ok) throw new Error("Statut HTTP " + response.status);
             return response.json();
