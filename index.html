@@ -158,32 +158,33 @@
       const STEIN_API_URL = "https://api.steinhq.com/v1/storages/6a40132d92b1163e971007d3";
       let baseData = [], recs = [], plan = [];
       
-      // Sécurité anti-cache Stein
-      function getFreshUrl(sheet) {
-        return `${STEIN_API_URL}/${sheet}?_nocache=${Date.now()}`;
-      }
+      // Configuration des requêtes avec en-têtes de désactivation du cache
+      const fetchOptions = {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      };
 
-      // Lecture insensible à la casse des en-têtes renvoyés par l'API
+      // Lecture insensible à la casse pour parer les modifications d'en-têtes de Stein
       function valChamp(obj, propName) {
         if (!obj) return "";
         let key = Object.keys(obj).find(k => k.trim().toLowerCase() === propName.trim().toLowerCase());
         return key ? obj[key] : "";
       }
 
-      // --- INITIALISATION ---
+      // --- INITIALISATION DES RECETTES ---
       document.addEventListener('DOMContentLoaded', function() {
         chargerBaseRecettes();
       });
 
       function chargerBaseRecettes() {
         let btn = document.getElementById('btn_suivant');
-        if(btn) {
-          btn.disabled = true;
-          btn.className = "w-full min-h-[50px] bg-slate-400 text-white font-bold text-base rounded-xl shadow-md";
-          btn.innerText = "Chargement des recettes...";
-        }
+        if(btn) btn.innerText = "Chargement des recettes...";
 
-        fetch(getFreshUrl('Data'), { cache: "no-store" })
+        fetch(`${STEIN_API_URL}/Data`, fetchOptions)
           .then(response => response.json())
           .then(data => {
             if (Array.isArray(data)) {
@@ -195,15 +196,11 @@
                 btn.classList.remove('bg-slate-400');
                 btn.classList.add('bg-blue-500');
                 btn.innerText = 'Suivant';
-              } else if (btn) {
-                btn.innerText = "⚠️ Aucune recette trouvée dans l'onglet Data";
               }
-            } else if (btn) {
-              btn.innerText = "⚠️ Erreur format de réponse API";
             }
           })
           .catch(err => {
-            if(btn) btn.innerText = "Erreur de synchronisation Data";
+            if(btn) btn.innerText = "Erreur d'accès à l'onglet Data";
             console.error(err);
           });
       }
@@ -212,7 +209,6 @@
         document.querySelectorAll('.etape').forEach(e => e.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         
-        // Relance de sécurité si les recettes n'ont pas fini de charger
         if(id === 'etape1' && recs.length === 0) {
           chargerBaseRecettes();
         }
@@ -230,7 +226,7 @@
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement de l\'historique...</p>';
         
-        fetch(getFreshUrl('Menus_Sauvegardes'), { cache: "no-store" })
+        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, fetchOptions)
           .then(response => response.json())
           .then(data => {
             let box = document.getElementById('conteneur_menus');
@@ -258,7 +254,8 @@
 
             let html = '';
             lots.forEach((lot, index) => {
-              let titreBloc = (index === 0 && lots.length > 1) ? "🔵 Semaine prochaine" : (index === 1 ? "🟢 Semaine en cours" : "Semaine");
+              // Alignement de l'ordre d'affichage (Index 0 = Dernière planification effectuée)
+              let titreBloc = (index === 0 && lots.length > 1) ? "🟢 Planification la plus récente" : "⚪ Planification précédente";
               
               html += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-black text-slate-700 border-b pb-2 mb-3 text-sm">${titreBloc} <span class="text-xs font-normal text-slate-400 block mt-1">Créé le ${lot.date}</span></h3>
@@ -280,7 +277,7 @@
             box.innerHTML = html;
           })
           .catch(err => {
-            document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4">Erreur de liaison avec l\'historique.</p>';
+            document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4">Erreur lors du chargement de l\'historique.</p>';
           });
       }
 
@@ -291,7 +288,7 @@
         afficherDetails();
       }
 
-      // --- PLANIFICATION ---
+      // --- FORMULAIRE DE PLANIFICATION ---
       function genForm() {
         let n = document.getElementById('nb_repas').value;
         let h = '';
@@ -369,7 +366,7 @@
         }
       }
 
-      // --- CALCUL ET SYNCHRONISATION DES INGRÉDIENTS ---
+      // --- CALCUL ET SYNCHRONISATION ---
       function calcul() {
         let blocks = document.querySelectorAll('.repas-card');
         let err = false;
@@ -404,11 +401,11 @@
           couverts: p.couverts
         }));
 
-        fetch(getFreshUrl('Menus_Sauvegardes'), {
+        fetch(`${STEIN_API_URL}/Menus_Sauvegardes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payloadMenu)
-        }).catch(e => console.error("Erreur de sauvegarde de la semaine", e));
+        }).catch(e => console.error(e));
 
         let mapCourses = {};
         baseData.forEach(ligne => {
@@ -476,7 +473,7 @@
         navigator.share ? navigator.share({ title: "Chef Perso", text: txt }) : navigator.clipboard.writeText(txt).then(() => alert("Copié !"));
       }
 
-      // --- DETAILS D'UNE RECETTE ---
+      // --- VUE DETAILS RECETTE ---
       function afficherDetails() {
         let r = document.getElementById('select_consult').value;
         let p = parseInt(document.getElementById('parts_consult').value) || 5;
@@ -501,7 +498,7 @@
         document.getElementById('details_recette').innerHTML = h;
       }
 
-      // --- AJOUT DE RECETTE (Format Brut) ---
+      // --- SAUVEGARDE AJOUT RECETTE ---
       function addIngRow() {
         let div = document.createElement('div');
         div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-orange-200";
@@ -516,7 +513,6 @@
         document.querySelectorAll('#new_ingredients_list > div').forEach(l => {
           let n = l.querySelector('.ing-nom').value.trim();
           let q = l.querySelector('.ing-qte').value.trim();
-          // Structure exacte de ton onglet Brut
           if(n) rawPayload.push({ titre_recette: nom, Ingredient: n, quantite: q });
         });
         
@@ -525,21 +521,23 @@
         let btn = document.getElementById('btn_save');
         btn.innerText = "⏳ Enregistrement..."; btn.disabled = true;
 
-        fetch(getFreshUrl('Brut'), {
+        fetch(`${STEIN_API_URL}/Brut`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(rawPayload)
         })
         .then(() => {
-          alert("✅ Recette enregistrée avec succès dans l'onglet Brut !"); 
-          chargerBaseRecettes(); 
+          alert("✅ Recette enregistrée dans l'onglet Brut !"); 
+          fetch(`${STEIN_API_URL}/Data`, fetchOptions)
+            .then(res => res.json())
+            .then(data => { baseData = data; recs = [...new Set(data.map(item => valChamp(item, 'Titre')).filter(t => t))]; });
           changerVue('menu_principal');
           document.getElementById('new_nom').value = '';
           document.getElementById('new_ingredients_list').innerHTML = '';
           btn.innerText = "💾 Enregistrer"; btn.disabled = false;
         })
         .catch(err => {
-          alert("Erreur de communication avec l'API Stein.");
+          alert("Erreur de communication avec l'API.");
           btn.innerText = "💾 Enregistrer"; 
           btn.disabled = false;
         });
