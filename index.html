@@ -61,11 +61,14 @@
       </div>
     </div>
 
-    <!-- ÉTAPE CREATION DE MENU (REPAS PAR REPAS) -->
+    <!-- ÉTAPE CREATION / EDITION DE MENU -->
     <div id="etape2" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
       <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-1 text-left w-fit">⬅ Accueil</button>
-      <h2 class="text-xl font-bold text-center text-slate-700 mt-1 mb-1">Composer le menu</h2>
+      <h2 id="titre_edition_menu" class="text-xl font-bold text-center text-slate-700 mt-1 mb-1">Composer le menu</h2>
       
+      <!-- ID caché pour la modification -->
+      <input type="hidden" id="edit_menu_id" value="">
+
       <!-- Sélection du premier jour de la semaine du menu -->
       <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
         <label class="block font-semibold text-slate-600 mb-1 text-xs uppercase tracking-wider">Premier jour de la semaine (Lundi) :</label>
@@ -169,7 +172,7 @@
       // ⚠️ ADRESSE DE TON API GOOGLE APPS SCRIPT
       const API_URL = "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
 
-      let recs = [], plan = [];
+      let recs = [], plan = [], menusCharges = [];
 
       async function apiGet(action, params = {}) {
         const queryParams = new URLSearchParams({ action, ...params }).toString();
@@ -226,6 +229,8 @@
       }
 
       function ouvrirPlanification() {
+        document.getElementById('edit_menu_id').value = '';
+        document.getElementById('titre_edition_menu').innerText = 'Composer le menu';
         document.getElementById('date_debut_menu').value = getProchainLundi();
         document.getElementById('form_repas').innerHTML = '';
         ajouterBlocRepas();
@@ -249,8 +254,8 @@
         }
       }
 
-      // --- AJOUT DYNAMIQUE DE BLOCS REPAS DANS LE MENU ---
-      function ajouterBlocRepas() {
+      // --- AJOUT DYNAMIQUE DE BLOCS REPAS ---
+      function ajouterBlocRepas(donneesRepas = null) {
         const conteneur = document.getElementById('form_repas');
         const optionsHTML = '<option value="">Sélectionne une recette</option>' + (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
 
@@ -296,6 +301,25 @@
           </div>`;
 
         conteneur.insertAdjacentHTML('beforeend', cardHTML);
+
+        // Si rechargement pour modification
+        if (donneesRepas) {
+          let derniereCard = conteneur.lastElementChild;
+          if (donneesRepas.recette) derniereCard.querySelector('.recette').value = donneesRepas.recette;
+          if (donneesRepas.couverts) {
+            derniereCard.querySelector('.couverts').value = donneesRepas.couverts;
+            derniereCard.querySelector('.couverts-val').innerText = donneesRepas.couverts;
+          }
+          if (donneesRepas.titre) {
+            let slotsFormates = donneesRepas.titre.toLowerCase();
+            derniereCard.querySelectorAll('.slot-btn').forEach(btn => {
+              let val = btn.getAttribute('data-val');
+              if (slotsFormates.includes(val)) {
+                toggleSlot(btn);
+              }
+            });
+          }
+        }
       }
 
       function modifierPartsCard(btn, delta) {
@@ -356,9 +380,9 @@
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement...</p>';
         
         try {
-          const menus = await apiGet('getMenusSauvegardes');
+          menusCharges = await apiGet('getMenusSauvegardes');
           let box = document.getElementById('conteneur_menus');
-          if(!menus || menus.length === 0) {
+          if(!menusCharges || menusCharges.length === 0) {
             box.innerHTML = '<p class="text-center text-slate-500 mt-4">Aucun menu planifié.</p>';
             return;
           }
@@ -367,7 +391,7 @@
           aujourdhui.setHours(0,0,0,0);
 
           let html = '';
-          menus.forEach((lot, index) => {
+          menusCharges.forEach((lot, index) => {
             let titreBloc = "📅 Menu";
             let badgeColor = "border-slate-300";
 
@@ -397,8 +421,11 @@
 
             html += `<div class="bg-white p-4 rounded-2xl shadow-sm border-2 ${badgeColor}">
                       <div class="flex justify-between items-center border-b pb-2 mb-3">
-                        <h3 class="font-black text-slate-700 text-sm">${titreBloc}</h3>
-                        <span class="text-xs text-slate-400 font-medium">${dateAffichee}</span>
+                        <div>
+                          <h3 class="font-black text-slate-700 text-sm">${titreBloc}</h3>
+                          <span class="text-xs text-slate-400 font-medium">${dateAffichee}</span>
+                        </div>
+                        <button type="button" onclick="editerMenuExistant('${lot.id}')" class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-indigo-200 active:scale-95 transition-all">✏️ Modifier</button>
                       </div>
                       <div class="flex flex-col gap-2">`;
             
@@ -419,6 +446,22 @@
         } catch(e) {
           document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4">Erreur lors du chargement.</p>';
         }
+      }
+
+      function editerMenuExistant(idMenu) {
+        let lot = menusCharges.find(m => String(m.id) === String(idMenu));
+        if (!lot) return;
+
+        document.getElementById('edit_menu_id').value = lot.id;
+        document.getElementById('titre_edition_menu').innerText = 'Modifier le menu';
+        if (lot.dateDebut) document.getElementById('date_debut_menu').value = lot.dateDebut;
+
+        document.getElementById('form_repas').innerHTML = '';
+        lot.repas.forEach(repas => {
+          ajouterBlocRepas(repas);
+        });
+
+        changerVue('etape2');
       }
 
       function cuisinerRaccourci(recette, couverts) {
@@ -454,8 +497,9 @@
         document.getElementById('liste').innerHTML = '<li class="p-4 text-center text-slate-500 animate-pulse text-sm">Calcul et sauvegarde du menu...</li>';
         
         const dateDebutStr = document.getElementById('date_debut_menu').value;
+        const idMenuExistant = document.getElementById('edit_menu_id').value;
 
-        apiPost('sauvegarderMenu', { plan: plan, dateDebutStr: dateDebutStr });
+        apiPost('sauvegarderMenu', { plan: plan, dateDebutStr: dateDebutStr, idMenuExistant: idMenuExistant });
 
         try {
           const l = await apiPost('calculerCourses', { planification: plan });
