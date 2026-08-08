@@ -192,7 +192,7 @@
         }
       }
 
-      // --- MENUS SAUVEGARDÉS ---
+// --- MENUS SAUVEGARDÉS ---
       async function chargerMenus() {
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement...</p>';
@@ -207,16 +207,24 @@
 
           let html = '';
           menus.forEach((lot, index) => {
-            let titreBloc = (index === 0 && menus.length > 1) ? "🟢 Semaine en cours" : (index === 1 ? "🔵 Semaine prochaine" : "Semaine");
+            // Le premier élément (index 0) est maintenant Garanti comme étant le plus récent
+            let titreBloc = (index === 0) 
+              ? "🟢 Menu le plus récent" 
+              : "🔵 Menu précédent";
             
-            html += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                      <h3 class="font-black text-slate-700 border-b pb-2 mb-3 text-sm">${titreBloc} <span class="text-xs font-normal text-slate-400 block mt-1">Créé le ${lot.date}</span></h3>
+            let badgeColor = (index === 0) ? "border-emerald-500" : "border-indigo-400";
+
+            html += `<div class="bg-white p-4 rounded-2xl shadow-sm border-2 ${badgeColor}">
+                      <div class="flex justify-between items-center border-b pb-2 mb-3">
+                        <h3 class="font-black text-slate-700 text-sm">${titreBloc}</h3>
+                        <span class="text-xs text-slate-400 font-medium">Créé le ${lot.date}</span>
+                      </div>
                       <div class="flex flex-col gap-2">`;
             
             lot.repas.forEach(r => {
               let recSafe = String(r.recette).replace(/'/g, "\\'").replace(/"/g, '&quot;');
               html += `
-                <div onclick="cuisinerRaccourci('${recSafe}',${r.couverts})" class="bg-slate-50 p-3 rounded-xl border border-slate-100 active:bg-slate-100 active:scale-95 transition-all cursor-pointer">
+                <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 p-3 rounded-xl border border-slate-100 active:bg-slate-100 active:scale-95 transition-all cursor-pointer">
                   <p class="font-bold text-indigo-700 text-sm mb-1">${r.titre}</p>
                   <p class="text-slate-600 text-sm flex justify-between items-center">
                     <span>🍲 ${r.recette} <span class="text-xs opacity-70">(${r.couverts} p.)</span></span>
