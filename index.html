@@ -2,13 +2,29 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Chef Perso</title>
+
+    <!-- 📱 OPTIONS PLEIN ÉCRAN (PWA / MOBILE) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Chef Perso">
+    <meta name="theme-color" content="#f1f5f9">
+
+    <!-- Web App Manifest (intégré directement) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Chef Perso","short_name":"ChefPerso","start_url":".","display":"standalone","background_color":"#f1f5f9","theme_color":"#f1f5f9","orientation":"portrait"}'>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       button, input, select { touch-action: manipulation; }
       .input-error { border-color: #ef4444 !important; border-width: 2px !important; }
       * { word-wrap: break-word; }
+      /* Gestion des encoches (notches) sur smartphones modernes */
+      body {
+        padding-top: env(safe-area-inset-top, 8px);
+        padding-bottom: env(safe-area-inset-bottom, 8px);
+      }
     </style>
   </head>
   <body class="bg-slate-100 p-2 sm:p-4 min-h-screen text-slate-800 font-sans w-full overflow-x-hidden box-border">
@@ -392,10 +408,8 @@
         
         const dateDebutStr = document.getElementById('date_debut_menu').value;
 
-        // 1. Sauvegarde
         apiPost('sauvegarderMenu', { plan: plan, dateDebutStr: dateDebutStr });
 
-        // 2. Calcul des courses
         try {
           const l = await apiPost('calculerCourses', { planification: plan });
           let u = document.getElementById('liste'); 
