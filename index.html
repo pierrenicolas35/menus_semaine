@@ -21,7 +21,7 @@
         <span class="text-2xl">➔</span>
       </button>
       
-      <button type="button" onclick="changerVue('etape1')" class="h-20 bg-blue-500 text-white font-bold rounded-2xl shadow-lg flex items-center justify-between px-6 active:scale-95 transition-all">
+      <button type="button" onclick="ouvrirPlanification()" class="h-20 bg-blue-500 text-white font-bold rounded-2xl shadow-lg flex items-center justify-between px-6 active:scale-95 transition-all">
         <span class="text-lg">🛒 Créer une semaine</span>
         <span class="text-2xl">➔</span>
       </button>
@@ -48,11 +48,21 @@
     <div id="etape1" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
       <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold p-2 text-left w-fit">⬅ Retour menu</button>
       <h2 class="text-xl font-bold text-center text-slate-700 mt-2 mb-2">Planifier la semaine</h2>
-      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200">
-        <label class="block font-semibold text-slate-600 mb-2 text-sm">Nombre de plats à préparer :</label>
-        <input type="number" id="nb_repas" value="5" min="1" inputmode="numeric" 
-               class="w-full min-h-[48px] text-lg p-3 border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+      
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-4">
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1 text-sm">Premier jour du menu (Lundi) :</label>
+          <input type="date" id="date_debut_menu" 
+                 class="w-full min-h-[48px] text-base p-3 border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1 text-sm">Nombre de plats à préparer :</label>
+          <input type="number" id="nb_repas" value="5" min="1" inputmode="numeric" 
+                 class="w-full min-h-[48px] text-lg p-3 border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        </div>
       </div>
+
       <button type="button" id="btn_suivant" onclick="genForm()" disabled
               class="w-full min-h-[50px] bg-slate-400 text-white font-bold text-base rounded-xl shadow-md transition-all">
         Chargement de la base...
@@ -144,12 +154,11 @@
     </div>
 
     <script>
-      // ⚠️ REMPLACE CETTE URL PAR TON URL APPS SCRIPT DÉPLOYÉE
+      // ⚠️ ADRESSE DE TON API GOOGLE APPS SCRIPT
       const API_URL = "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
 
       let recs = [], plan = [];
 
-      // Helper d'appel API (GET & POST)
       async function apiGet(action, params = {}) {
         const queryParams = new URLSearchParams({ action, ...params }).toString();
         const response = await fetch(`${API_URL}?${queryParams}`);
@@ -164,7 +173,6 @@
         return await response.json();
       }
 
-      // --- INITIALISATION ---
       document.addEventListener('DOMContentLoaded', async function() {
         let btn = document.getElementById('btn_suivant');
         try {
@@ -180,6 +188,19 @@
         }
       });
 
+      function getProchainLundi() {
+        let d = new Date();
+        let day = d.getDay();
+        let diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        let lundi = new Date(d.setDate(diff));
+        return lundi.toISOString().split('T')[0];
+      }
+
+      function ouvrirPlanification() {
+        document.getElementById('date_debut_menu').value = getProchainLundi();
+        changerVue('etape1');
+      }
+
       function changerVue(id) {
         document.querySelectorAll('.etape').forEach(e => e.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
@@ -192,7 +213,6 @@
         }
       }
 
-// --- MENUS SAUVEGARDÉS ---
       async function chargerMenus() {
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4">Chargement...</p>';
@@ -205,19 +225,42 @@
             return;
           }
 
+          const aujourdhui = new Date();
+          aujourdhui.setHours(0,0,0,0);
+
           let html = '';
           menus.forEach((lot, index) => {
-            // Le premier élément (index 0) est maintenant Garanti comme étant le plus récent
-            let titreBloc = (index === 0) 
-              ? "🟢 Menu le plus récent" 
-              : "🔵 Menu précédent";
-            
-            let badgeColor = (index === 0) ? "border-emerald-500" : "border-indigo-400";
+            let titreBloc = "📅 Semaine";
+            let badgeColor = "border-slate-300";
+
+            if (lot.dateDebut) {
+              let debut = new Date(lot.dateDebut);
+              let fin = new Date(lot.dateDebut);
+              fin.setDate(fin.getDate() + 6);
+
+              if (aujourdhui >= debut && aujourdhui <= fin) {
+                titreBloc = "🟢 Semaine en cours";
+                badgeColor = "border-emerald-500";
+              } else if (aujourdhui < debut) {
+                titreBloc = "🔵 Semaine prochaine / À venir";
+                badgeColor = "border-blue-500";
+              } else {
+                titreBloc = "⚪ Semaine passée";
+                badgeColor = "border-slate-300";
+              }
+            } else {
+              titreBloc = (index === 0) ? "🟢 Semaine en cours" : "🔵 Semaine prochaine";
+              badgeColor = (index === 0) ? "border-emerald-500" : "border-blue-500";
+            }
+
+            let dateAffichee = lot.dateDebut 
+              ? "Du " + new Date(lot.dateDebut).toLocaleDateString('fr-FR')
+              : "Créé le " + lot.date;
 
             html += `<div class="bg-white p-4 rounded-2xl shadow-sm border-2 ${badgeColor}">
                       <div class="flex justify-between items-center border-b pb-2 mb-3">
                         <h3 class="font-black text-slate-700 text-sm">${titreBloc}</h3>
-                        <span class="text-xs text-slate-400 font-medium">Créé le ${lot.date}</span>
+                        <span class="text-xs text-slate-400 font-medium">${dateAffichee}</span>
                       </div>
                       <div class="flex flex-col gap-2">`;
             
@@ -247,7 +290,6 @@
         afficherDetails();
       }
 
-      // --- PLANIFICATION ---
       function genForm() {
         let n = document.getElementById('nb_repas').value;
         let h = '';
@@ -348,8 +390,10 @@
         changerVue('etape3');
         document.getElementById('liste').innerHTML = '<li class="p-4 text-center text-slate-500 animate-pulse text-sm">Calcul et sauvegarde...</li>';
         
-        // 1. Sauvegarde du menu
-        apiPost('sauvegarderMenu', { plan });
+        const dateDebutStr = document.getElementById('date_debut_menu').value;
+
+        // 1. Sauvegarde
+        apiPost('sauvegarderMenu', { plan: plan, dateDebutStr: dateDebutStr });
 
         // 2. Calcul des courses
         try {
@@ -366,7 +410,7 @@
               <li class="flex items-center justify-between p-3 bg-white hover:bg-slate-50 transition-colors w-full">
                 <div class="flex-grow pr-2 min-w-0">
                   <span class="font-bold text-slate-800 text-sm break-words">${item.nom}</span> 
-                  <span class="text-blue-600 font-semibold ml-1 text-sm whitespace-nowrap">${qteAffichee}${item.unite}</span>
+                  <span class="text-blue-600 font-semibold ml-1 text-sm whitespace-nowrap">${qteAffichee} ${item.unite}</span>
                 </div>
                 <button type="button" class="delete min-w-[40px] min-h-[40px] w-10 flex items-center justify-center bg-red-100 text-red-600 rounded-lg active:scale-90" onclick="this.parentElement.remove()">🗑️</button>
               </li>`;
@@ -377,7 +421,6 @@
         }
       }
 
-      // --- AJOUTS & PARTAGE ---
       function ajouterIngredient() {
         let input = document.getElementById('ajout_manuel');
         let valeur = input.value.trim();
