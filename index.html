@@ -167,7 +167,7 @@
       </button>
     </div>
 
-    <script>
+ <script>
       // ⚠️ ADRESSE DE TON API GOOGLE APPS SCRIPT
       const API_URL = "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
 
@@ -187,8 +187,30 @@
         return await response.json();
       }
 
+      // --- INITIALISATION AVEC EXPIRATION DE L'ÉTAT (30 MIN) ---
       document.addEventListener('DOMContentLoaded', async function() {
         let btn = document.getElementById('btn_suivant');
+        
+        // 1. Vérification du temps d'inactivité (30 minutes = 1800000 ms)
+        const DELAI_EXPIRATION = 30 * 60 * 1000; 
+        let dernierAcces = parseInt(localStorage.getItem('dernier_acces') || "0");
+        let maintenant = new Date().getTime();
+        
+        let vueSauvegardee = 'menu_principal';
+
+        if (maintenant - dernierAcces < DELAI_EXPIRATION) {
+          // Si moins de 30 min, on restaure la dernière vue
+          vueSauvegardee = localStorage.getItem('derniere_vue') || 'menu_principal';
+        } else {
+          // Si plus de 30 min, on réinitialise sur le menu principal
+          localStorage.setItem('derniere_vue', 'menu_principal');
+        }
+
+        // Mise à jour de l'horodatage d'accès
+        localStorage.setItem('dernier_acces', maintenant.toString());
+
+        changerVue(vueSauvegardee, false);
+
         try {
           recs = await apiGet('getListeRecettes') || [];
           if(recs.length > 0 && !String(recs[0]).startsWith("⚠️")) {
@@ -196,6 +218,15 @@
             btn.classList.remove('bg-slate-400');
             btn.classList.add('bg-blue-500', 'active:bg-blue-600');
             btn.innerText = 'Suivant';
+          }
+
+          // Restauration du contenu si l'utilisateur était sur une vue spécifique
+          if (vueSauvegardee === 'vue_menus') chargerMenus();
+          if (vueSauvegardee === 'vue_consult') {
+            let lastRecipe = localStorage.getItem('derniere_recette');
+            if (lastRecipe) {
+              setTimeout(() => cuisinerRaccourci(lastRecipe, localStorage.getItem('derniers_couverts') || 5), 300);
+            }
           }
         } catch(e) {
           btn.innerText = 'Erreur de connexion';
@@ -215,9 +246,15 @@
         changerVue('etape1');
       }
 
-      function changerVue(id) {
+      function changerVue(id, sauver = true) {
         document.querySelectorAll('.etape').forEach(e => e.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
+        
+        // On enregistre l'heure et l'écran à chaque changement de vue
+        localStorage.setItem('dernier_acces', new Date().getTime().toString());
+        if (sauver) {
+          localStorage.setItem('derniere_vue', id);
+        }
         
         if(id === 'vue_consult') {
           let optionsSafe = (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
@@ -298,6 +335,8 @@
       }
 
       function cuisinerRaccourci(recette, couverts) {
+        localStorage.setItem('derniere_recette', recette);
+        localStorage.setItem('derniers_couverts', couverts);
         changerVue('vue_consult');
         document.getElementById('select_consult').value = recette;
         document.getElementById('parts_consult').value = couverts;
@@ -463,6 +502,10 @@
         let r = document.getElementById('select_consult').value;
         let p = document.getElementById('parts_consult').value;
         if(!r) return;
+        
+        localStorage.setItem('derniere_recette', r);
+        localStorage.setItem('derniers_couverts', p);
+
         document.getElementById('details_recette').innerHTML = '<p class="p-4 text-center text-slate-500 font-bold animate-pulse">Calcul...</p>';
         
         try {
