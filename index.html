@@ -27,6 +27,7 @@
   </head>
   <body class="bg-slate-100 p-2 sm:p-4 min-h-screen text-slate-800 font-sans w-full overflow-x-hidden box-border">
     
+    <!-- MENU PRINCIPAL -->
     <div id="menu_principal" class="etape flex flex-col gap-4 w-full max-w-md mx-auto">
       <h1 class="text-2xl font-black text-center text-slate-700 mt-4 mb-2 uppercase tracking-wider">Chef Perso</h1>
       
@@ -36,12 +37,12 @@
       </button>
       
       <button type="button" onclick="ouvrirPlanification()" class="h-20 bg-blue-500 text-white font-bold rounded-2xl shadow-lg flex items-center justify-between px-6 active:scale-95 transition-all">
-        <span class="text-lg">🛒 Créer une semaine</span>
+        <span class="text-lg">🛒 Créer un menu</span>
         <span class="text-2xl">➔</span>
       </button>
 
       <button type="button" onclick="changerVue('vue_consult')" class="h-20 bg-emerald-500 text-white font-bold rounded-2xl shadow-lg flex items-center justify-between px-6 active:scale-95 transition-all">
-        <span class="text-lg">🍳 Cuisiner (Détails)</span>
+        <span class="text-lg">🍳 Cuisiner (Fiche recette)</span>
         <span class="text-2xl">➔</span>
       </button>
 
@@ -51,58 +52,49 @@
       </button>
     </div>
 
+    <!-- MES MENUS PLANIFIÉS -->
     <div id="vue_menus" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
-      <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit">⬅ Retour menu</button>
-      <h2 class="text-xl font-bold text-indigo-700 text-center mb-2">Mes Semaines</h2>
+      <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit">⬅ Accueil</button>
+      <h2 class="text-xl font-bold text-indigo-700 text-center mb-2">Mes Menus Planifiés</h2>
       <div id="conteneur_menus" class="flex flex-col gap-5">
         <p class="text-center text-slate-500 animate-pulse">Chargement de tes menus...</p>
       </div>
     </div>
 
-    <div id="etape1" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
-      <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold p-2 text-left w-fit">⬅ Retour menu</button>
-      <h2 class="text-xl font-bold text-center text-slate-700 mt-2 mb-2">Planifier la semaine</h2>
+    <!-- ÉTAPE CREATION DE MENU (REPAS PAR REPAS) -->
+    <div id="etape2" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
+      <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-1 text-left w-fit">⬅ Accueil</button>
+      <h2 class="text-xl font-bold text-center text-slate-700 mt-1 mb-1">Composer le menu</h2>
       
-      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-4">
-        <div>
-          <label class="block font-semibold text-slate-600 mb-1 text-sm">Premier jour du menu (Lundi) :</label>
-          <input type="date" id="date_debut_menu" 
-                 class="w-full min-h-[48px] text-base p-3 border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-        </div>
-
-        <div>
-          <label class="block font-semibold text-slate-600 mb-1 text-sm">Nombre de plats à préparer :</label>
-          <input type="number" id="nb_repas" value="5" min="1" inputmode="numeric" 
-                 class="w-full min-h-[48px] text-lg p-3 border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-        </div>
+      <!-- Sélection du premier jour de la semaine du menu -->
+      <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+        <label class="block font-semibold text-slate-600 mb-1 text-xs uppercase tracking-wider">Premier jour de la semaine (Lundi) :</label>
+        <input type="date" id="date_debut_menu" 
+               class="w-full h-11 text-base px-3 border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
       </div>
 
-      <button type="button" id="btn_suivant" onclick="genForm()" disabled
-              class="w-full min-h-[50px] bg-slate-400 text-white font-bold text-base rounded-xl shadow-md transition-all">
-        Chargement de la base...
-      </button>
-    </div>
-    
-    <div id="etape2" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
-      <h2 class="text-xl font-bold text-center text-slate-700 mt-2 mb-1">Détails des plats</h2>
+      <!-- Conteneur des blocs repas -->
       <div id="form_repas" class="flex flex-col gap-4"></div>
       
-      <p id="msg_erreur" class="text-red-500 font-bold text-sm text-center hidden">⚠️ N'oublie pas de choisir une recette !</p>
+      <!-- Bouton Ajouter un repas au menu -->
+      <button type="button" onclick="ajouterBlocRepas()" 
+              class="w-full min-h-[50px] bg-blue-50 text-blue-700 font-bold text-base rounded-2xl border-2 border-dashed border-blue-300 active:bg-blue-100 transition-all flex items-center justify-center gap-2">
+        <span>➕</span> Ajouter un repas
+      </button>
 
-      <div class="flex gap-2 mt-1">
-        <button type="button" onclick="changerVue('etape1')" 
-                class="w-1/3 min-h-[50px] bg-slate-200 text-slate-700 font-bold text-base rounded-xl active:bg-slate-300 active:scale-[0.98] transition-all">
-          Retour
-        </button>
+      <p id="msg_erreur" class="text-red-500 font-bold text-sm text-center hidden">⚠️ N'oublie pas de choisir une recette pour chaque repas !</p>
+
+      <div class="flex gap-2 mt-2">
         <button type="button" onclick="calcul()" 
-                class="w-2/3 min-h-[50px] bg-blue-500 text-white font-bold text-base rounded-xl shadow-md active:bg-blue-600 active:scale-[0.98] transition-all">
-          Générer & Sauvegarder
+                class="w-full min-h-[52px] bg-blue-500 text-white font-bold text-base rounded-xl shadow-md active:bg-blue-600 active:scale-[0.98] transition-all">
+          Générer & Sauvegarder le menu
         </button>
       </div>
     </div>
 
+    <!-- LISTE DE COURSES DU MENU -->
     <div id="etape3" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
-      <h2 class="text-xl font-bold text-center text-slate-700 mt-2 mb-1">🛒 Ma liste</h2>
+      <h2 class="text-xl font-bold text-center text-slate-700 mt-2 mb-1">🛒 Ma liste de courses</h2>
       
       <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex gap-2 items-center">
         <input type="text" id="ajout_manuel" placeholder="Ajouter (Lait...)" 
@@ -120,38 +112,44 @@
       <div class="flex gap-2 mt-1 w-full">
         <button type="button" onclick="partage('Menu')" class="w-1/2 min-h-[56px] bg-blue-500 text-white font-bold rounded-xl shadow-md active:bg-blue-600 active:scale-[0.98] transition-all flex flex-col items-center justify-center p-2">
           <span class="text-lg leading-none mb-1">🍽️</span>
-          <span class="text-xs sm:text-sm">Le Menu</span>
+          <span class="text-xs sm:text-sm">Partager le Menu</span>
         </button>
         <button type="button" onclick="partage('Courses')" class="w-1/2 min-h-[56px] bg-green-500 text-white font-bold rounded-xl shadow-md active:bg-green-600 active:scale-[0.98] transition-all flex flex-col items-center justify-center p-2">
           <span class="text-lg leading-none mb-1">🛒</span>
-          <span class="text-xs sm:text-sm">Les Courses</span>
+          <span class="text-xs sm:text-sm">Partager les Courses</span>
         </button>
       </div>
 
       <div class="flex gap-2 mt-1 w-full">
         <button type="button" onclick="changerVue('menu_principal')" class="w-full min-h-[50px] bg-slate-800 text-white font-bold text-base rounded-xl active:bg-slate-900 active:scale-[0.98] transition-all">
-          Menu principal
+          Accueil principal
         </button>
       </div>
     </div>
 
+    <!-- CUISINER (CONSULTATION FICHE RECETTE) -->
     <div id="vue_consult" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
-      <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit">⬅ Retour menu</button>
-      <h2 class="text-xl font-bold text-emerald-700 text-center">Détails recette</h2>
+      <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit">⬅ Accueil</button>
+      <h2 class="text-xl font-bold text-emerald-700 text-center">Fiche recette</h2>
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-3">
         <select id="select_consult" class="w-full h-12 border rounded-lg p-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="afficherDetails()"></select>
         <div class="flex items-center justify-between gap-4">
           <label class="font-bold text-sm text-slate-600">Nombre de parts :</label>
-          <input type="number" id="parts_consult" value="5" min="1" class="w-20 h-10 text-center border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="afficherDetails()">
+          <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden bg-slate-50">
+            <button type="button" onclick="modifierPartsConsult(-1)" class="w-10 h-10 bg-slate-200 text-slate-700 font-black text-lg active:bg-slate-300 transition-all flex items-center justify-center">−</button>
+            <span id="parts_consult_val" class="w-12 text-center font-bold text-slate-800 text-base">5</span>
+            <button type="button" onclick="modifierPartsConsult(1)" class="w-10 h-10 bg-slate-200 text-slate-700 font-black text-lg active:bg-slate-300 transition-all flex items-center justify-center">+</button>
+          </div>
         </div>
       </div>
       <div id="details_recette" class="bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[100px] overflow-hidden">
-        <p class="p-4 text-center text-slate-400 italic text-sm">Sélectionnez une recette pour voir les ingrédients.</p>
+        <p class="p-4 text-center text-slate-400 italic text-sm">Sélectionnez une recette pour voir ses ingrédients.</p>
       </div>
     </div>
 
+    <!-- AJOUTER UNE RECETTE -->
     <div id="vue_ajout" class="etape hidden flex flex-col gap-3 w-full max-w-md mx-auto">
-      <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit">⬅ Retour</button>
+      <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit">⬅ Accueil</button>
       <h2 class="text-xl font-bold text-orange-600 text-center">Nouvelle Recette</h2>
       
       <input type="text" id="new_nom" placeholder="Titre de la recette..." class="h-14 border border-slate-300 rounded-xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
@@ -163,11 +161,11 @@
       </button>
       
       <button type="button" id="btn_save" onclick="sauverRecette()" class="h-14 bg-orange-500 text-white font-bold text-lg rounded-xl shadow-md mt-2 active:bg-orange-600 active:scale-[0.98] transition-all">
-        💾 Enregistrer
+        💾 Enregistrer la recette
       </button>
     </div>
 
- <script>
+    <script>
       // ⚠️ ADRESSE DE TON API GOOGLE APPS SCRIPT
       const API_URL = "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
 
@@ -189,9 +187,6 @@
 
       // --- INITIALISATION AVEC EXPIRATION DE L'ÉTAT (30 MIN) ---
       document.addEventListener('DOMContentLoaded', async function() {
-        let btn = document.getElementById('btn_suivant');
-        
-        // 1. Vérification du temps d'inactivité (30 minutes = 1800000 ms)
         const DELAI_EXPIRATION = 30 * 60 * 1000; 
         let dernierAcces = parseInt(localStorage.getItem('dernier_acces') || "0");
         let maintenant = new Date().getTime();
@@ -199,28 +194,17 @@
         let vueSauvegardee = 'menu_principal';
 
         if (maintenant - dernierAcces < DELAI_EXPIRATION) {
-          // Si moins de 30 min, on restaure la dernière vue
           vueSauvegardee = localStorage.getItem('derniere_vue') || 'menu_principal';
         } else {
-          // Si plus de 30 min, on réinitialise sur le menu principal
           localStorage.setItem('derniere_vue', 'menu_principal');
         }
 
-        // Mise à jour de l'horodatage d'accès
         localStorage.setItem('dernier_acces', maintenant.toString());
-
         changerVue(vueSauvegardee, false);
 
         try {
           recs = await apiGet('getListeRecettes') || [];
-          if(recs.length > 0 && !String(recs[0]).startsWith("⚠️")) {
-            btn.disabled = false;
-            btn.classList.remove('bg-slate-400');
-            btn.classList.add('bg-blue-500', 'active:bg-blue-600');
-            btn.innerText = 'Suivant';
-          }
 
-          // Restauration du contenu si l'utilisateur était sur une vue spécifique
           if (vueSauvegardee === 'vue_menus') chargerMenus();
           if (vueSauvegardee === 'vue_consult') {
             let lastRecipe = localStorage.getItem('derniere_recette');
@@ -229,7 +213,7 @@
             }
           }
         } catch(e) {
-          btn.innerText = 'Erreur de connexion';
+          console.error('Erreur de connexion API');
         }
       });
 
@@ -243,14 +227,15 @@
 
       function ouvrirPlanification() {
         document.getElementById('date_debut_menu').value = getProchainLundi();
-        changerVue('etape1');
+        document.getElementById('form_repas').innerHTML = ''; // Réinitialise
+        ajouterBlocRepas(); // Ajoute 1 repas par défaut dans le menu
+        changerVue('etape2');
       }
 
       function changerVue(id, sauver = true) {
         document.querySelectorAll('.etape').forEach(e => e.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         
-        // On enregistre l'heure et l'écran à chaque changement de vue
         localStorage.setItem('dernier_acces', new Date().getTime().toString());
         if (sauver) {
           localStorage.setItem('derniere_vue', id);
@@ -261,6 +246,108 @@
           let currentSelect = document.getElementById('select_consult').value;
           document.getElementById('select_consult').innerHTML = '<option value="">Sélectionner une recette...</option>' + optionsSafe;
           if (currentSelect) document.getElementById('select_consult').value = currentSelect;
+        }
+      }
+
+      // --- AJOUT DYNAMIQUE DE BLOCS REPAS DANS LE MENU ---
+      function ajouterBlocRepas() {
+        const conteneur = document.getElementById('form_repas');
+        const optionsHTML = '<option value="">Sélectionne une recette</option>' + (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
+
+        const joursData = [
+          { label: 'Lu', val: 'lundi' }, { label: 'Ma', val: 'mardi' }, { label: 'Me', val: 'mercredi' },
+          { label: 'Je', val: 'jeudi' }, { label: 'Ve', val: 'vendredi' }, { label: 'Sa', val: 'samedi' }, { label: 'Di', val: 'dimanche' }
+        ];
+
+        let gridHTML = '<div class="grid grid-cols-7 gap-1 mt-3 mb-2">';
+        joursData.forEach(j => {
+          gridHTML += `
+            <div class="flex flex-col gap-1 items-center">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${j.label}</span>
+              <button type="button" class="slot-btn w-full aspect-square min-h-[40px] rounded-lg bg-slate-100 text-slate-400 text-base border border-slate-200 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} midi" onclick="toggleSlot(this)">☀️</button>
+              <button type="button" class="slot-btn w-full aspect-square min-h-[40px] rounded-lg bg-slate-100 text-slate-400 text-base border border-slate-200 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} soir" onclick="toggleSlot(this)">🌙</button>
+            </div>`;
+        });
+        gridHTML += '</div>';
+
+        let cardIndex = conteneur.children.length + 1;
+        let cardHTML = `
+          <div class="repas-card bg-white p-4 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-blue-500 flex flex-col gap-2 relative">
+            ${cardIndex > 1 ? `<button type="button" onclick="this.closest('.repas-card').remove()" class="absolute top-2 right-2 w-8 h-8 text-slate-400 hover:text-red-500 flex items-center justify-center text-sm font-bold">✕</button>` : ''}
+            <div class="flex flex-col mb-1 border-b border-dashed border-slate-200 pb-2">
+              <span class="titre-display text-base font-bold text-slate-400 leading-tight">Sélectionne les créneaux 👇</span>
+              <input type="hidden" class="titre" value="Repas non défini">
+            </div>
+            ${gridHTML}
+            
+            <div class="flex items-center justify-between gap-2 mt-2">
+              <label class="font-semibold text-slate-600 text-xs whitespace-nowrap">Personnes :</label>
+              <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden bg-slate-50">
+                <button type="button" onclick="modifierPartsCard(this, -1)" class="w-10 h-10 bg-slate-200 text-slate-700 font-black text-lg active:bg-slate-300 transition-all flex items-center justify-center">−</button>
+                <span class="couverts-val w-12 text-center font-bold text-slate-800 text-sm">5</span>
+                <input type="hidden" class="couverts" value="5">
+                <button type="button" onclick="modifierPartsCard(this, 1)" class="w-10 h-10 bg-slate-200 text-slate-700 font-black text-lg active:bg-slate-300 transition-all flex items-center justify-center">+</button>
+              </div>
+            </div>
+
+            <select class="recette w-full min-h-[44px] text-sm p-2 mt-1 border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+              ${optionsHTML}
+            </select>
+          </div>`;
+
+        conteneur.insertAdjacentHTML('beforeend', cardHTML);
+      }
+
+      function modifierPartsCard(btn, delta) {
+        let parent = btn.closest('div');
+        let valSpan = parent.querySelector('.couverts-val');
+        let inputHidden = parent.querySelector('.couverts');
+        let valActuelle = parseInt(inputHidden.value) || 5;
+        let nouvelleVal = Math.max(1, valActuelle + delta);
+        valSpan.innerText = nouvelleVal;
+        inputHidden.value = nouvelleVal;
+      }
+
+      function modifierPartsConsult(delta) {
+        let valSpan = document.getElementById('parts_consult_val');
+        let valActuelle = parseInt(valSpan.innerText) || 5;
+        let nouvelleVal = Math.max(1, valActuelle + delta);
+        valSpan.innerText = nouvelleVal;
+        afficherDetails();
+      }
+
+      function toggleSlot(btn) {
+        btn.classList.toggle('bg-blue-100');
+        btn.classList.toggle('border-blue-400');
+        btn.classList.toggle('bg-slate-100');
+        btn.classList.toggle('border-slate-200');
+        
+        let card = btn.closest('.repas-card');
+        let actives = card.querySelectorAll('.slot-btn.bg-blue-100');
+        let titleDisplay = card.querySelector('.titre-display');
+        let titleInput = card.querySelector('.titre');
+        
+        if (actives.length > 0) {
+            let slotsArr = Array.from(actives).map(b => b.getAttribute('data-val'));
+            let slotsFormates = "";
+            
+            if (slotsArr.length === 1) {
+              slotsFormates = slotsArr[0];
+            } else {
+              let dernier = slotsArr.pop();
+              slotsFormates = slotsArr.join(', ') + ' et ' + dernier;
+            }
+
+            slotsFormates = slotsFormates.charAt(0).toUpperCase() + slotsFormates.slice(1);
+            titleDisplay.innerText = slotsFormates;
+            titleInput.value = slotsFormates;
+            titleDisplay.classList.remove('text-slate-400');
+            titleDisplay.classList.add('text-blue-700');
+        } else {
+            titleDisplay.innerText = "Sélectionne les créneaux 👇";
+            titleInput.value = "Repas non défini";
+            titleDisplay.classList.add('text-slate-400');
+            titleDisplay.classList.remove('text-blue-700');
         }
       }
 
@@ -281,7 +368,7 @@
 
           let html = '';
           menus.forEach((lot, index) => {
-            let titreBloc = "📅 Semaine";
+            let titreBloc = "📅 Menu";
             let badgeColor = "border-slate-300";
 
             if (lot.dateDebut) {
@@ -290,22 +377,22 @@
               fin.setDate(fin.getDate() + 6);
 
               if (aujourdhui >= debut && aujourdhui <= fin) {
-                titreBloc = "🟢 Semaine en cours";
+                titreBloc = "🟢 Menu de la semaine en cours";
                 badgeColor = "border-emerald-500";
               } else if (aujourdhui < debut) {
-                titreBloc = "🔵 Semaine prochaine / À venir";
+                titreBloc = "🔵 Menu de la semaine prochaine";
                 badgeColor = "border-blue-500";
               } else {
-                titreBloc = "⚪ Semaine passée";
+                titreBloc = "⚪ Menu passé";
                 badgeColor = "border-slate-300";
               }
             } else {
-              titreBloc = (index === 0) ? "🟢 Semaine en cours" : "🔵 Semaine prochaine";
+              titreBloc = (index === 0) ? "🟢 Menu en cours" : "🔵 Menu suivant";
               badgeColor = (index === 0) ? "border-emerald-500" : "border-blue-500";
             }
 
             let dateAffichee = lot.dateDebut 
-              ? "Du " + new Date(lot.dateDebut).toLocaleDateString('fr-FR')
+              ? "Semaine du " + new Date(lot.dateDebut).toLocaleDateString('fr-FR')
               : "Créé le " + lot.date;
 
             html += `<div class="bg-white p-4 rounded-2xl shadow-sm border-2 ${badgeColor}">
@@ -339,85 +426,8 @@
         localStorage.setItem('derniers_couverts', couverts);
         changerVue('vue_consult');
         document.getElementById('select_consult').value = recette;
-        document.getElementById('parts_consult').value = couverts;
+        document.getElementById('parts_consult_val').innerText = couverts;
         afficherDetails();
-      }
-
-      function genForm() {
-        let n = document.getElementById('nb_repas').value;
-        let h = '';
-        let optionsHTML = '<option value="">Sélectionne un menu</option>' + (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
-
-        const joursData = [
-          { label: 'Lu', val: 'lundi' }, { label: 'Ma', val: 'mardi' }, { label: 'Me', val: 'mercredi' },
-          { label: 'Je', val: 'jeudi' }, { label: 'Ve', val: 'vendredi' }, { label: 'Sa', val: 'samedi' }, { label: 'Di', val: 'dimanche' }
-        ];
-
-        for(let i=1; i<=n; i++) {
-          let gridHTML = '<div class="grid grid-cols-7 gap-1 mt-3 mb-2">';
-          joursData.forEach(j => {
-            gridHTML += `
-              <div class="flex flex-col gap-1 items-center">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${j.label}</span>
-                <button type="button" class="slot-btn w-full aspect-square min-h-[44px] rounded-lg bg-slate-100 text-slate-400 text-lg border border-slate-200 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} midi" onclick="toggleSlot(this)">☀️</button>
-                <button type="button" class="slot-btn w-full aspect-square min-h-[44px] rounded-lg bg-slate-100 text-slate-400 text-lg border border-slate-200 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} soir" onclick="toggleSlot(this)">🌙</button>
-              </div>`;
-          });
-          gridHTML += '</div>';
-
-          h += `
-            <div class="repas-card bg-white p-4 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-blue-500 flex flex-col gap-2">
-              <div class="flex flex-col mb-1 border-b border-dashed border-slate-200 pb-2">
-                <span class="titre-display text-base font-bold text-slate-400 leading-tight">Sélectionne les jours 👇</span>
-                <input type="hidden" class="titre" value="Repas non défini">
-              </div>
-              ${gridHTML}
-              <div class="flex items-center justify-between gap-2 mt-2">
-                <label class="font-semibold text-slate-600 text-xs whitespace-nowrap">Personnes :</label>
-                <input type="number" class="couverts w-16 min-h-[44px] text-sm text-center border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none" value="5" min="1" inputmode="numeric">
-              </div>
-              <select class="recette w-full min-h-[44px] text-sm p-2 border border-slate-300 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                ${optionsHTML}
-              </select>
-            </div>`;
-        }
-        document.getElementById('form_repas').innerHTML = h;
-        changerVue('etape2');
-      }
-
-      function toggleSlot(btn) {
-        btn.classList.toggle('bg-blue-100');
-        btn.classList.toggle('border-blue-400');
-        btn.classList.toggle('bg-slate-100');
-        btn.classList.toggle('border-slate-200');
-        
-        let card = btn.closest('.repas-card');
-        let actives = card.querySelectorAll('.slot-btn.bg-blue-100');
-        let titleDisplay = card.querySelector('.titre-display');
-        let titleInput = card.querySelector('.titre');
-        
-        if (actives.length > 0) {
-            let slotsArr = Array.from(actives).map(b => b.getAttribute('data-val'));
-            let slotsFormates = "";
-            
-            if (slotsArr.length === 1) {
-              slotsFormates = slotsArr[0];
-            } else {
-              let dernier = slotsArr.pop();
-              slotsFormates = slotsArr.join(', ') + ' et ' + dernier;
-            }
-
-            slotsFormates = slotsFormates.charAt(0).toUpperCase() + slotsFormates.slice(1);
-            titleDisplay.innerText = slotsFormates;
-            titleInput.value = slotsFormates;
-            titleDisplay.classList.remove('text-slate-400');
-            titleDisplay.classList.add('text-blue-700');
-        } else {
-            titleDisplay.innerText = "Sélectionne les jours 👇";
-            titleInput.value = "Repas non défini";
-            titleDisplay.classList.add('text-slate-400');
-            titleDisplay.classList.remove('text-blue-700');
-        }
       }
 
       async function calcul() {
@@ -441,7 +451,7 @@
         if(err) { msgBox.classList.remove('hidden'); return; } else { msgBox.classList.add('hidden'); }
         
         changerVue('etape3');
-        document.getElementById('liste').innerHTML = '<li class="p-4 text-center text-slate-500 animate-pulse text-sm">Calcul et sauvegarde...</li>';
+        document.getElementById('liste').innerHTML = '<li class="p-4 text-center text-slate-500 animate-pulse text-sm">Calcul et sauvegarde du menu...</li>';
         
         const dateDebutStr = document.getElementById('date_debut_menu').value;
 
@@ -500,7 +510,7 @@
 
       async function afficherDetails() {
         let r = document.getElementById('select_consult').value;
-        let p = document.getElementById('parts_consult').value;
+        let p = parseInt(document.getElementById('parts_consult_val').innerText) || 5;
         if(!r) return;
         
         localStorage.setItem('derniere_recette', r);
@@ -544,7 +554,7 @@
           location.reload();
         } catch(e) {
           alert("Erreur lors de l'enregistrement.");
-          btn.innerText = "💾 Enregistrer"; btn.disabled = false;
+          btn.innerText = "💾 Enregistrer la recette"; btn.disabled = false;
         }
       }
     </script>
