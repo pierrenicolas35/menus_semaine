@@ -5,22 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Chef Perso</title>
 
-    <!-- 📱 OPTIONS PLEIN ÉCRAN (PWA / MOBILE) -->
+    <!-- 📱 OPTIONS PLEIN ÉCRAN PWA (ANDROID & IOS) -->
+    <link rel="manifest" href="./manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Chef Perso">
     <meta name="theme-color" content="#f1f5f9">
-
-    <!-- Web App Manifest (intégré directement) -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Chef Perso","short_name":"ChefPerso","start_url":".","display":"standalone","background_color":"#f1f5f9","theme_color":"#f1f5f9","orientation":"portrait"}'>
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1830/1830839.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       button, input, select { touch-action: manipulation; }
       .input-error { border-color: #ef4444 !important; border-width: 2px !important; }
       * { word-wrap: break-word; }
-      /* Gestion des encoches (notches) sur smartphones modernes */
       body {
         padding-top: env(safe-area-inset-top, 8px);
         padding-bottom: env(safe-area-inset-bottom, 8px);
