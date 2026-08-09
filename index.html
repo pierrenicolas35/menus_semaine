@@ -14,7 +14,7 @@
     <meta name="theme-color" content="#f8fafc">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1830/1830839.png">
 
-    <!-- Tailwind CSS & Lucide Icons (Icônes modernes SVG) -->
+    <!-- Tailwind CSS & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
@@ -33,8 +33,8 @@
     <!-- CONTENU PRINCIPAL -->
     <div class="w-full max-w-md mx-auto p-4 flex flex-col gap-5">
       
-      <!-- MENU PRINCIPAL (BENTO DASHBOARD) -->
-      <div id="menu_principal" class="etape flex flex-col gap-5 w-full">
+      <!-- MENU PRINCIPAL (DASHBOARD) -->
+      <div id="menu_principal" class="etape flex flex-col gap-4 w-full">
         
         <!-- En-tête Profil & Branding -->
         <div class="flex items-center justify-between pt-1">
@@ -47,33 +47,27 @@
           </div>
         </div>
 
-        <!-- WIDGET 1 : APERÇU / REPAS DU JOUR OU SEMAINE EN COURS -->
-        <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 flex flex-col gap-3 relative overflow-hidden">
-          <!-- Effet lumineux d'arrière-plan -->
-          <div class="absolute -right-10 -top-10 w-28 h-28 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
-
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i>
-              <span id="titre_semaine_accueil" class="font-bold text-xs text-slate-700 uppercase tracking-wider">Semaine...</span>
-            </div>
+        <!-- ENCADRÉ MODERNE SEMAINE EN COURS -->
+        <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200/80 flex flex-col gap-2.5 relative overflow-hidden">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <span id="titre_semaine_accueil" class="font-bold text-xs text-indigo-600 uppercase tracking-wider">Semaine...</span>
             <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">En cours</span>
           </div>
 
-          <div id="contenu_semaine_accueil" class="flex flex-col gap-2 pt-1 min-h-[50px] justify-center">
+          <div id="contenu_semaine_accueil" class="flex flex-col gap-1 pt-1 min-h-[40px] justify-center">
             <p class="text-center text-xs text-slate-400 animate-pulse">Chargement de la planification...</p>
           </div>
         </div>
 
-        <!-- ACCÈS RAPIDE PRINCIPAL (HERO CARD) -->
-        <button type="button" onclick="chargerMenus()" class="w-full p-5 bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 text-white rounded-3xl shadow-xl shadow-indigo-500/20 flex items-center justify-between active:scale-[0.98] transition-all relative overflow-hidden group">
+        <!-- ACTION HERO : BATCH COOKING (MODE CUISINE GROUPÉE) -->
+        <button type="button" onclick="ouvrirSelectionBatch()" class="w-full p-5 bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 text-white rounded-3xl shadow-xl shadow-orange-500/20 flex items-center justify-between active:scale-[0.98] transition-all relative overflow-hidden group">
           <div class="flex items-center gap-4 relative z-10">
-            <div class="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <i data-lucide="utensils" class="w-6 h-6 text-white"></i>
+            <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
+              <i data-lucide="flame" class="w-6 h-6 text-white"></i>
             </div>
             <div class="text-left">
-              <span class="block text-base font-black leading-tight">Accéder aux Menus</span>
-              <span class="text-xs text-indigo-100/90 font-medium">Consulter la planification globale</span>
+              <span class="block text-base font-black leading-tight">Session Batch Cooking</span>
+              <span class="text-xs text-orange-100 font-medium">Préparer plusieurs plats à la fois</span>
             </div>
           </div>
           <div class="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center relative z-10 border border-white/20">
@@ -81,10 +75,18 @@
           </div>
         </button>
 
-        <!-- GRILLE BENTO (2x2) POUR LES ACTIONS SECONDAIRES -->
+        <!-- ACCÈS AUX MENUS -->
+        <button type="button" onclick="chargerMenus()" class="w-full p-4 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-600/15 flex items-center justify-between px-5 active:scale-[0.98] transition-all">
+          <div class="flex items-center gap-3">
+            <i data-lucide="calendar-days" class="w-5 h-5 text-indigo-200"></i>
+            <span class="font-bold text-sm">Accéder à la vue globale des Menus</span>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-indigo-200"></i>
+        </button>
+
+        <!-- GRILLE BENTO POUR AUTRES ACTIONS -->
         <div class="grid grid-cols-2 gap-3.5">
           
-          <!-- Carte 1 : Créer Menu -->
           <button type="button" onclick="ouvrirPlanification()" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-blue-300">
             <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <i data-lucide="shopping-cart" class="w-5 h-5"></i>
@@ -95,18 +97,16 @@
             </div>
           </button>
 
-          <!-- Carte 2 : Fiche Recette -->
           <button type="button" onclick="changerVue('vue_consult')" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-emerald-300">
             <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <i data-lucide="book-open" class="w-5 h-5"></i>
             </div>
             <div>
               <span class="block font-bold text-slate-800 text-sm">Fiche Recette</span>
-              <span class="text-[11px] text-slate-400 font-medium">Voir & Cuisiner</span>
+              <span class="text-[11px] text-slate-400 font-medium">Consulter 1 plat</span>
             </div>
           </button>
 
-          <!-- Carte 3 : Partager (Toute largeur ou intégré) -->
           <button type="button" onclick="ouvrirModalePartage()" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-violet-300">
             <div class="w-10 h-10 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center">
               <i data-lucide="share-2" class="w-5 h-5"></i>
@@ -117,7 +117,6 @@
             </div>
           </button>
 
-          <!-- Carte 4 : Nouvelle Recette -->
           <button type="button" onclick="changerVue('vue_ajout')" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-orange-300">
             <div class="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
               <i data-lucide="plus-circle" class="w-5 h-5"></i>
@@ -130,6 +129,61 @@
 
         </div>
 
+      </div>
+
+      <!-- VUE SÉLECTION DES PLATS POUR LE BATCH COOKING -->
+      <div id="vue_selection_batch" class="etape hidden flex flex-col gap-4 w-full">
+        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-1 text-left w-fit flex items-center gap-1 text-sm">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
+        </button>
+
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Session Batch Cooking</h2>
+          <p class="text-xs text-slate-500">Sélectionne les plats que tu cuisines aujourd'hui</p>
+        </div>
+
+        <!-- Choix de la semaine cible -->
+        <div class="bg-white p-3.5 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-2">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Semaine cible :</label>
+          <select id="select_semaine_batch" onchange="chargerPlatsBatchCible()" class="w-full h-11 border border-slate-200 rounded-2xl px-3 bg-slate-50 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
+        </div>
+
+        <!-- Liste des repas à cocher -->
+        <div id="liste_cocher_batch" class="flex flex-col gap-2.5 min-h-[150px]">
+          <p class="text-center text-xs text-slate-400 animate-pulse py-6">Chargement des repas...</p>
+        </div>
+
+        <button type="button" onclick="demarrerSessionCuisine()" class="w-full p-4 bg-amber-500 text-white font-bold text-base rounded-2xl shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i data-lucide="play" class="w-5 h-5"></i> Lancer la session cuisine
+        </button>
+      </div>
+
+      <!-- VUE BATCH COOKING MULTI-FICHES (PLAN DE TRAVAIL) -->
+      <div id="vue_session_cuisine" class="etape hidden flex flex-col gap-4 w-full">
+        <div class="flex justify-between items-center">
+          <button type="button" onclick="changerVue('vue_selection_batch')" class="text-slate-500 font-bold text-xs flex items-center gap-1">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Changer la sélection
+          </button>
+          <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full">🔥 Mode Cuisine Active</span>
+        </div>
+
+        <!-- BANDEAU DES ONGLETS DE PLATS -->
+        <div id="onglets_batch" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
+
+        <!-- FICHE RECETTE ACTIVE -->
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h3 id="batch_titre_plat" class="font-black text-slate-800 text-base">Plat</h3>
+            <div class="flex items-center gap-1.5 border border-slate-200 rounded-xl px-2 py-1 bg-slate-50">
+              <span class="text-xs text-slate-400 font-medium">Parts :</span>
+              <span id="batch_parts_plat" class="font-bold text-indigo-600 text-sm">5</span>
+            </div>
+          </div>
+
+          <div id="batch_details_recette" class="min-h-[120px]">
+            <p class="p-4 text-center text-slate-400 italic text-sm">Sélectionnez une fiche.</p>
+          </div>
+        </div>
       </div>
 
       <!-- MES MENUS PLANIFIÉS -->
@@ -206,7 +260,7 @@
         </div>
       </div>
 
-      <!-- CUISINER (CONSULTATION FICHE RECETTE) -->
+      <!-- CUISINER (CONSULTATION FICHE RECETTE UNITAIRE) -->
       <div id="vue_consult" class="etape hidden flex flex-col gap-3 w-full">
         <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
@@ -286,6 +340,7 @@
       const API_URL = "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
 
       let recs = [], plan = [], menusCharges = [], listeCoursesBrute = [];
+      let platsSelectionnesBatch = [];
 
       // --- MAPPING TAXONOMIE DES RAYONS DE SUPERMARCHÉ ---
       const REGLES_RAYONS = [
@@ -364,7 +419,7 @@
         }
       });
 
-      // --- ENCADRÉ SEMAINE EN COURS (PAGE D'ACCUEIL) ---
+      // --- ENCADRÉ ACCUEIL POUR LA SEMAINE EN COURS ---
       async function chargerMenuSemaineAccueil() {
         const lundiActuel = getLundiDate(new Date());
         const lundiStr = formaterDateLitterale(lundiActuel);
@@ -397,10 +452,120 @@
             });
             conteneur.innerHTML = html + '</ul>';
           } else {
-            conteneur.innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-2">Pas de menu programmé pour cette semaine</p>';
+            conteneur.innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
           }
         } catch(e) {
-          document.getElementById('contenu_semaine_accueil').innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-2">Pas de menu programmé pour cette semaine</p>';
+          document.getElementById('contenu_semaine_accueil').innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
+        }
+      }
+
+      // --- MODE BATCH COOKING ---
+      async function ouvrirSelectionBatch() {
+        changerVue('vue_selection_batch');
+        if (!menusCharges || menusCharges.length === 0) {
+          menusCharges = await apiGet('getMenusSauvegardes') || [];
+        }
+
+        let select = document.getElementById('select_semaine_batch');
+        select.innerHTML = '';
+
+        if (!menusCharges || menusCharges.length === 0) {
+          document.getElementById('liste_cocher_batch').innerHTML = '<p class="text-center text-xs text-slate-400 py-4">Aucun menu disponible.</p>';
+          return;
+        }
+
+        // On présélectionne la semaine prochaine si on est le week-end, sinon la semaine en cours ou le premier menu
+        const aujourdhui = new Date();
+        let idDefaut = menusCharges[0].id;
+
+        menusCharges.forEach((lot) => {
+          let labelSemaine = lot.dateDebut 
+            ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut))
+            : "Menu (" + lot.date + ")";
+          select.innerHTML += `<option value="${lot.id}">${labelSemaine}</option>`;
+        });
+
+        chargerPlatsBatchCible();
+      }
+
+      function chargerPlatsBatchCible() {
+        let idSelected = document.getElementById('select_semaine_batch').value;
+        let menuCible = menusCharges.find(m => String(m.id) === String(idSelected));
+        let conteneur = document.getElementById('liste_cocher_batch');
+
+        if (!menuCible || !menuCible.repas || menuCible.repas.length === 0) {
+          conteneur.innerHTML = '<p class="text-center text-xs text-slate-400 py-4">Aucun plat dans ce menu.</p>';
+          return;
+        }
+
+        let html = '';
+        menuCible.repas.forEach((r, idx) => {
+          let titreFormate = (r.titre && r.titre !== "Repas non défini") ? r.titre : "Repas " + (idx + 1);
+          let recSafe = String(r.recette).replace(/"/g, '&quot;');
+          html += `
+            <label class="flex items-center gap-3 p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm cursor-pointer active:bg-slate-50 transition-all">
+              <input type="checkbox" class="chk-batch w-5 h-5 rounded-lg text-amber-500 border-slate-300 focus:ring-amber-500" data-recette="${recSafe}" data-couverts="${r.couverts}" data-titre="${titreFormate}" checked>
+              <div class="flex flex-col min-w-0 flex-grow">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${titreFormate}</span>
+                <span class="text-sm font-bold text-slate-800 truncate">${r.recette} <span class="text-xs font-normal text-slate-400">(${r.couverts} p.)</span></span>
+              </div>
+            </label>`;
+        });
+        conteneur.innerHTML = html;
+      }
+
+      async function demarrerSessionCuisine() {
+        let cochés = Array.from(document.querySelectorAll('.chk-batch:checked'));
+        if (cochés.length === 0) {
+          alert("⚠️ Coche au moins 1 plat à cuisiner !");
+          return;
+        }
+
+        platsSelectionnesBatch = cochés.map(c => ({
+          recette: c.getAttribute('data-recette'),
+          couverts: parseInt(c.getAttribute('data-couverts')) || 5,
+          titre: c.getAttribute('data-titre')
+        }));
+
+        changerVue('vue_session_cuisine');
+
+        // Génération des onglets de bascule
+        let ongletsBox = document.getElementById('onglets_batch');
+        let htmlOnglets = '';
+        platsSelectionnesBatch.forEach((p, idx) => {
+          let activeClass = idx === 0 ? "bg-amber-500 text-white shadow-md shadow-amber-500/20" : "bg-white text-slate-600 border border-slate-200";
+          htmlOnglets += `
+            <button type="button" onclick="afficherOngletBatch(${idx})" class="btn-tab-batch font-bold text-xs px-3.5 py-2 rounded-2xl whitespace-nowrap transition-all ${activeClass}" data-idx="${idx}">
+              ${p.recette}
+            </button>`;
+        });
+        ongletsBox.innerHTML = htmlOnglets;
+
+        afficherOngletBatch(0);
+      }
+
+      async function afficherOngletBatch(index) {
+        document.querySelectorAll('.btn-tab-batch').forEach((btn, i) => {
+          if (i === index) {
+            btn.className = "btn-tab-batch font-bold text-xs px-3.5 py-2 rounded-2xl whitespace-nowrap transition-all bg-amber-500 text-white shadow-md shadow-amber-500/20";
+          } else {
+            btn.className = "btn-tab-batch font-bold text-xs px-3.5 py-2 rounded-2xl whitespace-nowrap transition-all bg-white text-slate-600 border border-slate-200";
+          }
+        });
+
+        let plat = platsSelectionnesBatch[index];
+        document.getElementById('batch_titre_plat').innerText = plat.recette;
+        document.getElementById('batch_parts_plat').innerText = plat.couverts;
+        document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-slate-400 italic text-sm animate-pulse">Chargement de la fiche...</p>';
+
+        try {
+          const items = await apiGet('getDetailsRecette', { nomRecette: plat.recette, nbParts: plat.couverts });
+          if (!items || items.length === 0) return document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-sm">Introuvable.</p>';
+          let h = '<ul class="divide-y divide-slate-100">';
+          items.forEach(it => h += `<li class="py-2.5 px-1 flex justify-between bg-white text-sm"><span class="font-bold text-slate-800">${it.nom}</span><span class="text-amber-600 font-semibold">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
+          document.getElementById('batch_details_recette').innerHTML = h + '</ul>';
+        } catch(e) {
+          document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
         }
       }
 
