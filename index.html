@@ -30,26 +30,21 @@
     <!-- MENU PRINCIPAL (NOUVELLE ERGONOMIE DASHBOARD) -->
     <div id="menu_principal" class="etape flex flex-col gap-4 w-full max-w-md mx-auto">
       
-      <!-- En-tête Application -->
-      <div class="flex items-center justify-between pt-2 pb-1">
-        <div>
-          <h1 class="text-2xl font-black text-slate-800 tracking-tight">Chef Perso</h1>
-          <p class="text-xs text-slate-500 font-medium">Planification & Courses intelligentes</p>
-        </div>
-        <div class="w-10 h-10 rounded-2xl bg-blue-500 text-white flex items-center justify-center font-bold text-xl shadow-md">
-          🍳
-        </div>
+      <!-- En-tête Application (Sans icône trompeuse) -->
+      <div class="pt-2 pb-1">
+        <h1 class="text-2xl font-black text-slate-800 tracking-tight">Chef Perso</h1>
+        <p class="text-xs text-slate-500 font-medium">Planification & Courses intelligentes</p>
       </div>
 
-      <!-- Action Principale (CTA) -->
-      <button type="button" onclick="ouvrirPlanification()" class="w-full p-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-3xl shadow-lg shadow-blue-500/20 flex items-center justify-between active:scale-[0.98] transition-all">
+      <!-- Action Principale : Accéder au menu de la semaine -->
+      <button type="button" onclick="chargerMenus()" class="w-full p-5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-3xl shadow-lg shadow-indigo-500/20 flex items-center justify-between active:scale-[0.98] transition-all">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl backdrop-blur-sm">
-            🛒
+            📅
           </div>
           <div class="text-left">
-            <span class="block text-lg font-bold leading-tight">Créer un menu</span>
-            <span class="text-xs text-blue-100 font-medium">Planifier repas & courses</span>
+            <span class="block text-lg font-bold leading-tight">Accéder au menu de la semaine</span>
+            <span class="text-xs text-indigo-100 font-medium">Voir la planification en cours</span>
           </div>
         </div>
         <span class="text-xl font-bold bg-white/20 w-8 h-8 rounded-full flex items-center justify-center">➔</span>
@@ -58,13 +53,13 @@
       <!-- Grille d'actions secondaires -->
       <div class="grid grid-cols-2 gap-3 mt-1">
         
-        <button type="button" onclick="chargerMenus()" class="p-4 bg-white rounded-2xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:bg-slate-50 active:scale-[0.98] transition-all">
-          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold">
-            📅
+        <button type="button" onclick="ouvrirPlanification()" class="p-4 bg-white rounded-2xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:bg-slate-50 active:scale-[0.98] transition-all">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
+            🛒
           </div>
           <div>
-            <span class="block font-bold text-slate-800 text-sm">Mes Menus</span>
-            <span class="text-[11px] text-slate-400">Voir l'historique</span>
+            <span class="block font-bold text-slate-800 text-sm">Créer un menu</span>
+            <span class="text-[11px] text-slate-400">Nouveau planning</span>
           </div>
         </button>
 
@@ -80,8 +75,20 @@
 
       </div>
 
+      <!-- Bouton de partage rapide sur l'accueil -->
+      <button type="button" onclick="partagerDepuisAccueil()" class="w-full p-4 bg-emerald-500 text-white rounded-2xl shadow-md flex items-center justify-between px-5 active:bg-emerald-600 active:scale-[0.98] transition-all mt-1">
+        <div class="flex items-center gap-3">
+          <span class="text-xl">📤</span>
+          <div class="text-left">
+            <span class="block font-bold text-sm leading-tight">Partager le menu & les courses</span>
+            <span class="text-[11px] text-emerald-100">Export rapide de la semaine en cours</span>
+          </div>
+        </div>
+        <span class="text-emerald-100 text-lg">➔</span>
+      </button>
+
       <!-- Action Gestion Base -->
-      <button type="button" onclick="changerVue('vue_ajout')" class="w-full p-3.5 bg-white rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between px-4 active:bg-slate-50 active:scale-[0.98] transition-all mt-1">
+      <button type="button" onclick="changerVue('vue_ajout')" class="w-full p-3.5 bg-white rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between px-4 active:bg-slate-50 active:scale-[0.98] transition-all">
         <div class="flex items-center gap-3">
           <span class="text-lg">➕</span>
           <span class="font-bold text-slate-700 text-sm">Ajouter une nouvelle recette</span>
@@ -558,6 +565,53 @@
           afficherListeCourseTriee();
         } catch(e) {
           document.getElementById('conteneur_rayons').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du calcul.</p>';
+        }
+      }
+
+      // --- NOUVELLE FONCTION DE PARTAGE RAPIDE DEPUIS L'ACCUEIL ---
+      async function partagerDepuisAccueil() {
+        try {
+          let menus = await apiGet('getMenusSauvegardes');
+          if (!menus || menus.length === 0) {
+            alert("Aucun menu planifié trouvé pour le moment.");
+            return;
+          }
+
+          // On cible le menu en cours ou le plus récent (index 0)
+          let menuActuel = menus[0];
+          let planExport = menuActuel.repas || [];
+          let dateInput = menuActuel.dateDebut || "";
+          let dateFormatee = dateInput ? new Date(dateInput).toLocaleDateString('fr-FR') : "en cours";
+
+          let coursesExport = await apiPost('calculerCourses', { planification: planExport }) || [];
+
+          let txt = `🍽️ MENUS POUR LA SEMAINE DU ${dateFormatee} :\n\n`;
+          planExport.forEach(p => txt += `🗓️ ${p.nom}\n👉 ${p.recette} (${p.couverts} parts)\n\n`);
+
+          txt += `🛒 LISTE DE COURSES POUR LA SEMAINE DU ${dateFormatee} :\n\n`;
+          let groupes = {};
+          coursesExport.forEach(item => {
+            let rayon = determinerRayon(item.nom);
+            if (!groupes[rayon]) groupes[rayon] = [];
+            groupes[rayon].push(item);
+          });
+
+          for (let [rayon, items] of Object.entries(groupes)) {
+            txt += `--- ${rayon.toUpperCase()} ---\n`;
+            items.forEach(item => {
+              let qte = item.quantite ? ` (${item.quantite} ${item.unite})` : '';
+              txt += `- ${item.nom}${qte}\n`;
+            });
+            txt += `\n`;
+          }
+
+          if (navigator.share) {
+            navigator.share({ title: "Chef Perso - Menu & Courses", text: txt });
+          } else {
+            navigator.clipboard.writeText(txt).then(() => alert("Menu et liste de courses copiés dans le presse-papier !"));
+          }
+        } catch(e) {
+          alert("Erreur lors de la récupération des données de partage.");
         }
       }
 
