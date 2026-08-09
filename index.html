@@ -47,7 +47,7 @@
           </div>
         </div>
 
-        <!-- ENCADRÉ MODERNE SEMAINE EN COURS -->
+        <!-- ENCADRÉ SEMAINE EN COURS -->
         <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200/80 flex flex-col gap-2.5 relative overflow-hidden">
           <div class="flex items-center justify-between border-b border-slate-100 pb-2">
             <span id="titre_semaine_accueil" class="font-bold text-xs text-indigo-600 uppercase tracking-wider">Semaine...</span>
@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <!-- ACTION HERO : BATCH COOKING (MODE CUISINE GROUPÉE) -->
+        <!-- ACTION HERO : BATCH COOKING -->
         <button type="button" onclick="ouvrirSelectionBatch()" class="w-full p-5 bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600 text-white rounded-3xl shadow-xl shadow-orange-500/20 flex items-center justify-between active:scale-[0.98] transition-all relative overflow-hidden group">
           <div class="flex items-center gap-4 relative z-10">
             <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
@@ -84,7 +84,7 @@
           <i data-lucide="chevron-right" class="w-4 h-4 text-indigo-200"></i>
         </button>
 
-        <!-- GRILLE BENTO POUR AUTRES ACTIONS -->
+        <!-- GRILLE BENTO (2x2) -->
         <div class="grid grid-cols-2 gap-3.5">
           
           <button type="button" onclick="ouvrirPlanification()" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-blue-300">
@@ -131,7 +131,7 @@
 
       </div>
 
-      <!-- VUE SÉLECTION DES PLATS POUR LE BATCH COOKING -->
+      <!-- VUE SÉLECTION DES PLATS BATCH COOKING -->
       <div id="vue_selection_batch" class="etape hidden flex flex-col gap-4 w-full">
         <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-1 text-left w-fit flex items-center gap-1 text-sm">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
@@ -142,13 +142,11 @@
           <p class="text-xs text-slate-500">Sélectionne les plats que tu cuisines aujourd'hui</p>
         </div>
 
-        <!-- Choix de la semaine cible -->
         <div class="bg-white p-3.5 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-2">
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Semaine cible :</label>
           <select id="select_semaine_batch" onchange="chargerPlatsBatchCible()" class="w-full h-11 border border-slate-200 rounded-2xl px-3 bg-slate-50 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
         </div>
 
-        <!-- Liste des repas à cocher -->
         <div id="liste_cocher_batch" class="flex flex-col gap-2.5 min-h-[150px]">
           <p class="text-center text-xs text-slate-400 animate-pulse py-6">Chargement des repas...</p>
         </div>
@@ -158,14 +156,20 @@
         </button>
       </div>
 
-      <!-- VUE BATCH COOKING MULTI-FICHES (PLAN DE TRAVAIL) -->
+      <!-- VUE BATCH COOKING MULTI-FICHES (PLAN DE TRAVAIL + GUIDAGE GEMINI) -->
       <div id="vue_session_cuisine" class="etape hidden flex flex-col gap-4 w-full">
         <div class="flex justify-between items-center">
           <button type="button" onclick="changerVue('vue_selection_batch')" class="text-slate-500 font-bold text-xs flex items-center gap-1">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i> Changer la sélection
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Modifier sélection
           </button>
           <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full">🔥 Mode Cuisine Active</span>
         </div>
+
+        <!-- BOUTON D'ASSISTANCE GEMINI -->
+        <button type="button" id="btn_gemini_batch" onclick="lancerAssistantGeminiBatch()" class="w-full p-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs rounded-2xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i>
+          <span>🤖 Demander la feuille de route à Gemini</span>
+        </button>
 
         <!-- BANDEAU DES ONGLETS DE PLATS -->
         <div id="onglets_batch" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
@@ -341,6 +345,7 @@
 
       let recs = [], plan = [], menusCharges = [], listeCoursesBrute = [];
       let platsSelectionnesBatch = [];
+      let cacheDetailsIngredsBatch = {};
 
       // --- MAPPING TAXONOMIE DES RAYONS DE SUPERMARCHÉ ---
       const REGLES_RAYONS = [
@@ -438,7 +443,7 @@
             return aujourdhui >= debut && aujourdhui <= fin;
           });
 
-          let conteneur = document.getElementById('contenu_semaine_accueil');
+          let conteneur = document.getElementById('conteneur_semaine_accueil');
 
           if (menuCourant && menuCourant.repas && menuCourant.repas.length > 0) {
             let html = '<ul class="divide-y divide-slate-100">';
@@ -455,11 +460,11 @@
             conteneur.innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
           }
         } catch(e) {
-          document.getElementById('contenu_semaine_accueil').innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
+          document.getElementById('conteneur_semaine_accueil').innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
         }
       }
 
-      // --- MODE BATCH COOKING ---
+      // --- BATCH COOKING & GUIDAGE GEMINI ---
       async function ouvrirSelectionBatch() {
         changerVue('vue_selection_batch');
         if (!menusCharges || menusCharges.length === 0) {
@@ -473,10 +478,6 @@
           document.getElementById('liste_cocher_batch').innerHTML = '<p class="text-center text-xs text-slate-400 py-4">Aucun menu disponible.</p>';
           return;
         }
-
-        // On présélectionne la semaine prochaine si on est le week-end, sinon la semaine en cours ou le premier menu
-        const aujourdhui = new Date();
-        let idDefaut = menusCharges[0].id;
 
         menusCharges.forEach((lot) => {
           let labelSemaine = lot.dateDebut 
@@ -527,9 +528,9 @@
           titre: c.getAttribute('data-titre')
         }));
 
+        cacheDetailsIngredsBatch = {};
         changerVue('vue_session_cuisine');
 
-        // Génération des onglets de bascule
         let ongletsBox = document.getElementById('onglets_batch');
         let htmlOnglets = '';
         platsSelectionnesBatch.forEach((p, idx) => {
@@ -560,12 +561,61 @@
 
         try {
           const items = await apiGet('getDetailsRecette', { nomRecette: plat.recette, nbParts: plat.couverts });
+          cacheDetailsIngredsBatch[plat.recette] = items || [];
+
           if (!items || items.length === 0) return document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-sm">Introuvable.</p>';
           let h = '<ul class="divide-y divide-slate-100">';
           items.forEach(it => h += `<li class="py-2.5 px-1 flex justify-between bg-white text-sm"><span class="font-bold text-slate-800">${it.nom}</span><span class="text-amber-600 font-semibold">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
           document.getElementById('batch_details_recette').innerHTML = h + '</ul>';
         } catch(e) {
           document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
+        }
+      }
+
+      // --- LEMENTATION DE LA REQUÊTE BATCH COOKING GEMINI AVEC INGRÉDIENTS DÉTAILLÉS ---
+      async function lancerAssistantGeminiBatch() {
+        let btn = document.getElementById('btn_gemini_batch');
+        let texteOriginal = btn.innerHTML;
+        btn.innerHTML = `<span>⏳ Récupération de tous les ingrédients...</span>`;
+        btn.disabled = true;
+
+        try {
+          let listeCompleteIngredsText = "";
+
+          for (let p of platsSelectionnesBatch) {
+            let items = cacheDetailsIngredsBatch[p.recette];
+            if (!items) {
+              items = await apiGet('getDetailsRecette', { nomRecette: p.recette, nbParts: p.couverts }) || [];
+              cacheDetailsIngredsBatch[p.recette] = items;
+            }
+
+            listeCompleteIngredsText += `\n📌 Plat : ${p.recette} (${p.couverts} parts)\nIngrédients :\n`;
+            items.forEach(it => {
+              let qte = it.quantite > 0 ? `${it.quantite} ${it.unite}` : '';
+              listeCompleteIngredsText += `- ${it.nom} ${qte}\n`;
+            });
+          }
+
+          let promptGemini = `Je souhaite lancer une session de Batch Cooking rapide et ultra-efficace pour préparer les repas suivants :
+
+${listeCompleteIngredsText}
+Matériel disponible : Thermomix TM5, Four traditionnel, plaques de cuisson.
+
+Consignes à respecter impérativement :
+1. Rédige une feuille de route pas-à-pas chronologique et optimisée pour préparer ces plats en parallèle (ex: ce qui cuit au four ou au Thermomix pendant que je découpe les ingrédients).
+2. Regroupe les tâches similaires (ex: éplucher/découper tous les légumes en une seule fois).
+3. Adopte un ton direct, synthétique, structuré (puces, étapes numérotées) et sans bavardage inutile. L'objectif est la rapidité et l'efficacité maximale.`;
+
+          await navigator.clipboard.writeText(promptGemini);
+          
+          alert("✅ Le plan de préparation avec la liste des ingrédients a été copié !\n\nGemini va s'ouvrir : colle simplement le texte dans la zone de saisie (Ctrl+V ou appui long -> Coller).");
+          window.open("https://gemini.google.com/app", "_blank");
+
+        } catch(e) {
+          alert("Erreur lors de la préparation de la requête Gemini.");
+        } finally {
+          btn.innerHTML = texteOriginal;
+          btn.disabled = false;
         }
       }
 
@@ -859,7 +909,7 @@
         }
       }
 
-      // --- GESTION DU PARTAGE AVEC MODALE DE SÉLECTION ---
+      // --- GESTION DU PARTAGE AVEC MODALE ---
       async function ouvrirModalePartage() {
         try {
           if (!menusCharges || menusCharges.length === 0) {
