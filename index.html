@@ -359,6 +359,7 @@
       let recs = [], plan = [], menusCharges = [], listeCoursesBrute = [];
       let platsSelectionnesBatch = [];
       let cacheDetailsIngredsBatch = {};
+      let cacheDetailsRecettes = {};
 
       // --- MAPPING TAXONOMIE DES RAYONS DE SUPERMARCHÉ ---
       const REGLES_RAYONS = [
@@ -456,7 +457,7 @@
             return aujourdhui >= debut && aujourdhui <= fin;
           });
 
-          let conteneur = document.getElementById('conteneur_semaine_accueil');
+          let conteneur = document.getElementById('contenu_semaine_accueil');
 
           if (menuCourant && menuCourant.repas && menuCourant.repas.length > 0) {
             let html = '<ul class="divide-y divide-slate-100">';
@@ -473,7 +474,7 @@
             conteneur.innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
           }
         } catch(e) {
-          document.getElementById('conteneur_semaine_accueil').innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
+          document.getElementById('contenu_semaine_accueil').innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
         }
       }
 
@@ -575,6 +576,7 @@
         try {
           const items = await apiGet('getDetailsRecette', { nomRecette: plat.recette, nbParts: plat.couverts });
           cacheDetailsIngredsBatch[plat.recette] = items || [];
+          cacheDetailsRecettes[getCleCacheRecette(plat.recette, plat.couverts)] = items || [];
 
           if (!items || items.length === 0) return document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-sm">Introuvable.</p>';
           let h = '<ul class="divide-y divide-slate-100">';
@@ -667,6 +669,37 @@ Consignes à respecter impérativement :
         setTimeout(() => lucide.createIcons(), 50);
       }
 
+      function getCleCacheRecette(recette, couverts) {
+        return `${String(recette || '').trim().toLowerCase()}::${parseInt(couverts) || 1}`;
+      }
+
+      function mettreAJourBoutonIngredientsCarte(selectEl) {
+        let card = selectEl.closest('.repas-card');
+        if (!card) return;
+
+        let btn = card.querySelector('.btn-ingredients-programmation');
+        if (!btn) return;
+
+        if (selectEl.value) {
+          btn.classList.remove('hidden');
+          btn.disabled = false;
+        } else {
+          btn.classList.add('hidden');
+          btn.disabled = true;
+        }
+      }
+
+      function ouvrirIngredientsDepuisCarte(btn) {
+        let card = btn.closest('.repas-card');
+        if (!card) return;
+
+        let select = card.querySelector('.recette');
+        let couvertsInput = card.querySelector('.couverts');
+        if (!select || !select.value) return;
+
+        ouvrirPopupIngredientsMenu(select.value, parseInt(couvertsInput?.value) || 1);
+      }
+
       function ajouterBlocRepas(donneesRepas = null) {
         const conteneur = document.getElementById('form_repas');
         const optionsHTML = '<option value="">Sélectionne une recette</option>' + (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
@@ -707,9 +740,14 @@ Consignes à respecter impérativement :
               </div>
             </div>
 
-            <select class="recette w-full min-h-[44px] text-sm px-3 mt-1 border border-slate-200 rounded-2xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium">
-              ${optionsHTML}
-            </select>
+            <div class="flex items-center gap-2 mt-1">
+              <select onchange="mettreAJourBoutonIngredientsCarte(this)" class="recette flex-1 min-h-[44px] text-sm px-3 border border-slate-200 rounded-2xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium">
+                ${optionsHTML}
+              </select>
+              <button type="button" onclick="ouvrirIngredientsDepuisCarte(this)" class="btn-ingredients-programmation hidden shrink-0 min-h-[44px] px-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-2xl text-xs font-bold shadow-sm active:scale-95 transition-all" disabled>
+                Ingrédients
+              </button>
+            </div>
           </div>`;
 
         conteneur.insertAdjacentHTML('beforeend', cardHTML);
@@ -730,6 +768,7 @@ Consignes à respecter impérativement :
               }
             });
           }
+          mettreAJourBoutonIngredientsCarte(derniereCard.querySelector('.recette'));
         }
       }
 
@@ -842,7 +881,6 @@ Consignes à respecter impérativement :
                         </div>
                       </div>
                       <div class="flex flex-col gap-2">`;
-            
             lot.repas.forEach(r => {
               let recSafe = String(r.recette).replace(/'/g, "\\'").replace(/"/g, '&quot;');
               let titreFormate = (r.titre && r.titre !== "Repas non défini") ? r.titre : "Repas";
@@ -852,7 +890,6 @@ Consignes à respecter impérativement :
                   <p class="text-slate-600 text-xs flex justify-between items-center">
                     <span>🍲 ${r.recette} <span class="text-[10px] opacity-70">(${r.couverts} parts)</span></span>
                     <span class="flex items-center gap-1.5">
-                      <button type="button" onclick="event.stopPropagation(); ouvrirPopupIngredientsMenu('${recSafe}', ${r.couverts})" class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-bold shadow-sm active:scale-95 transition-all">Voir ingrédients</button>
                       <span class="text-[10px] bg-white border px-2 py-0.5 rounded-md font-medium shadow-sm">👉 Cuisiner</span>
                     </span>
                   </p>
@@ -989,20 +1026,33 @@ Consignes à respecter impérativement :
         document.getElementById('modale_ingredients_programme').classList.add('hidden');
       }
 
+      function afficherIngredientsProgramme(items) {
+        if (!items || items.length === 0) {
+          document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-sm text-slate-500">Aucun ingrédient trouvé.</p>';
+          return;
+        }
+
+        let h = '<ul class="divide-y divide-slate-100">';
+        items.forEach(it => h += `<li class="p-3 flex justify-between bg-white"><span class="font-bold text-slate-800 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
+        document.getElementById('contenu_ingredients_programme').innerHTML = h + '</ul>';
+      }
+
       async function ouvrirPopupIngredientsMenu(recette, couverts) {
+        const cleCache = getCleCacheRecette(recette, couverts);
         document.getElementById('titre_ingredients_programme').innerText = `Ingrédients • ${recette}`;
-        document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-slate-500 font-bold animate-pulse text-sm">Chargement...</p>';
         document.getElementById('modale_ingredients_programme').classList.remove('hidden');
+
+        if (cacheDetailsRecettes[cleCache]) {
+          afficherIngredientsProgramme(cacheDetailsRecettes[cleCache]);
+          return;
+        }
+
+        document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-slate-500 font-bold animate-pulse text-sm">Chargement...</p>';
 
         try {
           const items = await apiGet('getDetailsRecette', { nomRecette: recette, nbParts: couverts || 1 });
-          if (!items || items.length === 0) {
-            document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-sm text-slate-500">Aucun ingrédient trouvé.</p>';
-            return;
-          }
-          let h = '<ul class="divide-y divide-slate-100">';
-          items.forEach(it => h += `<li class="p-3 flex justify-between bg-white"><span class="font-bold text-slate-800 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
-          document.getElementById('contenu_ingredients_programme').innerHTML = h + '</ul>';
+          cacheDetailsRecettes[cleCache] = items || [];
+          afficherIngredientsProgramme(items || []);
         } catch(e) {
           document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
         }
