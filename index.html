@@ -335,6 +335,19 @@
       </div>
     </div>
 
+    <!-- MODALE INGRÉDIENTS D'UN REPAS PROGRAMMÉ -->
+    <div id="modale_ingredients_programme" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4 max-h-[80vh]">
+        <div class="flex justify-between items-center border-b pb-2">
+          <h3 id="titre_ingredients_programme" class="font-bold text-slate-800 text-base">Ingrédients</h3>
+          <button type="button" onclick="fermerPopupIngredientsMenu()" class="text-slate-400 text-xl font-bold p-1">✕</button>
+        </div>
+        <div id="contenu_ingredients_programme" class="overflow-y-auto">
+          <p class="p-4 text-center text-slate-400 italic text-sm">Chargement...</p>
+        </div>
+      </div>
+    </div>
+
     <!-- PIED DE PAGE -->
     <footer class="text-center py-3 mt-4 border-t border-slate-200/60">
       <p class="text-[11px] font-semibold text-slate-400 tracking-wide">Développé par P.NICOLAS</p>
@@ -823,7 +836,10 @@ Consignes à respecter impérativement :
                           <h3 class="font-black text-slate-700 text-sm">${titreBloc}</h3>
                           <span class="text-xs text-slate-400 font-medium">${dateAffichee}</span>
                         </div>
-                        <button type="button" onclick="editerMenuExistant('${lot.id}')" class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-indigo-200 active:scale-95 transition-all">✏️ Modifier</button>
+                        <div class="flex items-center gap-2">
+                          <button type="button" onclick="editerMenuExistant('${lot.id}')" class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-indigo-200 active:scale-95 transition-all">✏️ Modifier</button>
+                          <button type="button" onclick="supprimerMenuExistant('${lot.id}')" class="bg-red-50 text-red-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-red-200 active:scale-95 transition-all">🗑️ Supprimer</button>
+                        </div>
                       </div>
                       <div class="flex flex-col gap-2">`;
             
@@ -835,7 +851,10 @@ Consignes à respecter impérativement :
                   <p class="font-bold text-indigo-700 text-xs mb-1">${titreFormate}</p>
                   <p class="text-slate-600 text-xs flex justify-between items-center">
                     <span>🍲 ${r.recette} <span class="text-[10px] opacity-70">(${r.couverts} parts)</span></span>
-                    <span class="text-[10px] bg-white border px-2 py-0.5 rounded-md font-medium shadow-sm">👉 Cuisiner</span>
+                    <span class="flex items-center gap-1.5">
+                      <button type="button" onclick="event.stopPropagation(); ouvrirPopupIngredientsMenu('${recSafe}', ${r.couverts})" class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-bold shadow-sm active:scale-95 transition-all">Voir ingrédients</button>
+                      <span class="text-[10px] bg-white border px-2 py-0.5 rounded-md font-medium shadow-sm">👉 Cuisiner</span>
+                    </span>
                   </p>
                 </div>`;
             });
@@ -861,6 +880,31 @@ Consignes à respecter impérativement :
         });
 
         changerVue('etape2');
+      }
+
+      async function supprimerMenuExistant(idMenu) {
+        let lot = menusCharges.find(m => String(m.id) === String(idMenu));
+        if (!lot) return;
+
+        let etiquette = lot.dateDebut ? `la semaine du ${formaterDateLitterale(new Date(lot.dateDebut))}` : "ce menu";
+        if (!confirm(`Supprimer définitivement ${etiquette} ?`)) return;
+
+        try {
+          await apiPost('supprimerMenu', { idMenu: lot.id });
+          menusCharges = menusCharges.filter(m => String(m.id) !== String(idMenu));
+
+          if (String(document.getElementById('edit_menu_id').value) === String(idMenu)) {
+            document.getElementById('edit_menu_id').value = '';
+            document.getElementById('titre_edition_menu').innerText = 'Composer le menu';
+            document.getElementById('date_debut_menu').value = getProchainLundi();
+            document.getElementById('form_repas').innerHTML = '';
+          }
+
+          await chargerMenuSemaineAccueil();
+          await chargerMenus();
+        } catch(e) {
+          alert("Erreur lors de la suppression du menu.");
+        }
       }
 
       function cuisinerRaccourci(recette, couverts) {
@@ -939,6 +983,29 @@ Consignes à respecter impérativement :
 
       function fermerModalePartage() {
         document.getElementById('modale_partage').classList.add('hidden');
+      }
+
+      function fermerPopupIngredientsMenu() {
+        document.getElementById('modale_ingredients_programme').classList.add('hidden');
+      }
+
+      async function ouvrirPopupIngredientsMenu(recette, couverts) {
+        document.getElementById('titre_ingredients_programme').innerText = `Ingrédients • ${recette}`;
+        document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-slate-500 font-bold animate-pulse text-sm">Chargement...</p>';
+        document.getElementById('modale_ingredients_programme').classList.remove('hidden');
+
+        try {
+          const items = await apiGet('getDetailsRecette', { nomRecette: recette, nbParts: couverts || 1 });
+          if (!items || items.length === 0) {
+            document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-sm text-slate-500">Aucun ingrédient trouvé.</p>';
+            return;
+          }
+          let h = '<ul class="divide-y divide-slate-100">';
+          items.forEach(it => h += `<li class="p-3 flex justify-between bg-white"><span class="font-bold text-slate-800 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
+          document.getElementById('contenu_ingredients_programme').innerHTML = h + '</ul>';
+        } catch(e) {
+          document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
+        }
       }
 
       async function executerPartageModale(type) {
