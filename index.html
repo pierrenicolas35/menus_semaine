@@ -26,6 +26,12 @@
         padding-top: env(safe-area-inset-top, 8px);
         padding-bottom: env(safe-area-inset-bottom, 8px);
       }
+      .scroll-modal-body {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+        overscroll-behavior: contain !important;
+      }
     </style>
   </head>
   <body class="bg-slate-50 min-h-screen text-slate-800 font-sans w-full overflow-x-hidden box-border flex flex-col justify-between">
@@ -337,33 +343,33 @@
 
     <!-- MODALE INTERMÉDIAIRE : SUGGESTIONS D'ESSENTIELS COURANTS -->
     <div id="modale_suggestions" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 max-h-[90vh] overflow-hidden">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-4 sm:p-5 flex flex-col gap-3 max-h-[85vh] max-h-[85dvh] h-[85vh] h-[85dvh] overflow-hidden">
 
         <!-- En-tête -->
-        <div class="flex justify-between items-start border-b pb-3 shrink-0">
+        <div class="flex justify-between items-start border-b pb-2.5 shrink-0">
           <div>
             <h3 class="font-black text-slate-800 text-base flex items-center gap-1.5">
               <span>💡</span> Essentiels & Suggestions
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Complétez votre liste de courses avec les produits du quotidien</p>
+            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Complétez votre liste de courses avec les produits du quotidien</p>
           </div>
           <button type="button" onclick="fermerModaleSuggestions()" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1 leading-none">✕</button>
         </div>
 
         <!-- Formulaire d'ajout rapide de produit personnalisé -->
-        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex flex-col gap-2 shrink-0">
-          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">➕ Ajouter une nouvelle suggestion :</span>
-          <div class="flex flex-col gap-2">
-            <input type="text" id="nouvelle_sug_nom" placeholder="Ex: Sopalin, Yaourts, Lessive..." class="w-full h-10 px-3 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+        <div class="bg-slate-50 p-2.5 sm:p-3 rounded-2xl border border-slate-200 flex flex-col gap-1.5 shrink-0">
+          <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">➕ Ajouter une nouvelle suggestion :</span>
+          <div class="flex flex-col gap-1.5">
+            <input type="text" id="nouvelle_sug_nom" placeholder="Ex: Sopalin, Yaourts, Lessive..." class="w-full h-9 sm:h-10 px-3 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
             <div class="flex gap-2">
-              <select id="nouvelle_sug_cat" class="flex-grow h-10 px-2 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-0">
+              <select id="nouvelle_sug_cat" class="flex-grow h-9 sm:h-10 px-2 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-0">
                 <option value="🍎 Fruits & Légumes">🍎 Fruits/Légumes</option>
                 <option value="🥛 Produits Frais & Crémerie">🥛 Produits Frais</option>
                 <option value="🧹 Produits d'Entretien">🧹 Entretien</option>
                 <option value="🧼 Hygiène & Soins">🧼 Hygiène</option>
                 <option value="🍿 Épicerie & Boissons">🍿 Épicerie/Boissons</option>
               </select>
-              <button type="button" onclick="ajouterSuggestionPerso()" class="h-10 px-4 bg-amber-500 text-white font-bold text-xs rounded-xl shadow-sm active:scale-95 transition-all whitespace-nowrap shrink-0">
+              <button type="button" onclick="ajouterSuggestionPerso()" class="h-9 sm:h-10 px-3.5 bg-amber-500 text-white font-bold text-xs rounded-xl shadow-sm active:scale-95 transition-all whitespace-nowrap shrink-0">
                 Ajouter
               </button>
             </div>
@@ -371,16 +377,16 @@
         </div>
 
         <!-- Zone défilante des catégories et produits -->
-        <div id="contenu_suggestions_categories" class="flex-grow min-h-0 overflow-y-auto pr-1 flex flex-col gap-3">
+        <div id="contenu_suggestions_categories" class="scroll-modal-body flex-1 min-h-0 pr-1 flex flex-col gap-2.5">
           <!-- Injecté dynamiquement par JavaScript -->
         </div>
 
         <!-- Boutons d'action -->
         <div class="flex gap-2 pt-2 border-t shrink-0">
-          <button type="button" onclick="passerSuggestions()" class="w-1/3 h-12 bg-slate-100 text-slate-600 font-bold text-xs rounded-2xl active:scale-95 transition-all">
+          <button type="button" onclick="passerSuggestions()" class="w-1/3 h-11 sm:h-12 bg-slate-100 text-slate-600 font-bold text-xs rounded-2xl active:scale-95 transition-all">
             Passer
           </button>
-          <button type="button" onclick="validerSuggestionsEtVoirCourses()" class="w-2/3 h-12 bg-emerald-600 text-white font-bold text-xs rounded-2xl shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+          <button type="button" onclick="validerSuggestionsEtVoirCourses()" class="w-2/3 h-11 sm:h-12 bg-emerald-600 text-white font-bold text-xs rounded-2xl shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center gap-1.5">
             <span>Valider & voir les courses</span> 🛒
           </button>
         </div>
@@ -507,13 +513,17 @@
         let html = '';
 
         categories.forEach((catGroup, idxCat) => {
+          let estPlie = idxCat > 0; // Seule la première catégorie est dépliée par défaut
           html += `
             <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-              <div class="bg-slate-50 px-3.5 py-2 font-bold text-slate-700 text-xs flex justify-between items-center border-b border-slate-100">
-                <span>${catGroup.categorie}</span>
-                <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">${catGroup.items.length}</span>
-              </div>
-              <div class="p-2.5 flex flex-col gap-2">`;
+              <button type="button" class="w-full bg-slate-50 px-3.5 py-2.5 font-bold text-slate-700 text-xs flex justify-between items-center border-b border-slate-100 text-left active:bg-slate-100 transition-colors" onclick="let el = this.nextElementSibling; el.classList.toggle('hidden'); this.querySelector('.arrow-icon').classList.toggle('rotate-180');">
+                <span class="flex items-center gap-1.5">${catGroup.categorie}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">${catGroup.items.length}</span>
+                  <span class="arrow-icon text-slate-400 text-xs transition-transform ${estPlie ? '' : 'rotate-180'}">▼</span>
+                </div>
+              </button>
+              <div class="p-2.5 flex flex-col gap-2 ${estPlie ? 'hidden' : ''}">`;
 
           catGroup.items.forEach((item, idxItem) => {
             let idUnique = `sug_${idxCat}_${idxItem}`;
