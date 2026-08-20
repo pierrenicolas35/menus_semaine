@@ -1181,7 +1181,7 @@ Consignes à respecter impérativement :
         if (!confirm(`Supprimer définitivement ${etiquette} ?`)) return;
 
         try {
-          await apiPost('supprimerMenu', { idMenu: lot.id });
+          await apiPost('sauvegarderMenu', { plan: [], dateDebutStr: lot.dateDebut || '', idMenuExistant: lot.id });
           menusCharges = menusCharges.filter(m => String(m.id) !== String(idMenu));
 
           if (String(document.getElementById('edit_menu_id').value) === String(idMenu)) {
