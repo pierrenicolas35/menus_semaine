@@ -237,12 +237,25 @@
       <div id="etape3" class="etape hidden flex flex-col gap-3 w-full">
         <h2 class="text-xl font-bold text-center text-slate-800 mt-2 mb-1">🛒 Liste de courses</h2>
         
-        <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex gap-2 items-center">
-          <input type="text" id="ajout_manuel" placeholder="Ajouter un article hors recette..." 
-                 class="flex-grow min-h-[44px] px-3 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+        <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2">
+          <div class="flex gap-2 w-full">
+            <select id="ajout_manuel_rayon" class="w-1/2 min-h-[44px] px-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+              <option value="">🛒 Détecter Auto.</option>
+              <option value="🥦 Fruits & Légumes">🥦 Fruits & Légumes</option>
+              <option value="🧀 Produits Frais & Crémerie">🧀 Produits Frais & Crémerie</option>
+              <option value="🥩 Boucherie & Poissonnerie">🥩 Boucherie & Poissonnerie</option>
+              <option value="🍝 Épicerie Salée & Conserves">🍝 Épicerie Salée & Conserves</option>
+              <option value="🧹 Produits d'Entretien">🧹 Produits d'Entretien</option>
+              <option value="🧼 Hygiène & Soins">🧼 Hygiène & Soins</option>
+              <option value="❄️ Surgelés">❄️ Surgelés</option>
+              <option value="🥤 Boissons">🥤 Boissons</option>
+            </select>
+            <input type="text" id="ajout_manuel" placeholder="Article hors recette..."
+                   class="w-1/2 min-h-[44px] px-3 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+          </div>
           <button type="button" onclick="ajouterIngredient()" 
-                  class="min-w-[44px] min-h-[44px] w-11 bg-slate-100 text-slate-700 font-bold text-xl rounded-xl active:bg-slate-200 transition-all flex items-center justify-center">
-            ➕
+                  class="w-full min-h-[44px] bg-slate-100 text-slate-700 font-bold text-sm rounded-xl active:bg-slate-200 transition-all flex items-center justify-center gap-2">
+            ➕ Ajouter à la liste
           </button>
         </div>
 
@@ -357,11 +370,14 @@
             <input type="text" id="nouvelle_sug_nom" placeholder="Ex: Sopalin, Yaourts, Lessive..." class="w-full h-10 px-3 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
             <div class="flex gap-2">
               <select id="nouvelle_sug_cat" class="flex-grow h-10 px-2 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-0">
-                <option value="🍎 Fruits & Légumes">🍎 Fruits/Légumes</option>
-                <option value="🥛 Produits Frais & Crémerie">🥛 Produits Frais</option>
-                <option value="🧹 Produits d'Entretien">🧹 Entretien</option>
-                <option value="🧼 Hygiène & Soins">🧼 Hygiène</option>
-                <option value="🍿 Épicerie & Boissons">🍿 Épicerie/Boissons</option>
+                <option value="🥦 Fruits & Légumes">🥦 Fruits & Légumes</option>
+                <option value="🧀 Produits Frais & Crémerie">🧀 Produits Frais & Crémerie</option>
+                <option value="🥩 Boucherie & Poissonnerie">🥩 Boucherie & Poissonnerie</option>
+                <option value="🍝 Épicerie Salée & Conserves">🍝 Épicerie Salée & Conserves</option>
+                <option value="🧹 Produits d'Entretien">🧹 Produits d'Entretien</option>
+                <option value="🧼 Hygiène & Soins">🧼 Hygiène & Soins</option>
+                <option value="❄️ Surgelés">❄️ Surgelés</option>
+                <option value="🥤 Boissons">🥤 Boissons</option>
               </select>
               <button type="button" onclick="ajouterSuggestionPerso()" class="h-10 px-4 bg-amber-500 text-white font-bold text-xs rounded-xl shadow-sm active:scale-95 transition-all whitespace-nowrap shrink-0">
                 Ajouter
@@ -416,11 +432,11 @@
       let suggestionsPersonnalisees = [];
 
       const SUGGESTIONS_PAR_DEFAUT = [
-        { categorie: "🍎 Fruits & Légumes", items: ["Pommes", "Bananes", "Citrons", "Oignons", "Ail", "Carottes"] },
-        { categorie: "🥛 Produits Frais & Crémerie", items: ["Yaourts", "Lait", "Beurre", "Œufs", "Fromage râpé"] },
+        { categorie: "🥦 Fruits & Légumes", items: ["Pommes", "Bananes", "Citrons", "Oignons", "Ail", "Carottes"] },
+        { categorie: "🧀 Produits Frais & Crémerie", items: ["Yaourts", "Lait", "Beurre", "Œufs", "Fromage râpé"] },
         { categorie: "🧹 Produits d'Entretien", items: ["Sopalin", "Sacs poubelle", "Liquide vaisselle", "Lessive", "Éponges"] },
         { categorie: "🧼 Hygiène & Soins", items: ["Papier WC", "Gel douche", "Shampooing", "Dentifrice", "Mouchoirs"] },
-        { categorie: "🍿 Épicerie & Boissons", items: ["Eau minérale", "Café", "Pain de mie", "Riz", "Pâtes"] }
+        { categorie: "🍝 Épicerie Salée & Conserves", items: ["Pain de mie", "Riz", "Pâtes", "Eau minérale", "Café"] }
       ];
 
       // --- MAPPING TAXONOMIE DES RAYONS DE SUPERMARCHÉ ---
@@ -480,7 +496,7 @@
 
         if (Array.isArray(suggestionsPersonnalisees)) {
           suggestionsPersonnalisees.forEach(sug => {
-            let cat = sug.categorie || "🍿 Épicerie & Boissons";
+            let cat = sug.categorie || "🍝 Épicerie Salée & Conserves";
             let nom = sug.nom || sug;
             if (typeof nom === 'string' && nom.trim()) {
               if (!categoriesMap.has(cat)) {
@@ -568,6 +584,7 @@
 
         itemsCoches.forEach(chk => {
           let nom = chk.getAttribute('data-nom');
+          let cat = chk.getAttribute('data-cat');
           let parentDiv = chk.closest('div');
           let inputQte = parentDiv ? parentDiv.querySelector('.input-sug-qte') : null;
           let qte = inputQte ? inputQte.value.trim() : "";
@@ -576,7 +593,8 @@
           listeCoursesBrute.push({
             nom: nom,
             quantite: qte,
-            unite: ""
+            unite: "",
+            rayonForce: cat
           });
         });
 
@@ -1079,6 +1097,7 @@ Consignes à respecter impérativement :
         }
       }
 
+
       async function chargerMenus() {
         changerVue('vue_menus');
         document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4 text-sm">Chargement...</p>';
@@ -1094,36 +1113,47 @@ Consignes à respecter impérativement :
           const aujourdhui = new Date();
           aujourdhui.setHours(0,0,0,0);
 
-          let html = '';
-          menusCharges.forEach((lot, index) => {
-            let titreBloc = "📅 Menu";
-            let badgeColor = "border-slate-300";
+          let menuCourant = [];
+          let menusSuivants = [];
+          let menusPasses = [];
 
+          menusCharges.forEach((lot) => {
             if (lot.dateDebut) {
               let debut = new Date(lot.dateDebut);
               let fin = new Date(lot.dateDebut);
               fin.setDate(fin.getDate() + 6);
 
               if (aujourdhui >= debut && aujourdhui <= fin) {
-                titreBloc = "🟢 Menu de la semaine en cours";
-                badgeColor = "border-emerald-500";
+                menuCourant.push(lot);
               } else if (aujourdhui < debut) {
-                titreBloc = "🔵 Menu de la semaine prochaine";
-                badgeColor = "border-blue-500";
+                menusSuivants.push(lot);
               } else {
-                titreBloc = "⚪ Menu passé";
-                badgeColor = "border-slate-300";
+                menusPasses.push(lot);
               }
             } else {
-              titreBloc = (index === 0) ? "🟢 Menu en cours" : "🔵 Menu suivant";
-              badgeColor = (index === 0) ? "border-emerald-500" : "border-blue-500";
+              // S'il n'a pas de date de début, on le met dans "suivants" par défaut ou "courant" si on en n'a pas encore.
+              menusSuivants.push(lot);
             }
+          });
 
-            let dateAffichee = lot.dateDebut 
-              ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut))
-              : "Créé le " + lot.date;
+          // Trier les menus suivants par ordre chronologique
+          menusSuivants.sort((a, b) => {
+            if (!a.dateDebut) return 1;
+            if (!b.dateDebut) return -1;
+            return new Date(a.dateDebut) - new Date(b.dateDebut);
+          });
 
-            html += `<div class="bg-white p-4 rounded-3xl shadow-sm border-2 ${badgeColor}">
+          // Trier les menus passés par ordre anti-chronologique
+          menusPasses.sort((a, b) => {
+            if (!a.dateDebut) return 1;
+            if (!b.dateDebut) return -1;
+            return new Date(b.dateDebut) - new Date(a.dateDebut);
+          });
+
+          let html = '';
+
+          const renderMenu = (lot, titreBloc, badgeColor, dateAffichee) => {
+            return `<div class="bg-white p-4 rounded-3xl shadow-sm border-2 ${badgeColor}">
                       <div class="flex justify-between items-center border-b pb-2 mb-3">
                         <div>
                           <h3 class="font-black text-slate-700 text-sm">${titreBloc}</h3>
@@ -1134,11 +1164,11 @@ Consignes à respecter impérativement :
                           <button type="button" onclick="supprimerMenuExistant('${lot.id}')" class="bg-red-50 text-red-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-red-200 active:scale-95 transition-all">🗑️ Supprimer</button>
                         </div>
                       </div>
-                      <div class="flex flex-col gap-2">`;
-            lot.repas.forEach(r => {
-              let recSafe = String(r.recette).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                      <div class="flex flex-col gap-2">` +
+            lot.repas.map(r => {
+              let recSafe = String(r.recette).replace(/'/g, "\\\'").replace(/"/g, '&quot;');
               let titreFormate = (r.titre && r.titre !== "Repas non défini") ? r.titre : "Repas";
-              html += `
+              return `
                 <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 active:bg-slate-100 active:scale-95 transition-all cursor-pointer">
                   <p class="font-bold text-indigo-700 text-xs mb-1">${titreFormate}</p>
                   <p class="text-slate-600 text-xs flex justify-between items-center">
@@ -1148,10 +1178,38 @@ Consignes à respecter impérativement :
                     </span>
                   </p>
                 </div>`;
-            });
-            html += `</div></div>`;
+            }).join('') + `</div></div>`;
+          };
+
+          menuCourant.forEach((lot) => {
+            let dateAffichee = lot.dateDebut ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut)) : "Créé le " + lot.date;
+            html += renderMenu(lot, "🟢 Menu de la semaine en cours", "border-emerald-500", dateAffichee);
           });
+
+          menusSuivants.forEach((lot) => {
+            let dateAffichee = lot.dateDebut ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut)) : "Créé le " + lot.date;
+            html += renderMenu(lot, "🔵 Menu de la semaine prochaine", "border-blue-500", dateAffichee);
+          });
+
+          if (menusPasses.length > 0) {
+            html += `<details class="bg-white rounded-3xl shadow-sm border border-slate-200 group overflow-hidden mt-4">
+                       <summary class="cursor-pointer font-bold text-slate-700 text-sm p-4 bg-slate-50 flex items-center justify-between border-b border-slate-200/0 group-open:border-slate-200 transition-all">
+                         <span>🕰️ Menus Passés (${menusPasses.length})</span>
+                         <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform"></i>
+                       </summary>
+                       <div class="p-4 flex flex-col gap-4 bg-slate-50/50">`;
+
+            menusPasses.forEach((lot) => {
+              let dateAffichee = lot.dateDebut ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut)) : "Créé le " + lot.date;
+              html += renderMenu(lot, "⚪ Menu passé", "border-slate-300", dateAffichee);
+            });
+
+            html += `  </div>
+                     </details>`;
+          }
+
           box.innerHTML = html;
+          setTimeout(() => lucide.createIcons(), 50); // Mettre à jour les icônes lucide dans le details
         } catch(e) {
           document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4 text-sm">Erreur lors du chargement.</p>';
         }
@@ -1334,12 +1392,19 @@ Consignes à respecter impérativement :
           finaliserEnvoiTexte(txt);
         } else {
           try {
-            let coursesExport = await apiPost('calculerCourses', { planification: planTarget }) || [];
+            let coursesExport = [];
+            let dateKey = dateInput || 'sans_date';
+            let savedCourses = localStorage.getItem('courses_' + dateKey);
+            if (savedCourses) {
+                coursesExport = JSON.parse(savedCourses);
+            } else {
+                coursesExport = await apiPost('calculerCourses', { planification: planTarget }) || [];
+            }
             txt = `🛒 LISTE DE COURSES POUR LA SEMAINE DU ${dateFormatee.toUpperCase()} :\n\n`;
             
             let groupes = {};
             coursesExport.forEach(item => {
-              let rayon = determinerRayon(item.nom);
+              let rayon = item.rayonForce || determinerRayon(item.nom);
               if (!groupes[rayon]) groupes[rayon] = [];
               groupes[rayon].push(item);
             });
@@ -1369,6 +1434,8 @@ Consignes à respecter impérativement :
       }
 
       function afficherListeCourseTriee() {
+        let dateInput = document.getElementById('date_debut_menu').value || "sans_date";
+        localStorage.setItem('courses_' + dateInput, JSON.stringify(listeCoursesBrute));
         let conteneur = document.getElementById('conteneur_rayons');
         
         if (!listeCoursesBrute || listeCoursesBrute.length === 0) {
@@ -1378,7 +1445,7 @@ Consignes à respecter impérativement :
 
         let groupes = {};
         listeCoursesBrute.forEach(item => {
-          let rayon = determinerRayon(item.nom);
+          let rayon = item.rayonForce || determinerRayon(item.nom);
           if (!groupes[rayon]) groupes[rayon] = [];
           groupes[rayon].push(item);
         });
@@ -1419,11 +1486,14 @@ Consignes à respecter impérativement :
 
       function ajouterIngredient() {
         let input = document.getElementById('ajout_manuel');
+        let selectRayon = document.getElementById('ajout_manuel_rayon');
         let valeur = input.value.trim();
+        let rayon = selectRayon ? selectRayon.value : "";
         if(valeur !== "") {
-          listeCoursesBrute.push({ nom: valeur, quantite: "", unite: "" });
+          listeCoursesBrute.push({ nom: valeur, quantite: "", unite: "", rayonForce: rayon });
           afficherListeCourseTriee();
           input.value = ""; 
+          if(selectRayon) selectRayon.value = "";
         }
       }
 
@@ -1443,7 +1513,7 @@ Consignes à respecter impérativement :
           txt = `🛒 LISTE DE COURSES POUR LA SEMAINE DU ${dateFormatee.toUpperCase()} :\n\n`;
           let groupes = {};
           listeCoursesBrute.forEach(item => {
-            let rayon = determinerRayon(item.nom);
+            let rayon = item.rayonForce || determinerRayon(item.nom);
             if (!groupes[rayon]) groupes[rayon] = [];
             groupes[rayon].push(item);
           });
