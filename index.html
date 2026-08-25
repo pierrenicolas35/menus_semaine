@@ -1396,7 +1396,11 @@ Consignes à respecter impérativement :
             let dateKey = dateInput || 'sans_date';
             let savedCourses = localStorage.getItem('courses_' + dateKey);
             if (savedCourses) {
-                coursesExport = JSON.parse(savedCourses);
+                try {
+                    coursesExport = JSON.parse(savedCourses);
+                } catch(e) {
+                    coursesExport = await apiPost('calculerCourses', { planification: planTarget }) || [];
+                }
             } else {
                 coursesExport = await apiPost('calculerCourses', { planification: planTarget }) || [];
             }
@@ -1480,8 +1484,8 @@ Consignes à respecter impérativement :
       }
 
       function supprimerIngredientListe(btn, nomIngredient) {
-        btn.closest('li').remove();
         listeCoursesBrute = listeCoursesBrute.filter(i => i.nom !== nomIngredient);
+        afficherListeCourseTriee();
       }
 
       function ajouterIngredient() {
