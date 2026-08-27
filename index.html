@@ -47,6 +47,34 @@
 </head>
   <body class="bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans w-full overflow-x-hidden box-border flex flex-col justify-between">
     
+    <datalist id="datalist_ingredients"></datalist>
+
+    <!-- MODALE NOUVEL INGRÉDIENT LORS DE LA CRÉATION/MODIFICATION -->
+    <div id="modale_nouvel_ing_rapide" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4">
+        <div class="flex justify-between items-center border-b pb-2">
+          <h3 class="font-bold text-slate-800 dark:text-slate-200 text-base">Nouvel ingrédient détecté</h3>
+          <button type="button" onclick="annulerNouvelIngRapide()" class="text-slate-400 text-xl font-bold p-1">✕</button>
+        </div>
+        <div class="flex flex-col gap-3">
+          <p class="text-sm text-slate-600 dark:text-slate-300">
+            L'ingrédient <strong id="nouvel_ing_rapide_nom_display"></strong> n'est pas encore enregistré. Quel est son rayon ?
+          </p>
+          <input type="hidden" id="nouvel_ing_rapide_nom_val">
+          <input type="hidden" id="nouvel_ing_rapide_input_ref">
+
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rayon :</label>
+          <select id="nouvel_ing_rapide_rayon" class="w-full h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 bg-slate-50 dark:bg-slate-900 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <!-- Rempli dynamiquement -->
+          </select>
+
+          <button type="button" onclick="validerNouvelIngRapide()" class="h-12 mt-2 bg-indigo-600 text-white font-bold rounded-xl active:scale-[0.98] transition-all text-sm flex items-center justify-center">
+            Enregistrer l'ingrédient
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- CONTENU PRINCIPAL -->
     <div class="w-full max-w-md mx-auto p-4 flex flex-col gap-5">
       
@@ -490,6 +518,31 @@
 
         <p class="text-xs text-slate-500 dark:text-slate-400 text-center mb-2">Associez chaque ingrédient de vos recettes à son rayon de supermarché.</p>
 
+        <div class="flex flex-col gap-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-2">
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Créer un nouveau rayon :</label>
+          <div class="flex gap-2">
+            <input type="text" id="nouveau_rayon_nom" placeholder="Nom du rayon..." class="flex-grow h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <button type="button" onclick="ajouterNouveauRayonLocal()" class="h-12 px-4 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 font-bold rounded-xl active:scale-[0.98] transition-all text-sm whitespace-nowrap">
+              Ajouter
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-2">
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ajouter un ingrédient manuellement :</label>
+          <div class="flex flex-col gap-2">
+            <input type="text" id="admin_nouvel_ing_nom" placeholder="Nom de l'ingrédient..." class="h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <div class="flex gap-2">
+              <select id="admin_nouvel_ing_rayon" class="flex-grow h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-2 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-w-0">
+                <!-- Rempli dynamiquement -->
+              </select>
+              <button type="button" onclick="ajouterIngredientManuelRayons()" class="h-12 px-4 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 font-bold rounded-xl active:scale-[0.98] transition-all text-sm whitespace-nowrap">
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="flex items-center gap-2 mb-2">
           <input type="text" id="recherche_rayon_ing" placeholder="Rechercher un ingrédient..." oninput="filtrerRayonsIngredients()" class="w-full h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
@@ -620,7 +673,50 @@
         { categorie: "🍝 Épicerie Salée & Conserves", items: ["Pain de mie", "Riz", "Pâtes", "Eau minérale", "Café"] }
       ];
 
-      const LISTE_RAYONS_POSSIBLES = [
+      const INGREDIENTS_DE_BASE = [
+        "Amandes", "Avocat", "Carotte", "Citron vert ou jaune", "Fromage de chèvre frais", "Huile d'olive", "Œuf", "Quinoa (poids cru)",
+        "Ail", "Beurre", "Copeaux de pecorino romano", "Épinards frais", "Farine de blé complet", "Filet de poulet", "Lait demi-écrémé",
+        "Muscade", "Oignon blanc", "Pâtes à lasagne", "Ricotta", "Salade verte", "Vinaigre", "Haricots rouges (poids cuit)", "Maïs",
+        "Poudre de piment", "Sauce tomate cuisinée", "Steak végétal au soja", "Crème fraîche liquide 15-20%", "Jambon de dinde (sans nitrite)",
+        "Noisettes", "Parmesan râpé", "Basilic", "Gnocchis", "Herbes de Provence", "Noix", "Comté", "Emmental râpé", "Endive",
+        "Fromage à raclette", "Pâtes crozets au sarrasin", "Boule de mozzarella", "Courgette", "Tomate", "Copeaux de parmesan",
+        "Macaroni complets", "Coriandre", "Cumin", "Curry au choix", "Lait de coco", "Lentilles corail (poids cru)", "Tomate pelée",
+        "Cream cheese", "Gingembre", "Oignon rouge", "Patate douce", "Aubergine", "Feta", "Olives noires", "Pâtes complètes au choix (poids cru)",
+        "Tomates cerises", "Ananas", "Concombre", "Graines de sésame", "Pavé de saumon", "Semoule", "Edamame", "Riz semi-complet (poids cru)",
+        "Sauce soja", "Skyr nature", "Melon", "Saumon fumé (bio)", "Cube de légumes", "Graines de courge", "Potimarron",
+        "Champignons de Paris", "Asperges", "Echalote", "Persil frais", "Petits pois (poids cuit)", "Boulgour", "Crevettes",
+        "Vinaigre balsamique", "Ciboulette", "Lentilles (poids cuit)", "Pain complet", "Tortilla de blé", "Cornichons", "Miel",
+        "Moutarde", "Steak haché bœuf 5%", "Steak haché veau 15%", "Thym", "Concentré de tomate", "Bouillon de légumes", "Pain de mie complet"
+      ];
+
+      function getTousLesIngredients() {
+        let setIngredients = new Set();
+
+        INGREDIENTS_DE_BASE.forEach(ing => setIngredients.add(ing));
+
+        // Ajouter les suggestions personnalisées
+        if (Array.isArray(suggestionsPersonnalisees)) {
+          suggestionsPersonnalisees.forEach(sug => {
+            if (sug && (sug.nom || typeof sug === 'string')) {
+              setIngredients.add(sug.nom || sug);
+            }
+          });
+        }
+
+        // Ajouter les suggestions par défaut
+        SUGGESTIONS_PAR_DEFAUT.forEach(cat => {
+          cat.items.forEach(item => setIngredients.add(item));
+        });
+
+        // Ajouter les ingrédients existants dans mappingRayons
+        for (let ing of Object.keys(mappingRayons)) {
+          setIngredients.add(ing);
+        }
+
+        return Array.from(setIngredients).sort((a, b) => a.localeCompare(b));
+      }
+
+      let listeRayonsActuelle = [
         "🥦 Fruits & Légumes",
         "🧀 Produits Frais & Crémerie",
         "🥩 Boucherie & Poissonnerie",
@@ -632,13 +728,18 @@
         "🛒 Rayon Divers / Épicerie"
       ];
 
+      function normalizeName(name) {
+        if (!name) return "";
+        return name.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      }
+
       function determinerRayon(nomIngredient) {
-        let nom = nomIngredient.trim();
+        let nomNormalise = normalizeName(nomIngredient);
         // Logique "1 ingrédient = 1 rayon" stricte.
         // mappingRayons est alimenté par la fonction getTousLesRayons()
-        // La clé doit correspondre exactement, ignorant la casse.
+        // La clé doit correspondre exactement après normalisation.
         for (let [ing, rayon] of Object.entries(mappingRayons)) {
-            if (ing.toLowerCase() === nom.toLowerCase()) {
+            if (normalizeName(ing) === nomNormalise) {
                 return rayon;
             }
         }
@@ -1141,7 +1242,61 @@ Consignes à respecter impérativement :
         if(id === 'vue_gerer_rayons') {
           chargerRayonsAdmin();
         }
+        if (id === 'vue_ajout' || id === 'vue_modifier_recette') {
+          mettreAJourDatalistIngredients();
+        }
         setTimeout(() => lucide.createIcons(), 50);
+      }
+
+      function mettreAJourDatalistIngredients() {
+        let datalist = document.getElementById('datalist_ingredients');
+        if (datalist) {
+          let ingredients = getTousLesIngredients();
+          datalist.innerHTML = ingredients.map(ing => `<option value="${String(ing).replace(/"/g, '&quot;')}">`).join('');
+        }
+      }
+
+      function verifierIngredientExistant(inputElement) {
+        let val = inputElement.value.trim();
+        if (!val) return;
+
+        let ingredients = getTousLesIngredients();
+        let valNormalisee = normalizeName(val);
+
+        let existeDeja = ingredients.some(ing => normalizeName(ing) === valNormalisee);
+
+        if (!existeDeja) {
+          // L'ingrédient n'existe pas, on ouvre la modale
+          document.getElementById('nouvel_ing_rapide_nom_display').innerText = val;
+          document.getElementById('nouvel_ing_rapide_nom_val').value = val;
+          document.getElementById('nouvel_ing_rapide_input_ref').value = inputElement.id;
+
+          let selectRayon = document.getElementById('nouvel_ing_rapide_rayon');
+          selectRayon.innerHTML = listeRayonsActuelle.map(r => `<option value="${r}">${r}</option>`).join('');
+
+          document.getElementById('modale_nouvel_ing_rapide').classList.remove('hidden');
+        }
+      }
+
+      function annulerNouvelIngRapide() {
+        document.getElementById('modale_nouvel_ing_rapide').classList.add('hidden');
+        let ref = document.getElementById('nouvel_ing_rapide_input_ref').value;
+        if (ref) {
+          let input = document.getElementById(ref);
+          if (input) input.value = ''; // On efface la valeur puisqu'elle a été annulée
+        }
+      }
+
+      function validerNouvelIngRapide() {
+        let nom = document.getElementById('nouvel_ing_rapide_nom_val').value.trim();
+        let rayon = document.getElementById('nouvel_ing_rapide_rayon').value;
+
+        if (nom && rayon) {
+          mappingRayons[nom] = rayon;
+          mettreAJourDatalistIngredients();
+          alert(`L'ingrédient "${nom}" a bien été associé au rayon "${rayon}". (N'oubliez pas de sauvegarder les rayons plus tard si besoin)`);
+        }
+        document.getElementById('modale_nouvel_ing_rapide').classList.add('hidden');
       }
 
       function getCleCacheRecette(recette, couverts) {
@@ -1766,7 +1921,9 @@ Consignes à respecter impérativement :
       function addIngRow() {
         let div = document.createElement('div');
         div.className = "flex gap-2 items-center bg-white p-2 rounded-2xl border border-orange-200";
-        div.innerHTML = `<input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm px-1"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm text-center px-1"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
+        // Générer un ID unique pour le champ input pour pouvoir le retrouver
+        let inputId = "ing_new_" + Math.random().toString(36).substr(2, 9);
+        div.innerHTML = `<input type="text" id="${inputId}" placeholder="Ingrédient" list="datalist_ingredients" class="ing-nom flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm px-1" onchange="verifierIngredientExistant(this)"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm text-center px-1"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
         document.getElementById('new_ingredients_list').appendChild(div);
       }
 
@@ -1829,7 +1986,8 @@ Consignes à respecter impérativement :
         div.className = "flex gap-2 items-center bg-white dark:bg-slate-800 p-2 rounded-2xl border border-blue-200 dark:border-blue-800";
         let nomSafe = nom.replace(/"/g, '&quot;');
         let qteSafe = qte.replace(/"/g, '&quot;');
-        div.innerHTML = `<input type="text" placeholder="Ingrédient" value="${nomSafe}" class="ing-nom flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm px-1 bg-transparent text-slate-800 dark:text-slate-200"><input type="text" placeholder="Qté" value="${qteSafe}" class="ing-qte w-20 h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm text-center px-1 bg-transparent text-slate-800 dark:text-slate-200"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
+        let inputId = "ing_edit_" + Math.random().toString(36).substr(2, 9);
+        div.innerHTML = `<input type="text" id="${inputId}" placeholder="Ingrédient" value="${nomSafe}" list="datalist_ingredients" class="ing-nom flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm px-1 bg-transparent text-slate-800 dark:text-slate-200" onchange="verifierIngredientExistant(this)"><input type="text" placeholder="Qté" value="${qteSafe}" class="ing-qte w-20 h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm text-center px-1 bg-transparent text-slate-800 dark:text-slate-200"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
         document.getElementById('edit_ingredients_list').appendChild(div);
       }
 
@@ -1915,6 +2073,47 @@ Consignes à respecter impérativement :
         chargerSuggestionsAdmin();
       }
 
+      function mettreAJourSelectRayonsGlobal() {
+        let optionsRayons = listeRayonsActuelle.map(r => `<option value="${r}">${r}</option>`).join('');
+
+        let selectAjoutManuel = document.getElementById('ajout_manuel_rayon');
+        if (selectAjoutManuel) {
+          selectAjoutManuel.innerHTML = '<option value="">🛒 Détecter Auto.</option>' + optionsRayons;
+        }
+        let adminNouvIngRayon = document.getElementById('admin_nouvel_ing_rayon');
+        if (adminNouvIngRayon) {
+          adminNouvIngRayon.innerHTML = optionsRayons;
+        }
+      }
+
+      function ajouterNouveauRayonLocal() {
+        let nomInput = document.getElementById('nouveau_rayon_nom');
+        let nvRayon = nomInput.value.trim();
+        if (!nvRayon) return alert("Veuillez saisir un nom de rayon.");
+        if (listeRayonsActuelle.includes(nvRayon)) return alert("Ce rayon existe déjà.");
+
+        listeRayonsActuelle.push(nvRayon);
+        nomInput.value = "";
+
+        mettreAJourSelectRayonsGlobal();
+        afficherRayonsIngredients(mappingRayons);
+        alert(`Rayon "${nvRayon}" ajouté ! N'oubliez pas de le sauvegarder (via le bouton Sauvegarder) pour le conserver pour la prochaine fois.`);
+      }
+
+      function ajouterIngredientManuelRayons() {
+        let nomInput = document.getElementById('admin_nouvel_ing_nom');
+        let nvIng = nomInput.value.trim();
+        let nvRayon = document.getElementById('admin_nouvel_ing_rayon').value;
+
+        if (!nvIng) return alert("Veuillez saisir un nom d'ingrédient.");
+
+        mappingRayons[nvIng] = nvRayon;
+        nomInput.value = "";
+
+        afficherRayonsIngredients(mappingRayons);
+        alert(`Ingrédient "${nvIng}" ajouté au rayon "${nvRayon}" ! N'oubliez pas de sauvegarder.`);
+      }
+
       async function chargerRayonsAdmin() {
         let box = document.getElementById('admin_rayons_list');
         box.innerHTML = '<p class="text-sm text-slate-500 animate-pulse text-center">Chargement...</p>';
@@ -1927,6 +2126,13 @@ Consignes à respecter impérativement :
           console.warn("Erreur chargement rayons depuis API, on utilise le cache.", e);
         }
 
+        // Mettre à jour la liste des rayons s'il y a de nouveaux rayons dans le mapping
+        for (let r of Object.values(mappingRayons)) {
+          if (r && !listeRayonsActuelle.includes(r)) {
+            listeRayonsActuelle.push(r);
+          }
+        }
+        mettreAJourSelectRayonsGlobal();
         afficherRayonsIngredients(mappingRayons);
       }
 
@@ -1934,17 +2140,17 @@ Consignes à respecter impérativement :
         let box = document.getElementById('admin_rayons_list');
         let html = '';
 
-        let ingredients = Object.keys(objMapping).sort((a,b) => a.localeCompare(b));
+        let ingredients = getTousLesIngredients();
 
         if (ingredients.length === 0) {
            box.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">Aucun ingrédient trouvé. Calculez un menu pour que les ingrédients soient enregistrés.</p>';
            return;
         }
 
-        let optionsRayons = LISTE_RAYONS_POSSIBLES.map(r => `<option value="${r}">${r}</option>`).join('');
+        let optionsRayons = listeRayonsActuelle.map(r => `<option value="${r}">${r}</option>`).join('');
 
         ingredients.forEach(ing => {
-            let valActuelle = objMapping[ing] || "🛒 Rayon Divers / Épicerie";
+            let valActuelle = determinerRayon(ing);
             // On preselectionne l'option
             let opts = optionsRayons.replace(`value="${valActuelle}"`, `value="${valActuelle}" selected`);
             let id = "rayon_ing_" + ing.replace(/[^a-zA-Z0-9]/g, "_");
