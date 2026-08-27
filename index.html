@@ -671,7 +671,7 @@
         }
       }
 
-      function megerCategoriesSuggestions() {
+      function mergeCategoriesSuggestions() {
         // Fusionne les suggestions par défaut et les suggestions personnalisées
         let categoriesMap = new Map();
 
@@ -703,7 +703,7 @@
       }
 
       function ouvrirModaleSuggestions() {
-        let categories = megerCategoriesSuggestions();
+        let categories = mergeCategoriesSuggestions();
         let box = document.getElementById('contenu_suggestions_categories');
         let html = '';
 
@@ -1872,7 +1872,7 @@ Consignes à respecter impérativement :
         box.innerHTML = '<p class="text-sm text-slate-500 animate-pulse text-center">Chargement...</p>';
 
         await chargerSuggestionsPerso(); // Met à jour suggestionsPersonnalisees
-        let categories = megerCategoriesSuggestions();
+        let categories = mergeCategoriesSuggestions();
 
         let html = '';
         categories.forEach((catGroup) => {
