@@ -16,6 +16,15 @@
 
     <!-- Tailwind CSS & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {}
+        }
+      }
+    </script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
@@ -27,8 +36,16 @@
         padding-bottom: env(safe-area-inset-bottom, 8px);
       }
     </style>
-  </head>
-  <body class="bg-slate-50 min-h-screen text-slate-800 font-sans w-full overflow-x-hidden box-border flex flex-col justify-between">
+      <script>
+      // Initialisation du thème avant le rendu
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+</head>
+  <body class="bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans w-full overflow-x-hidden box-border flex flex-col justify-between">
     
     <!-- CONTENU PRINCIPAL -->
     <div class="w-full max-w-md mx-auto p-4 flex flex-col gap-5">
@@ -40,7 +57,7 @@
         <div class="flex items-center justify-between pt-1">
           <div>
             <span class="text-xs font-bold text-indigo-600 uppercase tracking-widest">Dashboard</span>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Chef Perso</h1>
+            <h1 class="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Chef Perso</h1>
           </div>
           <div class="w-10 h-10 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-sm shadow-sm">
             👨‍🍳
@@ -48,8 +65,8 @@
         </div>
 
         <!-- ENCADRÉ SEMAINE EN COURS -->
-        <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-200/80 flex flex-col gap-2.5 relative overflow-hidden">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-2.5 relative overflow-hidden">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
             <span id="titre_semaine_accueil" class="font-bold text-xs text-indigo-600 uppercase tracking-wider">Semaine...</span>
             <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">En cours</span>
           </div>
@@ -87,43 +104,43 @@
         <!-- GRILLE BENTO (2x2) -->
         <div class="grid grid-cols-2 gap-3.5">
           
-          <button type="button" onclick="ouvrirPlanification()" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-blue-300">
+          <button type="button" onclick="ouvrirPlanification()" class="p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-blue-300">
             <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <i data-lucide="shopping-cart" class="w-5 h-5"></i>
             </div>
             <div>
-              <span class="block font-bold text-slate-800 text-sm">Composer</span>
+              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Composer</span>
               <span class="text-[11px] text-slate-400 font-medium">Nouveau menu</span>
             </div>
           </button>
 
-          <button type="button" onclick="changerVue('vue_consult')" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-emerald-300">
+          <button type="button" onclick="changerVue('vue_consult')" class="p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-emerald-300">
             <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <i data-lucide="book-open" class="w-5 h-5"></i>
             </div>
             <div>
-              <span class="block font-bold text-slate-800 text-sm">Fiche Recette</span>
+              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Fiche Recette</span>
               <span class="text-[11px] text-slate-400 font-medium">Consulter 1 plat</span>
             </div>
           </button>
 
-          <button type="button" onclick="ouvrirModalePartage()" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-violet-300">
+          <button type="button" onclick="ouvrirModalePartage()" class="p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-violet-300">
             <div class="w-10 h-10 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center">
               <i data-lucide="share-2" class="w-5 h-5"></i>
             </div>
             <div>
-              <span class="block font-bold text-slate-800 text-sm">Partager</span>
+              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Partager</span>
               <span class="text-[11px] text-slate-400 font-medium">Menu & Courses</span>
             </div>
           </button>
 
-          <button type="button" onclick="changerVue('vue_ajout')" class="p-4 bg-white rounded-3xl shadow-sm border border-slate-200/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-orange-300">
-            <div class="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
-              <i data-lucide="plus-circle" class="w-5 h-5"></i>
+          <button type="button" onclick="changerVue('vue_parametres')" class="p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-slate-400">
+            <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+              <i data-lucide="settings" class="w-5 h-5"></i>
             </div>
             <div>
-              <span class="block font-bold text-slate-800 text-sm">Ajouter</span>
-              <span class="text-[11px] text-slate-400 font-medium">Nouvelle recette</span>
+              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Paramètres</span>
+              <span class="text-[11px] text-slate-400 font-medium">Réglages & Données</span>
             </div>
           </button>
 
@@ -133,18 +150,18 @@
 
       <!-- VUE SÉLECTION DES PLATS BATCH COOKING -->
       <div id="vue_selection_batch" class="etape hidden flex flex-col gap-4 w-full">
-        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-1 text-left w-fit flex items-center gap-1 text-sm">
+        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 dark:text-slate-400 font-bold py-1 text-left w-fit flex items-center gap-1 text-sm">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
         </button>
 
         <div>
-          <h2 class="text-xl font-bold text-slate-900">Session Batch Cooking</h2>
-          <p class="text-xs text-slate-500">Sélectionne les plats que tu cuisines aujourd'hui</p>
+          <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">Session Batch Cooking</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Sélectionne les plats que tu cuisines aujourd'hui</p>
         </div>
 
-        <div class="bg-white p-3.5 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-2">
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Semaine cible :</label>
-          <select id="select_semaine_batch" onchange="chargerPlatsBatchCible()" class="w-full h-11 border border-slate-200 rounded-2xl px-3 bg-slate-50 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
+        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-2">
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Semaine cible :</label>
+          <select id="select_semaine_batch" onchange="chargerPlatsBatchCible()" class="w-full h-11 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 bg-slate-50 dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-500"></select>
         </div>
 
         <div id="liste_cocher_batch" class="flex flex-col gap-2.5 min-h-[150px]">
@@ -159,7 +176,7 @@
       <!-- VUE BATCH COOKING MULTI-FICHES (PLAN DE TRAVAIL + GUIDAGE GEMINI) -->
       <div id="vue_session_cuisine" class="etape hidden flex flex-col gap-4 w-full">
         <div class="flex justify-between items-center">
-          <button type="button" onclick="changerVue('vue_selection_batch')" class="text-slate-500 font-bold text-xs flex items-center gap-1">
+          <button type="button" onclick="changerVue('vue_selection_batch')" class="text-slate-500 dark:text-slate-400 font-bold text-xs flex items-center gap-1">
             <i data-lucide="arrow-left" class="w-4 h-4"></i> Modifier sélection
           </button>
           <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full">🔥 Mode Cuisine Active</span>
@@ -175,10 +192,10 @@
         <div id="onglets_batch" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar"></div>
 
         <!-- FICHE RECETTE ACTIVE -->
-        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3">
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
           <div class="flex justify-between items-center border-b pb-2">
-            <h3 id="batch_titre_plat" class="font-black text-slate-800 text-base">Plat</h3>
-            <div class="flex items-center gap-1.5 border border-slate-200 rounded-xl px-2 py-1 bg-slate-50">
+            <h3 id="batch_titre_plat" class="font-black text-slate-800 dark:text-slate-200 text-base">Plat</h3>
+            <div class="flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 bg-slate-50 dark:bg-slate-900">
               <span class="text-xs text-slate-400 font-medium">Parts :</span>
               <span id="batch_parts_plat" class="font-bold text-indigo-600 text-sm">5</span>
             </div>
@@ -192,28 +209,28 @@
 
       <!-- MES MENUS PLANIFIÉS -->
       <div id="vue_menus" class="etape hidden flex flex-col gap-3 w-full">
-        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
+        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 dark:text-slate-400 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
         </button>
         <h2 class="text-xl font-bold text-indigo-900 text-center mb-1">Mes Menus Planifiés</h2>
         <div id="conteneur_menus" class="flex flex-col gap-4">
-          <p class="text-center text-slate-500 animate-pulse text-sm">Chargement de tes menus...</p>
+          <p class="text-center text-slate-500 dark:text-slate-400 animate-pulse text-sm">Chargement de tes menus...</p>
         </div>
       </div>
 
       <!-- ÉTAPE CREATION / EDITION DE MENU -->
       <div id="etape2" class="etape hidden flex flex-col gap-3 w-full">
-        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-1 text-left w-fit flex items-center gap-1 text-sm">
+        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 dark:text-slate-400 font-bold py-1 text-left w-fit flex items-center gap-1 text-sm">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
         </button>
-        <h2 id="titre_edition_menu" class="text-xl font-bold text-center text-slate-800 mt-1 mb-1">Composer le menu</h2>
+        <h2 id="titre_edition_menu" class="text-xl font-bold text-center text-slate-800 dark:text-slate-200 mt-1 mb-1">Composer le menu</h2>
         
         <input type="hidden" id="edit_menu_id" value="">
 
-        <div class="bg-white p-3.5 rounded-3xl shadow-sm border border-slate-200">
-          <label class="block font-bold text-slate-500 mb-1 text-xs uppercase tracking-wider">Premier jour de la semaine (Lundi) :</label>
+        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <label class="block font-bold text-slate-500 dark:text-slate-400 mb-1 text-xs uppercase tracking-wider">Premier jour de la semaine (Lundi) :</label>
           <input type="date" id="date_debut_menu" 
-                 class="w-full h-11 text-base px-3 border border-slate-200 rounded-2xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                 class="w-full h-11 text-base px-3 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
         </div>
 
         <div id="form_repas" class="flex flex-col gap-4"></div>
@@ -235,11 +252,11 @@
 
       <!-- LISTE DE COURSES DU MENU (TRIÉE PAR RAYON) -->
       <div id="etape3" class="etape hidden flex flex-col gap-3 w-full">
-        <h2 class="text-xl font-bold text-center text-slate-800 mt-2 mb-1">🛒 Liste de courses</h2>
+        <h2 class="text-xl font-bold text-center text-slate-800 dark:text-slate-200 mt-2 mb-1">🛒 Liste de courses</h2>
         
-        <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2">
+        <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-2">
           <div class="flex gap-2 w-full">
-            <select id="ajout_manuel_rayon" class="w-1/2 min-h-[44px] px-2 text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+            <select id="ajout_manuel_rayon" class="w-1/2 min-h-[44px] px-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
               <option value="">🛒 Détecter Auto.</option>
               <option value="🥦 Fruits & Légumes">🥦 Fruits & Légumes</option>
               <option value="🧀 Produits Frais & Crémerie">🧀 Produits Frais & Crémerie</option>
@@ -251,10 +268,10 @@
               <option value="🥤 Boissons">🥤 Boissons</option>
             </select>
             <input type="text" id="ajout_manuel" placeholder="Article hors recette..."
-                   class="w-1/2 min-h-[44px] px-3 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                   class="w-1/2 min-h-[44px] px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
           </div>
           <button type="button" onclick="ajouterIngredient()" 
-                  class="w-full min-h-[44px] bg-slate-100 text-slate-700 font-bold text-sm rounded-xl active:bg-slate-200 transition-all flex items-center justify-center gap-2">
+                  class="w-full min-h-[44px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm rounded-xl active:bg-slate-200 transition-all flex items-center justify-center gap-2">
             ➕ Ajouter à la liste
           </button>
         </div>
@@ -279,34 +296,143 @@
 
       <!-- CUISINER (CONSULTATION FICHE RECETTE UNITAIRE) -->
       <div id="vue_consult" class="etape hidden flex flex-col gap-3 w-full">
-        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
+        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 dark:text-slate-400 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
         </button>
         <h2 class="text-xl font-bold text-emerald-800 text-center">Fiche recette</h2>
-        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col gap-3">
-          <select id="select_consult" class="w-full h-12 border border-slate-200 rounded-2xl px-3 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-semibold" onchange="afficherDetails()"></select>
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
+          <select id="select_consult" class="w-full h-12 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-semibold" onchange="afficherDetails()"></select>
           <div class="flex items-center justify-between gap-4 pt-1">
-            <label class="font-bold text-xs text-slate-500 uppercase tracking-wider">Nombre de parts :</label>
-            <div class="flex items-center border border-slate-200 rounded-2xl overflow-hidden bg-slate-50">
-              <button type="button" onclick="modifierPartsConsult(-1)" class="w-10 h-10 bg-slate-100 text-slate-700 font-black text-lg active:bg-slate-200 transition-all flex items-center justify-center">−</button>
-              <span id="parts_consult_val" class="w-12 text-center font-bold text-slate-800 text-base">5</span>
-              <button type="button" onclick="modifierPartsConsult(1)" class="w-10 h-10 bg-slate-100 text-slate-700 font-black text-lg active:bg-slate-200 transition-all flex items-center justify-center">+</button>
+            <label class="font-bold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre de parts :</label>
+            <div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900">
+              <button type="button" onclick="modifierPartsConsult(-1)" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-black text-lg active:bg-slate-200 transition-all flex items-center justify-center">−</button>
+              <span id="parts_consult_val" class="w-12 text-center font-bold text-slate-800 dark:text-slate-200 text-base">5</span>
+              <button type="button" onclick="modifierPartsConsult(1)" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-black text-lg active:bg-slate-200 transition-all flex items-center justify-center">+</button>
             </div>
           </div>
         </div>
-        <div id="details_recette" class="bg-white rounded-3xl shadow-sm border border-slate-200 min-h-[100px] overflow-hidden">
+        <div id="details_recette" class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 min-h-[100px] overflow-hidden">
           <p class="p-4 text-center text-slate-400 italic text-sm">Sélectionnez une recette pour voir ses ingrédients.</p>
+        </div>
+      </div>
+
+      <!-- MENU PARAMETRES -->
+      <div id="vue_parametres" class="etape hidden flex flex-col gap-4 w-full">
+        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 dark:text-slate-400 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
+        </button>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 text-center mb-2">Paramètres</h2>
+
+        <div class="flex flex-col gap-3">
+
+          <button type="button" onclick="changerVue('vue_ajout')" class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between active:scale-[0.98] transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+              </div>
+              <div class="text-left">
+                <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Ajouter une recette</span>
+                <span class="text-[11px] text-slate-400 font-medium">Créer une nouvelle fiche</span>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+          </button>
+
+          <button type="button" onclick="changerVue('vue_modifier_recette')" class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between active:scale-[0.98] transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <i data-lucide="edit-3" class="w-5 h-5"></i>
+              </div>
+              <div class="text-left">
+                <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Modifier une recette</span>
+                <span class="text-[11px] text-slate-400 font-medium">Éditer les plats existants</span>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+          </button>
+
+          <button type="button" onclick="changerVue('vue_gerer_suggestions')" class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between active:scale-[0.98] transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i data-lucide="lightbulb" class="w-5 h-5"></i>
+              </div>
+              <div class="text-left">
+                <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Gérer les suggestions</span>
+                <span class="text-[11px] text-slate-400 font-medium">Listes d'essentiels</span>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+          </button>
+
+          <button type="button" onclick="changerVue('vue_gerer_rayons')" class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between active:scale-[0.98] transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i data-lucide="tags" class="w-5 h-5"></i>
+              </div>
+              <div class="text-left">
+                <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Gérer les rayons</span>
+                <span class="text-[11px] text-slate-400 font-medium">Associer un rayon par ingrédient</span>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
+          </button>
+
+          <div class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between mt-2">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+                <i data-lucide="moon" class="w-5 h-5"></i>
+              </div>
+              <div class="text-left">
+                <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Thème</span>
+                <span class="text-[11px] text-slate-400 font-medium">Clair ou foncé</span>
+              </div>
+            </div>
+            <select id="select_theme" onchange="changerTheme()" class="h-10 border border-slate-200 dark:border-slate-700 rounded-xl px-2 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500 text-xs font-semibold">
+              <option value="system">Automatique</option>
+              <option value="light">Clair</option>
+              <option value="dark">Foncé</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODIFIER UNE RECETTE -->
+      <div id="vue_modifier_recette" class="etape hidden flex flex-col gap-3 w-full">
+        <button type="button" onclick="changerVue('vue_parametres')" class="text-slate-500 dark:text-slate-400 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Paramètres
+        </button>
+        <h2 class="text-xl font-bold text-blue-600 text-center">Modifier une Recette</h2>
+
+        <select id="edit_recette_select" onchange="chargerRecetteEdition()" class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+          <option value="">Sélectionnez une recette...</option>
+        </select>
+
+        <div id="edit_recette_zone" class="hidden flex-col gap-3 mt-2">
+          <input type="hidden" id="edit_recette_nom_original">
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nouveau nom de la recette :</label>
+          <input type="text" id="edit_recette_nom" placeholder="Titre de la recette..." class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Ingrédients :</label>
+          <div id="edit_ingredients_list" class="flex flex-col gap-2"></div>
+
+          <button type="button" onclick="addEditIngRow()" class="h-12 bg-blue-50 text-blue-700 font-bold rounded-2xl border-2 border-dashed border-blue-200 active:bg-blue-100 transition-all text-sm flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i> Ajouter un ingrédient
+          </button>
+
+          <button type="button" id="btn_update_recette" onclick="mettreAJourRecette()" class="h-14 bg-blue-600 text-white font-bold text-base rounded-2xl shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all mt-2 flex items-center justify-center gap-2">
+            💾 Sauvegarder les modifications
+          </button>
         </div>
       </div>
 
       <!-- AJOUTER UNE RECETTE -->
       <div id="vue_ajout" class="etape hidden flex flex-col gap-3 w-full">
-        <button type="button" onclick="changerVue('menu_principal')" class="text-slate-500 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Accueil
+        <button type="button" onclick="changerVue('vue_parametres')" class="text-slate-500 dark:text-slate-400 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Paramètres
         </button>
         <h2 class="text-xl font-bold text-orange-600 text-center">Nouvelle Recette</h2>
         
-        <input type="text" id="new_nom" placeholder="Titre de la recette..." class="h-14 border border-slate-200 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
+        <input type="text" id="new_nom" placeholder="Titre de la recette..." class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
         
         <div id="new_ingredients_list" class="flex flex-col gap-2"></div>
         
@@ -321,21 +447,75 @@
 
     </div>
 
+      <!-- GERER LES SUGGESTIONS -->
+      <div id="vue_gerer_suggestions" class="etape hidden flex flex-col gap-3 w-full">
+        <button type="button" onclick="changerVue('vue_parametres')" class="text-slate-500 dark:text-slate-400 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Paramètres
+        </button>
+        <h2 class="text-xl font-bold text-amber-600 text-center">Gérer les suggestions</h2>
+
+        <p class="text-xs text-slate-500 dark:text-slate-400 text-center mb-2">Ajoutez, modifiez ou supprimez les produits suggérés pour la liste de courses.</p>
+
+        <div class="flex flex-col gap-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ajouter une suggestion :</label>
+          <input type="text" id="admin_sug_nom" placeholder="Ex: Essuie-tout..." class="h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500">
+          <select id="admin_sug_cat" class="h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-2 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <option value="🥦 Fruits & Légumes">🥦 Fruits & Légumes</option>
+            <option value="🧀 Produits Frais & Crémerie">🧀 Produits Frais & Crémerie</option>
+            <option value="🥩 Boucherie & Poissonnerie">🥩 Boucherie & Poissonnerie</option>
+            <option value="🍝 Épicerie Salée & Conserves">🍝 Épicerie Salée & Conserves</option>
+            <option value="🧹 Produits d'Entretien">🧹 Produits d'Entretien</option>
+            <option value="🧼 Hygiène & Soins">🧼 Hygiène & Soins</option>
+            <option value="❄️ Surgelés">❄️ Surgelés</option>
+            <option value="🥤 Boissons">🥤 Boissons</option>
+          </select>
+          <button type="button" onclick="ajouterSuggestionAdmin()" class="h-12 bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-200 font-bold rounded-xl active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i> Ajouter à la liste
+          </button>
+        </div>
+
+        <div id="admin_suggestions_list" class="flex flex-col gap-3 mt-2 min-h-[150px]"></div>
+
+        <button type="button" id="btn_save_suggestions" onclick="sauvegarderToutesSuggestions()" class="h-14 bg-amber-500 text-white font-bold text-base rounded-2xl shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2">
+          💾 Sauvegarder les suggestions
+        </button>
+      </div>
+
+      <!-- GERER LES RAYONS -->
+      <div id="vue_gerer_rayons" class="etape hidden flex flex-col gap-3 w-full">
+        <button type="button" onclick="changerVue('vue_parametres')" class="text-slate-500 dark:text-slate-400 font-bold py-2 text-left w-fit flex items-center gap-1 text-sm">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Paramètres
+        </button>
+        <h2 class="text-xl font-bold text-emerald-600 text-center">Gérer les rayons</h2>
+
+        <p class="text-xs text-slate-500 dark:text-slate-400 text-center mb-2">Associez chaque ingrédient de vos recettes à son rayon de supermarché.</p>
+
+        <div class="flex items-center gap-2 mb-2">
+          <input type="text" id="recherche_rayon_ing" placeholder="Rechercher un ingrédient..." oninput="filtrerRayonsIngredients()" class="w-full h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div id="admin_rayons_list" class="flex flex-col gap-2 min-h-[200px] max-h-[60vh] overflow-y-auto pr-1"></div>
+
+        <button type="button" id="btn_save_rayons" onclick="sauvegarderTousLesRayons()" class="h-14 bg-emerald-500 text-white font-bold text-base rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2">
+          💾 Sauvegarder les rayons
+        </button>
+      </div>
+
     <!-- MODALE INTERACTIVE DE PARTAGE -->
     <div id="modale_partage" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4">
         <div class="flex justify-between items-center border-b pb-2">
-          <h3 class="font-bold text-slate-800 text-base">📤 Export du menu</h3>
+          <h3 class="font-bold text-slate-800 dark:text-slate-200 text-base">📤 Export du menu</h3>
           <button type="button" onclick="fermerModalePartage()" class="text-slate-400 text-xl font-bold p-1">✕</button>
         </div>
 
         <div class="flex flex-col gap-2">
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Choisir la semaine :</label>
-          <select id="select_partage_menu" class="w-full h-11 border border-slate-200 rounded-2xl px-3 bg-slate-50 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Choisir la semaine :</label>
+          <select id="select_partage_menu" class="w-full h-11 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 bg-slate-50 dark:bg-slate-900 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
         </div>
 
         <div class="flex flex-col gap-2 pt-1">
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Type d'export :</label>
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type d'export :</label>
           <div class="grid grid-cols-2 gap-2">
             <button type="button" onclick="executerPartageModale('Menu')" class="p-3.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-2xl font-bold text-xs flex flex-col items-center gap-1.5 active:scale-95 transition-all">
               <i data-lucide="utensils" class="w-5 h-5"></i> Menu
@@ -350,26 +530,26 @@
 
     <!-- MODALE INTERMÉDIAIRE : SUGGESTIONS D'ESSENTIELS COURANTS -->
     <div id="modale_suggestions" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 max-h-[90vh] overflow-hidden">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-4 sm:p-5 flex flex-col gap-3 sm:gap-4 max-h-[90vh] overflow-hidden">
 
         <!-- En-tête -->
         <div class="flex justify-between items-start border-b pb-3 shrink-0">
           <div>
-            <h3 class="font-black text-slate-800 text-base flex items-center gap-1.5">
+            <h3 class="font-black text-slate-800 dark:text-slate-200 text-base flex items-center gap-1.5">
               <span>💡</span> Essentiels & Suggestions
             </h3>
-            <p class="text-xs text-slate-500 mt-0.5">Complétez votre liste de courses avec les produits du quotidien</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Complétez votre liste de courses avec les produits du quotidien</p>
           </div>
           <button type="button" onclick="fermerModaleSuggestions()" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1 leading-none">✕</button>
         </div>
 
         <!-- Formulaire d'ajout rapide de produit personnalisé -->
-        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex flex-col gap-2 shrink-0">
-          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">➕ Ajouter une nouvelle suggestion :</span>
+        <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col gap-2 shrink-0">
+          <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">➕ Ajouter une nouvelle suggestion :</span>
           <div class="flex flex-col gap-2">
-            <input type="text" id="nouvelle_sug_nom" placeholder="Ex: Sopalin, Yaourts, Lessive..." class="w-full h-10 px-3 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <input type="text" id="nouvelle_sug_nom" placeholder="Ex: Sopalin, Yaourts, Lessive..." class="w-full h-10 px-3 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
             <div class="flex gap-2">
-              <select id="nouvelle_sug_cat" class="flex-grow h-10 px-2 text-xs border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-0">
+              <select id="nouvelle_sug_cat" class="flex-grow h-10 px-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-0">
                 <option value="🥦 Fruits & Légumes">🥦 Fruits & Légumes</option>
                 <option value="🧀 Produits Frais & Crémerie">🧀 Produits Frais & Crémerie</option>
                 <option value="🥩 Boucherie & Poissonnerie">🥩 Boucherie & Poissonnerie</option>
@@ -393,7 +573,7 @@
 
         <!-- Boutons d'action -->
         <div class="flex gap-2 pt-2 border-t shrink-0">
-          <button type="button" onclick="passerSuggestions()" class="w-1/3 h-12 bg-slate-100 text-slate-600 font-bold text-xs rounded-2xl active:scale-95 transition-all">
+          <button type="button" onclick="passerSuggestions()" class="w-1/3 h-12 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-2xl active:scale-95 transition-all">
             Passer
           </button>
           <button type="button" onclick="validerSuggestionsEtVoirCourses()" class="w-2/3 h-12 bg-emerald-600 text-white font-bold text-xs rounded-2xl shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center justify-center gap-1.5">
@@ -406,9 +586,9 @@
 
     <!-- MODALE INGRÉDIENTS D'UN REPAS PROGRAMMÉ -->
     <div id="modale_ingredients_programme" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4 max-h-[80vh]">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4 max-h-[80vh]">
         <div class="flex justify-between items-center border-b pb-2">
-          <h3 id="titre_ingredients_programme" class="font-bold text-slate-800 text-base">Ingrédients</h3>
+          <h3 id="titre_ingredients_programme" class="font-bold text-slate-800 dark:text-slate-200 text-base">Ingrédients</h3>
           <button type="button" onclick="fermerPopupIngredientsMenu()" class="text-slate-400 text-xl font-bold p-1">✕</button>
         </div>
         <div id="contenu_ingredients_programme" class="overflow-y-auto">
@@ -430,6 +610,7 @@
       let cacheDetailsIngredsBatch = {};
       let cacheDetailsRecettes = {};
       let suggestionsPersonnalisees = [];
+      let mappingRayons = {}; // Stockage local des rayons d'ingrédients
 
       const SUGGESTIONS_PAR_DEFAUT = [
         { categorie: "🥦 Fruits & Légumes", items: ["Pommes", "Bananes", "Citrons", "Oignons", "Ail", "Carottes"] },
@@ -439,25 +620,29 @@
         { categorie: "🍝 Épicerie Salée & Conserves", items: ["Pain de mie", "Riz", "Pâtes", "Eau minérale", "Café"] }
       ];
 
-      // --- MAPPING TAXONOMIE DES RAYONS DE SUPERMARCHÉ ---
-      const REGLES_RAYONS = [
-        { rayon: "🥦 Fruits & Légumes", mots: ["pomme", "poivron", "oignon", "ail", "carotte", "courgette", "tomate", "salade", "avocat", "citron", "champignon", "haricot", "brocoli", "épinard", "patate", "pomme de terre", "persil", "ciboulette", "basilic", "concombre", "banane", "fraise", "orange", "clementine", "clémentine", "raisin", "melon"] },
-        { rayon: "🧀 Produits Frais & Crémerie", mots: ["lait", "beurre", "crème", "creme", "yaourt", "fromage", "emmental", "mozzarella", "parmesan", "feta", "œuf", "oeuf", "mascarpone", "ricotta", "comté"] },
-        { rayon: "🥩 Boucherie & Poissonnerie", mots: ["poulet", "dinde", "boeuf", "bœuf", "porc", "jambon", "lardons", "saumon", "cabillaud", "crevette", "thon", "viande", "steak", "escalope", "saucisse"] },
-        { rayon: "🍝 Épicerie Salée & Conserves", mots: ["riz", "pâte", "pate", "farine", "huile", "vinaigre", "sel", "poivre", "épice", "epice", "sauce", "moutarde", "lentille", "pois chiche", "pain", "tortilla", "bouillon", "sucre", "chocolat"] },
-        { rayon: "🧹 Produits d'Entretien", mots: ["sopalin", "essuie-tout", "essui tout", "liquide vaisselle", "lessive", "éponge", "eponge", "sac poubelle", "sacs poubelle", "nettoyant", "javel", "assouplissant", "produit vaisselle", "tablettes lave-vaisselle", "lave vaisselle"] },
-        { rayon: "🧼 Hygiène & Soins", mots: ["papier wc", "papier toilette", "wc", "gel douche", "shampooing", "shampoing", "dentifrice", "savon", "déodorant", "deodorant", "coton", "mouchoir", "mouchoirs", "serviette hygiénique", "protege slip"] },
-        { rayon: "❄️ Surgelés", mots: ["glace", "surgelé", "surgeles", "frite"] },
-        { rayon: "🥤 Boissons", mots: ["eau", "jus", "soda", "vin", "bière", "café", "thé"] }
+      const LISTE_RAYONS_POSSIBLES = [
+        "🥦 Fruits & Légumes",
+        "🧀 Produits Frais & Crémerie",
+        "🥩 Boucherie & Poissonnerie",
+        "🍝 Épicerie Salée & Conserves",
+        "🧹 Produits d'Entretien",
+        "🧼 Hygiène & Soins",
+        "❄️ Surgelés",
+        "🥤 Boissons",
+        "🛒 Rayon Divers / Épicerie"
       ];
 
       function determinerRayon(nomIngredient) {
-        const nom = nomIngredient.toLowerCase();
-        for (let regle of REGLES_RAYONS) {
-          if (regle.mots.some(m => nom.includes(m))) {
-            return regle.rayon;
-          }
+        let nom = nomIngredient.trim();
+        // Logique "1 ingrédient = 1 rayon" stricte.
+        // mappingRayons est alimenté par la fonction getTousLesRayons()
+        // La clé doit correspondre exactement, ignorant la casse.
+        for (let [ing, rayon] of Object.entries(mappingRayons)) {
+            if (ing.toLowerCase() === nom.toLowerCase()) {
+                return rayon;
+            }
         }
+        // Fallback s'il n'est pas encore assigné
         return "🛒 Rayon Divers / Épicerie";
       }
 
@@ -486,7 +671,7 @@
         }
       }
 
-      function megerCategoriesSuggestions() {
+      function mergeCategoriesSuggestions() {
         // Fusionne les suggestions par défaut et les suggestions personnalisées
         let categoriesMap = new Map();
 
@@ -518,16 +703,16 @@
       }
 
       function ouvrirModaleSuggestions() {
-        let categories = megerCategoriesSuggestions();
+        let categories = mergeCategoriesSuggestions();
         let box = document.getElementById('contenu_suggestions_categories');
         let html = '';
 
         categories.forEach((catGroup, idxCat) => {
           html += `
-            <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
-              <div class="bg-slate-50 px-3.5 py-2 font-bold text-slate-700 text-xs flex justify-between items-center border-b border-slate-100">
+            <div class="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm shrink-0">
+              <div class="bg-slate-50 dark:bg-slate-900 px-3.5 py-2 font-bold text-slate-700 dark:text-slate-300 text-xs flex justify-between items-center border-b border-slate-100 dark:border-slate-700">
                 <span>${catGroup.categorie}</span>
-                <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">${catGroup.items.length}</span>
+                <span class="text-[10px] bg-slate-200 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">${catGroup.items.length}</span>
               </div>
               <div class="p-2.5 flex flex-col gap-2">`;
 
@@ -538,9 +723,9 @@
               <div class="flex items-center justify-between gap-2 p-1.5 rounded-xl hover:bg-slate-50 transition-colors">
                 <label for="${idUnique}" class="flex items-center gap-2.5 flex-grow cursor-pointer min-w-0">
                   <input type="checkbox" id="${idUnique}" class="chk-sug-item w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500 shrink-0" data-nom="${itemSafe}" data-cat="${catGroup.categorie}">
-                  <span class="text-xs font-semibold text-slate-800 truncate">${item}</span>
+                  <span class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">${item}</span>
                 </label>
-                <input type="text" placeholder="Qté (facultatif)" class="input-sug-qte w-28 h-8 px-2 text-xs border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-1 focus:ring-emerald-500 shrink-0">
+                <input type="text" placeholder="Qté (facultatif)" class="input-sug-qte w-28 h-8 px-2 text-xs border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 shrink-0">
               </div>`;
           });
 
@@ -637,6 +822,12 @@
         changerVue(vueSauvegardee, false);
 
         try {
+          mappingRayons = await apiGet('getTousLesRayons') || {};
+        } catch(e) {
+          console.warn('Erreur lors du chargement des rayons:', e);
+        }
+
+        try {
           recs = await apiGet('getListeRecettes') || [];
           await chargerMenuSemaineAccueil();
 
@@ -721,7 +912,7 @@
                 let recettesStr = mapCreneaux.get(c.key).join(', ');
                 html += `
                   <li class="py-1.5 flex justify-between items-center text-xs">
-                    <span class="font-bold text-slate-700">${c.label}</span>
+                    <span class="font-bold text-slate-700 dark:text-slate-300">${c.label}</span>
                     <span class="text-indigo-600 font-semibold truncate max-w-[180px]">${recettesStr}</span>
                   </li>`;
                 auMoinsUnAffichage = true;
@@ -731,7 +922,7 @@
             repasNonAssignes.forEach(r => {
               html += `
                 <li class="py-1.5 flex justify-between items-center text-xs">
-                  <span class="font-bold text-slate-700">${r.titre}</span>
+                  <span class="font-bold text-slate-700 dark:text-slate-300">${r.titre}</span>
                   <span class="text-indigo-600 font-semibold truncate max-w-[180px]">${r.recette}</span>
                 </li>`;
               auMoinsUnAffichage = true;
@@ -790,11 +981,11 @@
           let titreFormate = (r.titre && r.titre !== "Repas non défini") ? r.titre : "Repas " + (idx + 1);
           let recSafe = String(r.recette).replace(/"/g, '&quot;');
           html += `
-            <label class="flex items-center gap-3 p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm cursor-pointer active:bg-slate-50 transition-all">
+            <label class="flex items-center gap-3 p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer active:bg-slate-50 transition-all">
               <input type="checkbox" class="chk-batch w-5 h-5 rounded-lg text-amber-500 border-slate-300 focus:ring-amber-500" data-recette="${recSafe}" data-couverts="${r.couverts}" data-titre="${titreFormate}" checked>
               <div class="flex flex-col min-w-0 flex-grow">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${titreFormate}</span>
-                <span class="text-sm font-bold text-slate-800 truncate">${r.recette} <span class="text-xs font-normal text-slate-400">(${r.couverts} p.)</span></span>
+                <span class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">${r.recette} <span class="text-xs font-normal text-slate-400">(${r.couverts} p.)</span></span>
               </div>
             </label>`;
         });
@@ -852,7 +1043,7 @@
 
           if (!items || items.length === 0) return document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-sm">Introuvable.</p>';
           let h = '<ul class="divide-y divide-slate-100">';
-          items.forEach(it => h += `<li class="py-2.5 px-1 flex justify-between bg-white text-sm"><span class="font-bold text-slate-800">${it.nom}</span><span class="text-amber-600 font-semibold">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
+          items.forEach(it => h += `<li class="py-2.5 px-1 flex justify-between bg-white dark:bg-slate-800 text-sm"><span class="font-bold text-slate-800 dark:text-slate-200">${it.nom}</span><span class="text-amber-600 font-semibold">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
           document.getElementById('batch_details_recette').innerHTML = h + '</ul>';
         } catch(e) {
           document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
@@ -938,6 +1129,18 @@ Consignes à respecter impérativement :
           document.getElementById('select_consult').innerHTML = '<option value="">Sélectionner une recette...</option>' + optionsSafe;
           if (currentSelect) document.getElementById('select_consult').value = currentSelect;
         }
+        if(id === 'vue_modifier_recette') {
+          let optionsSafe = (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
+          document.getElementById('edit_recette_select').innerHTML = '<option value="">Sélectionnez une recette...</option>' + optionsSafe;
+          document.getElementById('edit_recette_zone').classList.add('hidden');
+          document.getElementById('edit_recette_select').value = "";
+        }
+        if(id === 'vue_gerer_suggestions') {
+          chargerSuggestionsAdmin();
+        }
+        if(id === 'vue_gerer_rayons') {
+          chargerRayonsAdmin();
+        }
         setTimeout(() => lucide.createIcons(), 50);
       }
 
@@ -986,34 +1189,34 @@ Consignes à respecter impérativement :
           gridHTML += `
             <div class="flex flex-col gap-1 items-center">
               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${j.label}</span>
-              <button type="button" class="slot-btn w-full aspect-square min-h-[40px] rounded-lg bg-slate-100 text-slate-400 text-base border border-slate-200 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} midi" onclick="toggleSlot(this)">☀️</button>
-              <button type="button" class="slot-btn w-full aspect-square min-h-[40px] rounded-lg bg-slate-100 text-slate-400 text-base border border-slate-200 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} soir" onclick="toggleSlot(this)">🌙</button>
+              <button type="button" class="slot-btn w-full aspect-square min-h-[40px] rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-400 text-base border border-slate-200 dark:border-slate-700 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} midi" onclick="toggleSlot(this)">☀️</button>
+              <button type="button" class="slot-btn w-full aspect-square min-h-[40px] rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-400 text-base border border-slate-200 dark:border-slate-700 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} soir" onclick="toggleSlot(this)">🌙</button>
             </div>`;
         });
         gridHTML += '</div>';
 
         let cardIndex = conteneur.children.length + 1;
         let cardHTML = `
-          <div class="repas-card bg-white p-4 rounded-3xl shadow-sm border border-slate-200 border-l-4 border-l-indigo-600 flex flex-col gap-2 relative">
+          <div class="repas-card bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 border-l-4 border-l-indigo-600 flex flex-col gap-2 relative">
             ${cardIndex > 1 ? `<button type="button" onclick="this.closest('.repas-card').remove()" class="absolute top-2 right-2 w-8 h-8 text-slate-400 hover:text-red-500 flex items-center justify-center text-sm font-bold">✕</button>` : ''}
-            <div class="flex flex-col mb-1 border-b border-dashed border-slate-200 pb-2">
+            <div class="flex flex-col mb-1 border-b border-dashed border-slate-200 dark:border-slate-700 pb-2">
               <span class="titre-display text-sm font-bold text-slate-400 leading-tight">Sélectionne les créneaux 👇</span>
               <input type="hidden" class="titre" value="Repas non défini">
             </div>
             ${gridHTML}
             
             <div class="flex items-center justify-between gap-2 mt-2">
-              <label class="font-semibold text-slate-600 text-xs whitespace-nowrap">Nbr de parts :</label>
-              <div class="flex items-center border border-slate-200 rounded-2xl overflow-hidden bg-slate-50">
-                <button type="button" onclick="modifierPartsCard(this, -1)" class="w-10 h-10 bg-slate-100 text-slate-700 font-black text-lg active:bg-slate-200 transition-all flex items-center justify-center">−</button>
-                <span class="couverts-val w-12 text-center font-bold text-slate-800 text-sm">5</span>
+              <label class="font-semibold text-slate-600 dark:text-slate-300 text-xs whitespace-nowrap">Nbr de parts :</label>
+              <div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900">
+                <button type="button" onclick="modifierPartsCard(this, -1)" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-black text-lg active:bg-slate-200 transition-all flex items-center justify-center">−</button>
+                <span class="couverts-val w-12 text-center font-bold text-slate-800 dark:text-slate-200 text-sm">5</span>
                 <input type="hidden" class="couverts" value="5">
-                <button type="button" onclick="modifierPartsCard(this, 1)" class="w-10 h-10 bg-slate-100 text-slate-700 font-black text-lg active:bg-slate-200 transition-all flex items-center justify-center">+</button>
+                <button type="button" onclick="modifierPartsCard(this, 1)" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-black text-lg active:bg-slate-200 transition-all flex items-center justify-center">+</button>
               </div>
             </div>
 
             <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 mt-1 w-full">
-              <select onchange="mettreAJourBoutonIngredientsCarte(this)" class="recette w-full min-w-0 min-h-[44px] text-sm px-3 border border-slate-200 rounded-2xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium">
+              <select onchange="mettreAJourBoutonIngredientsCarte(this)" class="recette w-full min-w-0 min-h-[44px] text-sm px-3 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium">
                 ${optionsHTML}
               </select>
               <button type="button" onclick="ouvrirIngredientsDepuisCarte(this)" class="btn-ingredients-programmation hidden shrink-0 min-h-[44px] whitespace-nowrap px-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-2xl text-xs font-bold shadow-sm active:scale-95 transition-all" disabled>
@@ -1100,13 +1303,13 @@ Consignes à respecter impérativement :
 
       async function chargerMenus() {
         changerVue('vue_menus');
-        document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 animate-pulse mt-4 text-sm">Chargement...</p>';
+        document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 dark:text-slate-400 animate-pulse mt-4 text-sm">Chargement...</p>';
         
         try {
           menusCharges = await apiGet('getMenusSauvegardes');
           let box = document.getElementById('conteneur_menus');
           if(!menusCharges || menusCharges.length === 0) {
-            box.innerHTML = '<p class="text-center text-slate-500 mt-4 text-sm">Aucun menu planifié.</p>';
+            box.innerHTML = '<p class="text-center text-slate-500 dark:text-slate-400 mt-4 text-sm">Aucun menu planifié.</p>';
             return;
           }
 
@@ -1153,10 +1356,10 @@ Consignes à respecter impérativement :
           let html = '';
 
           const renderMenu = (lot, titreBloc, badgeColor, dateAffichee) => {
-            return `<div class="bg-white p-4 rounded-3xl shadow-sm border-2 ${badgeColor}">
+            return `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border-2 ${badgeColor}">
                       <div class="flex justify-between items-center border-b pb-2 mb-3">
                         <div>
-                          <h3 class="font-black text-slate-700 text-sm">${titreBloc}</h3>
+                          <h3 class="font-black text-slate-700 dark:text-slate-300 text-sm">${titreBloc}</h3>
                           <span class="text-xs text-slate-400 font-medium">${dateAffichee}</span>
                         </div>
                         <div class="flex items-center gap-2">
@@ -1169,12 +1372,12 @@ Consignes à respecter impérativement :
               let recSafe = String(r.recette).replace(/'/g, "\\\'").replace(/"/g, '&quot;');
               let titreFormate = (r.titre && r.titre !== "Repas non défini") ? r.titre : "Repas";
               return `
-                <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 p-3 rounded-2xl border border-slate-100 active:bg-slate-100 active:scale-95 transition-all cursor-pointer">
+                <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-slate-100 dark:border-slate-700 active:bg-slate-100 active:scale-95 transition-all cursor-pointer">
                   <p class="font-bold text-indigo-700 text-xs mb-1">${titreFormate}</p>
-                  <p class="text-slate-600 text-xs flex justify-between items-center">
+                  <p class="text-slate-600 dark:text-slate-300 text-xs flex justify-between items-center">
                     <span>🍲 ${r.recette} <span class="text-[10px] opacity-70">(${r.couverts} parts)</span></span>
                     <span class="flex items-center gap-1.5">
-                      <span class="text-[10px] bg-white border px-2 py-0.5 rounded-md font-medium shadow-sm">👉 Cuisiner</span>
+                      <span class="text-[10px] bg-white dark:bg-slate-800 border px-2 py-0.5 rounded-md font-medium shadow-sm">👉 Cuisiner</span>
                     </span>
                   </p>
                 </div>`;
@@ -1192,8 +1395,8 @@ Consignes à respecter impérativement :
           });
 
           if (menusPasses.length > 0) {
-            html += `<details class="bg-white rounded-3xl shadow-sm border border-slate-200 group overflow-hidden mt-4">
-                       <summary class="cursor-pointer font-bold text-slate-700 text-sm p-4 bg-slate-50 flex items-center justify-between border-b border-slate-200/0 group-open:border-slate-200 transition-all">
+            html += `<details class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 group overflow-hidden mt-4">
+                       <summary class="cursor-pointer font-bold text-slate-700 dark:text-slate-300 text-sm p-4 bg-slate-50 dark:bg-slate-900 flex items-center justify-between border-b border-slate-200/0 group-open:border-slate-200 transition-all">
                          <span>🕰️ Menus Passés (${menusPasses.length})</span>
                          <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform"></i>
                        </summary>
@@ -1338,12 +1541,12 @@ Consignes à respecter impérativement :
 
       function afficherIngredientsProgramme(items) {
         if (!items || items.length === 0) {
-          document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-sm text-slate-500">Aucun ingrédient trouvé.</p>';
+          document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">Aucun ingrédient trouvé.</p>';
           return;
         }
 
         let h = '<ul class="divide-y divide-slate-100">';
-        items.forEach(it => h += `<li class="p-3 flex justify-between bg-white"><span class="font-bold text-slate-800 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
+        items.forEach(it => h += `<li class="p-3 flex justify-between bg-white dark:bg-slate-800"><span class="font-bold text-slate-800 dark:text-slate-200 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
         document.getElementById('contenu_ingredients_programme').innerHTML = h + '</ul>';
       }
 
@@ -1357,7 +1560,7 @@ Consignes à respecter impérativement :
           return;
         }
 
-        document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-slate-500 font-bold animate-pulse text-sm">Chargement...</p>';
+        document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-slate-500 dark:text-slate-400 font-bold animate-pulse text-sm">Chargement...</p>';
 
         try {
           const items = await apiGet('getDetailsRecette', { nomRecette: recette, nbParts: couverts || 1 });
@@ -1443,7 +1646,7 @@ Consignes à respecter impérativement :
         let conteneur = document.getElementById('conteneur_rayons');
         
         if (!listeCoursesBrute || listeCoursesBrute.length === 0) {
-          conteneur.innerHTML = '<p class="p-4 text-center text-slate-500 text-sm bg-white rounded-2xl shadow-sm">Aucun ingrédient trouvé.</p>';
+          conteneur.innerHTML = '<p class="p-4 text-center text-slate-500 dark:text-slate-400 text-sm bg-white dark:bg-slate-800 rounded-2xl shadow-sm">Aucun ingrédient trouvé.</p>';
           return;
         }
 
@@ -1457,8 +1660,8 @@ Consignes à respecter impérativement :
         let html = '';
         for (let [rayon, items] of Object.entries(groupes)) {
           html += `
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-              <div class="bg-slate-100/80 px-4 py-2 font-bold text-slate-700 text-xs uppercase tracking-wider border-b border-slate-200">
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div class="bg-slate-100/80 px-4 py-2 font-bold text-slate-700 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
                 ${rayon}
               </div>
               <ul class="divide-y divide-slate-100">`;
@@ -1470,7 +1673,7 @@ Consignes à respecter impérativement :
             html += `
               <li class="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors w-full">
                 <div class="flex-grow pr-2 min-w-0">
-                  <span class="font-bold text-slate-800 text-sm break-words">${item.nom}</span> 
+                  <span class="font-bold text-slate-800 dark:text-slate-200 text-sm break-words">${item.nom}</span>
                   <span class="text-blue-600 font-semibold ml-1 text-sm whitespace-nowrap">${qteAffichee} ${uniteAffichee}</span>
                 </div>
                 <button type="button" class="delete min-w-[36px] min-h-[36px] w-9 flex items-center justify-center bg-red-100 text-red-600 rounded-lg active:scale-90 transition-all text-sm" onclick="supprimerIngredientListe(this, '${nomSafe}')">🗑️</button>
@@ -1547,13 +1750,13 @@ Consignes à respecter impérativement :
         localStorage.setItem('derniere_recette', r);
         localStorage.setItem('derniers_couverts', p);
 
-        document.getElementById('details_recette').innerHTML = '<p class="p-4 text-center text-slate-500 font-bold animate-pulse text-sm">Calcul...</p>';
+        document.getElementById('details_recette').innerHTML = '<p class="p-4 text-center text-slate-500 dark:text-slate-400 font-bold animate-pulse text-sm">Calcul...</p>';
         
         try {
           const items = await apiGet('getDetailsRecette', { nomRecette: r, nbParts: p });
           if (!items || items.length === 0) return document.getElementById('details_recette').innerHTML = '<p class="p-4 text-center text-sm">Introuvable.</p>';
           let h = '<ul class="divide-y divide-slate-100">';
-          items.forEach(it => h += `<li class="p-3 flex justify-between bg-white"><span class="font-bold text-slate-800 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
+          items.forEach(it => h += `<li class="p-3 flex justify-between bg-white dark:bg-slate-800"><span class="font-bold text-slate-800 dark:text-slate-200 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
           document.getElementById('details_recette').innerHTML = h + '</ul>';
         } catch(e) {
           document.getElementById('details_recette').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
@@ -1563,9 +1766,41 @@ Consignes à respecter impérativement :
       function addIngRow() {
         let div = document.createElement('div');
         div.className = "flex gap-2 items-center bg-white p-2 rounded-2xl border border-orange-200";
-        div.innerHTML = `<input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 border-b border-slate-100 outline-none text-sm px-1"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 border-b border-slate-100 outline-none text-sm text-center px-1"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
+        div.innerHTML = `<input type="text" placeholder="Ingrédient" class="ing-nom flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm px-1"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm text-center px-1"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
         document.getElementById('new_ingredients_list').appendChild(div);
       }
+
+      function initThemeSelector() {
+        let select = document.getElementById('select_theme');
+        if (localStorage.theme === 'dark') {
+          select.value = 'dark';
+        } else if (localStorage.theme === 'light') {
+          select.value = 'light';
+        } else {
+          select.value = 'system';
+        }
+      }
+
+      function changerTheme() {
+        let select = document.getElementById('select_theme');
+        let val = select.value;
+        if (val === 'dark') {
+          localStorage.theme = 'dark';
+          document.documentElement.classList.add('dark');
+        } else if (val === 'light') {
+          localStorage.theme = 'light';
+          document.documentElement.classList.remove('dark');
+        } else {
+          localStorage.removeItem('theme');
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', initThemeSelector);
 
       async function sauverRecette() {
         let nom = document.getElementById('new_nom').value.trim();
@@ -1586,6 +1821,238 @@ Consignes à respecter impérativement :
         } catch(e) {
           alert("Erreur lors de l'enregistrement.");
           btn.innerText = "💾 Enregistrer la recette"; btn.disabled = false;
+        }
+      }
+
+      function addEditIngRow(nom = "", qte = "") {
+        let div = document.createElement('div');
+        div.className = "flex gap-2 items-center bg-white dark:bg-slate-800 p-2 rounded-2xl border border-blue-200 dark:border-blue-800";
+        let nomSafe = nom.replace(/"/g, '&quot;');
+        let qteSafe = qte.replace(/"/g, '&quot;');
+        div.innerHTML = `<input type="text" placeholder="Ingrédient" value="${nomSafe}" class="ing-nom flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm px-1 bg-transparent text-slate-800 dark:text-slate-200"><input type="text" placeholder="Qté" value="${qteSafe}" class="ing-qte w-20 h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm text-center px-1 bg-transparent text-slate-800 dark:text-slate-200"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
+        document.getElementById('edit_ingredients_list').appendChild(div);
+      }
+
+      async function chargerRecetteEdition() {
+        let nomRecette = document.getElementById('edit_recette_select').value;
+        let zone = document.getElementById('edit_recette_zone');
+        let list = document.getElementById('edit_ingredients_list');
+
+        if (!nomRecette) {
+          zone.classList.add('hidden');
+          return;
+        }
+
+        zone.classList.remove('hidden');
+        list.innerHTML = '<p class="text-sm text-slate-500 animate-pulse py-2">Chargement des ingrédients...</p>';
+        document.getElementById('edit_recette_nom_original').value = nomRecette;
+        document.getElementById('edit_recette_nom').value = nomRecette;
+        document.getElementById('btn_update_recette').disabled = true;
+
+        try {
+          const items = await apiGet('getDetailsRecette', { nomRecette: nomRecette, nbParts: 1 });
+          list.innerHTML = '';
+          if (items && items.length > 0) {
+            items.forEach(it => {
+              let qte = it.quantite ? (it.unite ? `${it.quantite} ${it.unite}` : it.quantite) : "";
+              addEditIngRow(it.nom, String(qte));
+            });
+          } else {
+            addEditIngRow(); // Ajoute une ligne vide
+          }
+        } catch(e) {
+          list.innerHTML = '<p class="text-sm text-red-500">Erreur lors du chargement.</p>';
+        } finally {
+          document.getElementById('btn_update_recette').disabled = false;
+        }
+      }
+
+      async function chargerSuggestionsAdmin() {
+        let box = document.getElementById('admin_suggestions_list');
+        box.innerHTML = '<p class="text-sm text-slate-500 animate-pulse text-center">Chargement...</p>';
+
+        await chargerSuggestionsPerso(); // Met à jour suggestionsPersonnalisees
+        let categories = mergeCategoriesSuggestions();
+
+        let html = '';
+        categories.forEach((catGroup) => {
+          html += `
+            <div class="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm shrink-0">
+              <div class="bg-slate-50 dark:bg-slate-900 px-3.5 py-2 font-bold text-slate-700 dark:text-slate-200 text-xs flex justify-between items-center border-b border-slate-100 dark:border-slate-700">
+                <span>${catGroup.categorie}</span>
+                <span class="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">${catGroup.items.length}</span>
+              </div>
+              <div class="p-2.5 flex flex-col gap-2">`;
+
+          catGroup.items.forEach((item) => {
+            let itemSafe = String(item).replace(/"/g, '&quot;');
+            html += `
+              <div class="flex gap-2 items-center">
+                <input type="text" value="${itemSafe}" class="admin-sug-item flex-grow h-10 px-2 text-sm border-b border-slate-100 dark:border-slate-700 outline-none bg-transparent text-slate-800 dark:text-slate-200" data-cat="${catGroup.categorie}">
+                <button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>
+              </div>`;
+          });
+
+          html += `</div></div>`;
+        });
+
+        box.innerHTML = html;
+      }
+
+      function ajouterSuggestionAdmin() {
+        let nomInput = document.getElementById('admin_sug_nom');
+        let catSelect = document.getElementById('admin_sug_cat');
+        let nom = nomInput.value.trim();
+        let cat = catSelect.value;
+
+        if (!nom) return alert("Veuillez saisir un nom.");
+
+        // On l'ajoute dans le DOM dans la bonne catégorie
+        let box = document.getElementById('admin_suggestions_list');
+        // Simple recharge en l'ajoutant temporairement
+        suggestionsPersonnalisees.push({ nom: nom, categorie: cat });
+        nomInput.value = '';
+        chargerSuggestionsAdmin();
+      }
+
+      async function chargerRayonsAdmin() {
+        let box = document.getElementById('admin_rayons_list');
+        box.innerHTML = '<p class="text-sm text-slate-500 animate-pulse text-center">Chargement...</p>';
+        document.getElementById('recherche_rayon_ing').value = '';
+
+        try {
+          // On s'assure d'avoir la dernière version
+          mappingRayons = await apiGet('getTousLesRayons') || {};
+        } catch(e) {
+          console.warn("Erreur chargement rayons depuis API, on utilise le cache.", e);
+        }
+
+        afficherRayonsIngredients(mappingRayons);
+      }
+
+      function afficherRayonsIngredients(objMapping) {
+        let box = document.getElementById('admin_rayons_list');
+        let html = '';
+
+        let ingredients = Object.keys(objMapping).sort((a,b) => a.localeCompare(b));
+
+        if (ingredients.length === 0) {
+           box.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">Aucun ingrédient trouvé. Calculez un menu pour que les ingrédients soient enregistrés.</p>';
+           return;
+        }
+
+        let optionsRayons = LISTE_RAYONS_POSSIBLES.map(r => `<option value="${r}">${r}</option>`).join('');
+
+        ingredients.forEach(ing => {
+            let valActuelle = objMapping[ing] || "🛒 Rayon Divers / Épicerie";
+            // On preselectionne l'option
+            let opts = optionsRayons.replace(`value="${valActuelle}"`, `value="${valActuelle}" selected`);
+            let id = "rayon_ing_" + ing.replace(/[^a-zA-Z0-9]/g, "_");
+
+            html += `
+            <div class="rayon-ing-row flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm gap-2" data-nom="${ing}">
+               <span class="text-sm font-bold text-slate-800 dark:text-slate-200 flex-grow min-w-0 break-words">${ing}</span>
+               <select class="rayon-ing-select h-10 border border-slate-200 dark:border-slate-700 rounded-xl px-2 text-xs bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 shrink-0 max-w-[150px]">
+                  ${opts}
+               </select>
+            </div>
+            `;
+        });
+
+        box.innerHTML = html;
+      }
+
+      function filtrerRayonsIngredients() {
+        let terme = document.getElementById('recherche_rayon_ing').value.toLowerCase();
+        document.querySelectorAll('.rayon-ing-row').forEach(row => {
+          let nom = row.getAttribute('data-nom').toLowerCase();
+          if (nom.includes(terme)) {
+            row.style.display = 'flex';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      }
+
+      async function sauvegarderTousLesRayons() {
+        let nouveauMapping = {};
+        document.querySelectorAll('.rayon-ing-row').forEach(row => {
+           let nom = row.getAttribute('data-nom');
+           let rayon = row.querySelector('.rayon-ing-select').value;
+           nouveauMapping[nom] = rayon;
+        });
+
+        let btn = document.getElementById('btn_save_rayons');
+        btn.innerText = "⏳ Sauvegarde...";
+        btn.disabled = true;
+
+        try {
+          const msg = await apiPost('sauvegarderRayons', { mapping: nouveauMapping });
+          alert(msg || "Rayons sauvegardés avec succès !");
+          mappingRayons = nouveauMapping;
+        } catch(e) {
+          alert("Erreur lors de la sauvegarde.");
+        } finally {
+          btn.innerText = "💾 Sauvegarder les rayons";
+          btn.disabled = false;
+        }
+      }
+
+      async function sauvegarderToutesSuggestions() {
+        let items = document.querySelectorAll('.admin-sug-item');
+        let suggestionsFinale = [];
+
+        items.forEach(input => {
+          let nom = input.value.trim();
+          let cat = input.getAttribute('data-cat');
+          if (nom) {
+            suggestionsFinale.push({ nom: nom, categorie: cat });
+          }
+        });
+
+        let btn = document.getElementById('btn_save_suggestions');
+        btn.innerText = "⏳ Sauvegarde...";
+        btn.disabled = true;
+
+        try {
+          const msg = await apiPost('sauvegarderSuggestions', { suggestions: suggestionsFinale });
+          alert(msg || "Suggestions sauvegardées avec succès !");
+
+          // Mettre à jour localement les suggestions par défaut pour éviter de les dupliquer si le backend gère tout
+          suggestionsPersonnalisees = suggestionsFinale;
+
+        } catch(e) {
+          alert("Erreur lors de la sauvegarde.");
+        } finally {
+          btn.innerText = "💾 Sauvegarder les suggestions";
+          btn.disabled = false;
+        }
+      }
+
+      async function mettreAJourRecette() {
+        let nomOriginal = document.getElementById('edit_recette_nom_original').value;
+        let nouveauNom = document.getElementById('edit_recette_nom').value.trim();
+        let ings = [];
+
+        document.querySelectorAll('#edit_ingredients_list > div').forEach(l => {
+          let n = l.querySelector('.ing-nom').value.trim();
+          if(n) ings.push({nom: n, qte: l.querySelector('.ing-qte').value.trim()});
+        });
+
+        if(!nouveauNom || ings.length === 0) return alert("⚠️ Nom et ingrédients requis.");
+
+        let btn = document.getElementById('btn_update_recette');
+        btn.innerText = "⏳ Sauvegarde...";
+        btn.disabled = true;
+
+        try {
+          const msg = await apiPost('modifierRecette', { nomOriginal: nomOriginal, nouveauNom: nouveauNom, ingredients: ings });
+          alert(msg || "Recette mise à jour avec succès !");
+          location.reload();
+        } catch(e) {
+          alert("Erreur lors de la mise à jour.");
+          btn.innerText = "💾 Sauvegarder les modifications";
+          btn.disabled = false;
         }
       }
     </script>
