@@ -92,18 +92,6 @@
           </div>
         </div>
 
-        <!-- ENCADRÉ SEMAINE EN COURS -->
-        <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-2.5 relative overflow-hidden">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-            <span id="titre_semaine_accueil" class="font-bold text-xs text-indigo-600 uppercase tracking-wider">Semaine...</span>
-            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">En cours</span>
-          </div>
-
-          <div id="contenu_semaine_accueil" class="flex flex-col gap-1 pt-1 min-h-[40px] justify-center">
-            <p class="text-center text-xs text-slate-400 animate-pulse">Chargement de la planification...</p>
-          </div>
-        </div>
-
         <!-- ACTION HERO : VUE GLOBALE DES MENUS -->
         <button type="button" onclick="chargerMenus()" class="w-full p-5 bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-800 text-white rounded-3xl shadow-xl shadow-indigo-600/20 flex items-center justify-between active:scale-[0.98] transition-all relative overflow-hidden group">
           <div class="flex items-center gap-4 relative z-10">
@@ -120,6 +108,19 @@
           </div>
         </button>
 
+        <button type="button" onclick="ouvrirPlanification()" class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between px-5 active:scale-[0.98] transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+            </div>
+            <div class="text-left">
+              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Composer</span>
+              <span class="text-[11px] text-slate-400 font-medium">Nouveau menu</span>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
         <!-- SECONDAIRE : BATCH COOKING -->
         <button type="button" onclick="ouvrirSelectionBatch()" class="w-full p-4 bg-amber-500 text-white rounded-2xl shadow-lg shadow-amber-500/15 flex items-center justify-between px-5 active:scale-[0.98] transition-all">
           <div class="flex items-center gap-3">
@@ -129,50 +130,10 @@
           <i data-lucide="chevron-right" class="w-4 h-4 text-amber-100"></i>
         </button>
 
-        <!-- GRILLE BENTO (2x2) -->
-        <div class="grid grid-cols-2 gap-3.5">
-          
-          <button type="button" onclick="ouvrirPlanification()" class="p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-blue-300">
-            <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Composer</span>
-              <span class="text-[11px] text-slate-400 font-medium">Nouveau menu</span>
-            </div>
-          </button>
-
-          <button type="button" onclick="changerVue('vue_consult')" class="p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-emerald-300">
-            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <i data-lucide="book-open" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Fiche Recette</span>
-              <span class="text-[11px] text-slate-400 font-medium">Consulter 1 plat</span>
-            </div>
-          </button>
-
-          <button type="button" onclick="ouvrirModalePartage()" class="p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-violet-300">
-            <div class="w-10 h-10 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center">
-              <i data-lucide="share-2" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Partager</span>
-              <span class="text-[11px] text-slate-400 font-medium">Menu & Courses</span>
-            </div>
-          </button>
-
-          <button type="button" onclick="changerVue('vue_parametres')" class="p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 flex flex-col gap-3 text-left active:scale-[0.97] transition-all hover:border-slate-400">
-            <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
-              <i data-lucide="settings" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <span class="block font-bold text-slate-800 dark:text-slate-200 text-sm">Paramètres</span>
-              <span class="text-[11px] text-slate-400 font-medium">Réglages & Données</span>
-            </div>
-          </button>
-
-        </div>
+        <button type="button" onclick="changerVue('vue_parametres')" class="w-full p-4 mt-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+          <span class="font-bold text-sm">Paramètres</span>
+        </button>
 
       </div>
 
@@ -543,6 +504,11 @@
           </div>
         </div>
 
+        <div class="flex flex-col gap-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-2">
+          <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Liste des rayons :</label>
+          <div id="liste_rayons_editables" class="flex flex-col gap-2 max-h-[150px] overflow-y-auto pr-1"></div>
+        </div>
+
         <div class="flex items-center gap-2 mb-2">
           <input type="text" id="recherche_rayon_ing" placeholder="Rechercher un ingrédient..." oninput="filtrerRayonsIngredients()" class="w-full h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
         </div>
@@ -650,6 +616,12 @@
       </div>
     </div>
 
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast_notification" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-3 rounded-2xl shadow-xl text-sm font-bold flex items-center gap-3 z-50 transition-all duration-300 opacity-0 transform translate-y-4">
+      <span>✨ Données mises à jour</span>
+      <button onclick="document.getElementById('toast_notification').classList.add('opacity-0', 'translate-y-4'); setTimeout(() => document.getElementById('toast_notification').classList.add('hidden'), 300);" class="ml-2 text-slate-400 hover:text-slate-200">✕</button>
+    </div>
+
     <!-- PIED DE PAGE -->
     <footer class="text-center py-3 mt-4 border-t border-slate-200/60">
       <p class="text-[11px] font-semibold text-slate-400 tracking-wide">Développé par P.NICOLAS</p>
@@ -657,6 +629,18 @@
 
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
+
+      function afficherToastUpdate() {
+        let toast = document.getElementById('toast_notification');
+        toast.classList.remove('hidden');
+        // Trigger reflow
+        void toast.offsetWidth;
+        toast.classList.remove('opacity-0', 'translate-y-4');
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-4');
+          setTimeout(() => toast.classList.add('hidden'), 300);
+        }, 3000);
+      }
 
       let recs = [], plan = [], menusCharges = [], listeCoursesBrute = [];
       let platsSelectionnesBatch = [];
@@ -690,30 +674,35 @@
       ];
 
       function getTousLesIngredients() {
-        let setIngredients = new Set();
+        let mapIngredients = new Map();
 
-        INGREDIENTS_DE_BASE.forEach(ing => setIngredients.add(ing));
+        const addIngredient = (ing) => {
+          if(!ing) return;
+          let norm = normalizeName(ing);
+          if(!mapIngredients.has(norm)) {
+            mapIngredients.set(norm, String(ing));
+          }
+        };
 
-        // Ajouter les suggestions personnalisées
+        INGREDIENTS_DE_BASE.forEach(addIngredient);
+
         if (Array.isArray(suggestionsPersonnalisees)) {
           suggestionsPersonnalisees.forEach(sug => {
             if (sug && (sug.nom || typeof sug === 'string')) {
-              setIngredients.add(sug.nom || sug);
+              addIngredient(sug.nom || sug);
             }
           });
         }
 
-        // Ajouter les suggestions par défaut
         SUGGESTIONS_PAR_DEFAUT.forEach(cat => {
-          cat.items.forEach(item => setIngredients.add(item));
+          cat.items.forEach(addIngredient);
         });
 
-        // Ajouter les ingrédients existants dans mappingRayons
         for (let ing of Object.keys(mappingRayons)) {
-          setIngredients.add(ing);
+          addIngredient(ing);
         }
 
-        return Array.from(setIngredients).sort((a, b) => a.localeCompare(b));
+        return Array.from(mapIngredients.values()).sort((a, b) => a.localeCompare(b));
       }
 
       let listeRayonsActuelle = [
@@ -762,14 +751,9 @@
       }
 
       async function chargerSuggestionsPerso() {
-        try {
-          const res = await apiGet('getSuggestions');
-          if (Array.isArray(res)) {
-            suggestionsPersonnalisees = res;
-          }
-        } catch(e) {
-          console.warn("Impossible de charger les suggestions personnalisées depuis le Google Sheet, utilisation du fallback.");
-        }
+        // On n'attend plus le fetch synchrone pour afficher
+        // Les suggestions sont gérées dans fetchDonneesArrierePlan
+        // On peut s'assurer de fetcher quand meme par prudence si on veut, mais c'est pas obligatoire
       }
 
       function mergeCategoriesSuggestions() {
@@ -858,6 +842,8 @@
 
         ouvrirModaleSuggestions();
 
+        localStorage.setItem('cache_suggestionsPersonnalisees', JSON.stringify(suggestionsPersonnalisees));
+
         try {
           await apiPost('ajouterSuggestion', nouvelleSug);
         } catch(e) {
@@ -920,125 +906,105 @@
         }
 
         localStorage.setItem('dernier_acces', maintenant.toString());
+
+        // 1. Charger depuis le cache local (synchrone)
+        try {
+          let cacheRayons = localStorage.getItem('cache_mappingRayons');
+          if (cacheRayons) {
+             mappingRayons = JSON.parse(cacheRayons);
+             for (let r of Object.values(mappingRayons)) {
+               if (r && !listeRayonsActuelle.includes(r)) {
+                 listeRayonsActuelle.push(r);
+               }
+             }
+             mettreAJourSelectRayonsGlobal();
+          }
+
+          let cacheRecettes = localStorage.getItem('cache_recs');
+          if (cacheRecettes) recs = JSON.parse(cacheRecettes);
+
+          let cacheMenus = localStorage.getItem('cache_menusCharges');
+          if (cacheMenus) menusCharges = JSON.parse(cacheMenus);
+
+          let cacheSuggestions = localStorage.getItem('cache_suggestionsPersonnalisees');
+          if (cacheSuggestions) suggestionsPersonnalisees = JSON.parse(cacheSuggestions);
+        } catch(e) {
+          console.warn("Erreur de lecture du cache", e);
+        }
+
         changerVue(vueSauvegardee, false);
 
-        try {
-          mappingRayons = await apiGet('getTousLesRayons') || {};
-        } catch(e) {
-          console.warn('Erreur lors du chargement des rayons:', e);
+        if (vueSauvegardee === 'vue_menus' && menusCharges && menusCharges.length > 0) {
+            chargerMenus();
         }
-
-        try {
-          recs = await apiGet('getListeRecettes') || [];
-          await chargerMenuSemaineAccueil();
-
-          if (vueSauvegardee === 'vue_menus') chargerMenus();
-          if (vueSauvegardee === 'vue_consult') {
-            let lastRecipe = localStorage.getItem('derniere_recette');
-            if (lastRecipe) {
-              setTimeout(() => cuisinerRaccourci(lastRecipe, localStorage.getItem('derniers_couverts') || 5), 300);
-            }
+        if (vueSauvegardee === 'vue_consult') {
+          let lastRecipe = localStorage.getItem('derniere_recette');
+          if (lastRecipe) {
+            setTimeout(() => cuisinerRaccourci(lastRecipe, localStorage.getItem('derniers_couverts') || 5), 300);
           }
-        } catch(e) {
-          console.error('Erreur de connexion API');
         }
+        if (vueSauvegardee === 'vue_gerer_rayons') {
+           chargerRayonsAdmin();
+        }
+        if (vueSauvegardee === 'vue_gerer_suggestions') {
+           chargerSuggestionsAdmin();
+        }
+
+        // 2. Fetch en arrière-plan et comparaison
+        fetchDonneesArrierePlan(vueSauvegardee);
       });
 
-      // --- ENCADRÉ ACCUEIL POUR LA SEMAINE EN COURS ---
-      async function chargerMenuSemaineAccueil() {
-        const lundiActuel = getLundiDate(new Date());
-        const lundiStr = formaterDateLitterale(lundiActuel);
-        document.getElementById('titre_semaine_accueil').innerText = `Semaine du ${lundiStr}`;
-
-        const CRENEAUX_SEMAINE = [
-          { key: "lundi midi", label: "Lundi midi" },
-          { key: "lundi soir", label: "Lundi soir" },
-          { key: "mardi midi", label: "Mardi midi" },
-          { key: "mardi soir", label: "Mardi soir" },
-          { key: "mercredi midi", label: "Mercredi midi" },
-          { key: "mercredi soir", label: "Mercredi soir" },
-          { key: "jeudi midi", label: "Jeudi midi" },
-          { key: "jeudi soir", label: "Jeudi soir" },
-          { key: "vendredi midi", label: "Vendredi midi" },
-          { key: "vendredi soir", label: "Vendredi soir" },
-          { key: "samedi midi", label: "Samedi midi" },
-          { key: "samedi soir", label: "Samedi soir" },
-          { key: "dimanche midi", label: "Dimanche midi" },
-          { key: "dimanche soir", label: "Dimanche soir" }
-        ];
-
+      async function fetchDonneesArrierePlan(vueActuelle) {
         try {
-          menusCharges = await apiGet('getMenusSauvegardes') || [];
-          const aujourdhui = new Date();
-          aujourdhui.setHours(0,0,0,0);
+          let hasUpdates = false;
 
-          let menuCourant = menusCharges.find(m => {
-            if (!m.dateDebut) return false;
-            let debut = new Date(m.dateDebut);
-            let fin = new Date(m.dateDebut);
-            fin.setDate(fin.getDate() + 6);
-            return aujourdhui >= debut && aujourdhui <= fin;
-          });
+          let [nouveauxRayons, nouvellesRecettes, nouveauxMenus, nouvellesSuggestions] = await Promise.all([
+             apiGet('getTousLesRayons').catch(() => null),
+             apiGet('getListeRecettes').catch(() => null),
+             apiGet('getMenusSauvegardes').catch(() => null),
+             apiGet('getSuggestions').catch(() => null)
+          ]);
 
-          let conteneur = document.getElementById('contenu_semaine_accueil');
+          if (nouveauxRayons && JSON.stringify(nouveauxRayons) !== JSON.stringify(mappingRayons)) {
+             mappingRayons = nouveauxRayons;
+             localStorage.setItem('cache_mappingRayons', JSON.stringify(mappingRayons));
+             hasUpdates = true;
+          }
+          if (nouvellesRecettes && JSON.stringify(nouvellesRecettes) !== JSON.stringify(recs)) {
+             recs = nouvellesRecettes;
+             localStorage.setItem('cache_recs', JSON.stringify(recs));
+             hasUpdates = true;
+          }
+          if (nouveauxMenus && JSON.stringify(nouveauxMenus) !== JSON.stringify(menusCharges)) {
+             menusCharges = nouveauxMenus;
+             localStorage.setItem('cache_menusCharges', JSON.stringify(menusCharges));
+             hasUpdates = true;
+          }
+          if (nouvellesSuggestions && Array.isArray(nouvellesSuggestions) && JSON.stringify(nouvellesSuggestions) !== JSON.stringify(suggestionsPersonnalisees)) {
+             suggestionsPersonnalisees = nouvellesSuggestions;
+             localStorage.setItem('cache_suggestionsPersonnalisees', JSON.stringify(suggestionsPersonnalisees));
+             hasUpdates = true;
+          }
 
-          if (menuCourant && menuCourant.repas && menuCourant.repas.length > 0) {
-            let mapCreneaux = new Map();
-            let repasNonAssignes = [];
+          // Synchroniser listeRayonsActuelle si mappingRayons a changé
+          if (hasUpdates && nouveauxRayons) {
+             for (let r of Object.values(nouveauxRayons)) {
+               if (r && !listeRayonsActuelle.includes(r)) {
+                 listeRayonsActuelle.push(r);
+               }
+             }
+             mettreAJourSelectRayonsGlobal();
+          }
 
-            menuCourant.repas.forEach(r => {
-              let titreLower = (r.titre || "").toLowerCase();
-              let assigne = false;
-
-              CRENEAUX_SEMAINE.forEach(c => {
-                if (titreLower.includes(c.key)) {
-                  if (!mapCreneaux.has(c.key)) {
-                    mapCreneaux.set(c.key, []);
-                  }
-                  mapCreneaux.get(c.key).push(r.recette);
-                  assigne = true;
-                }
-              });
-
-              if (!assigne && r.recette) {
-                repasNonAssignes.push({ titre: (r.titre && r.titre !== "Repas non défini") ? r.titre : "Repas", recette: r.recette });
-              }
-            });
-
-            let html = '<ul class="divide-y divide-slate-100">';
-            let auMoinsUnAffichage = false;
-
-            CRENEAUX_SEMAINE.forEach(c => {
-              if (mapCreneaux.has(c.key)) {
-                let recettesStr = mapCreneaux.get(c.key).join(', ');
-                html += `
-                  <li class="py-1.5 flex justify-between items-center text-xs">
-                    <span class="font-bold text-slate-700 dark:text-slate-300">${c.label}</span>
-                    <span class="text-indigo-600 font-semibold truncate max-w-[180px]">${recettesStr}</span>
-                  </li>`;
-                auMoinsUnAffichage = true;
-              }
-            });
-
-            repasNonAssignes.forEach(r => {
-              html += `
-                <li class="py-1.5 flex justify-between items-center text-xs">
-                  <span class="font-bold text-slate-700 dark:text-slate-300">${r.titre}</span>
-                  <span class="text-indigo-600 font-semibold truncate max-w-[180px]">${r.recette}</span>
-                </li>`;
-              auMoinsUnAffichage = true;
-            });
-
-            if (auMoinsUnAffichage) {
-              conteneur.innerHTML = html + '</ul>';
-            } else {
-              conteneur.innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
-            }
-          } else {
-            conteneur.innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
+          if (hasUpdates) {
+             afficherToastUpdate();
+             // Actualiser la vue courante silencieusement si nécessaire
+             if (vueActuelle === 'vue_menus') chargerMenus(false); // pass flag
+             if (vueActuelle === 'vue_gerer_rayons') chargerRayonsAdmin();
+             if (vueActuelle === 'vue_gerer_suggestions') chargerSuggestionsAdmin();
           }
         } catch(e) {
-          document.getElementById('contenu_semaine_accueil').innerHTML = '<p class="text-center text-xs text-slate-400 font-medium py-1">Pas de menu programmé pour cette semaine</p>';
+          console.warn("Échec de la mise à jour en arrière-plan", e);
         }
       }
 
@@ -1456,12 +1422,12 @@ Consignes à respecter impérativement :
       }
 
 
-      async function chargerMenus() {
-        changerVue('vue_menus');
-        document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-slate-500 dark:text-slate-400 animate-pulse mt-4 text-sm">Chargement...</p>';
+      async function chargerMenus(shouldChangeVue = true) {
+        if (shouldChangeVue) {
+            changerVue('vue_menus');
+        }
         
         try {
-          menusCharges = await apiGet('getMenusSauvegardes');
           let box = document.getElementById('conteneur_menus');
           if(!menusCharges || menusCharges.length === 0) {
             box.innerHTML = '<p class="text-center text-slate-500 dark:text-slate-400 mt-4 text-sm">Aucun menu planifié.</p>';
@@ -1599,6 +1565,7 @@ Consignes à respecter impérativement :
         try {
           await apiPost('sauvegarderMenu', { plan: [], dateDebutStr: lot.dateDebut || '', idMenuExistant: lot.id });
           menusCharges = menusCharges.filter(m => String(m.id) !== String(idMenu));
+          localStorage.setItem('cache_menusCharges', JSON.stringify(menusCharges));
 
           if (String(document.getElementById('edit_menu_id').value) === String(idMenu)) {
             document.getElementById('edit_menu_id').value = '';
@@ -1607,7 +1574,6 @@ Consignes à respecter impérativement :
             document.getElementById('form_repas').innerHTML = '';
           }
 
-          await chargerMenuSemaineAccueil();
           await chargerMenus();
         } catch(e) {
           alert("Erreur lors de la suppression du menu.");
@@ -1648,11 +1614,13 @@ Consignes à respecter impérativement :
 
         apiPost('sauvegarderMenu', { plan: plan, dateDebutStr: dateDebutStr, idMenuExistant: idMenuExistant });
 
+        // Mettre à jour le cache local pour le nouveau menu créé en optimiste ? Pas de retour d'ID du backend ici, on va laisser le fetch background s'en occuper
+        // ou on relance le fetch
+        fetchDonneesArrierePlan('etape2');
+
         try {
           listeCoursesBrute = await apiPost('calculerCourses', { planification: plan }) || [];
-          await chargerSuggestionsPerso();
           ouvrirModaleSuggestions();
-          await chargerMenuSemaineAccueil();
         } catch(e) {
           alert("Erreur lors du calcul du menu.");
         }
@@ -1661,10 +1629,6 @@ Consignes à respecter impérativement :
       // --- GESTION DU PARTAGE AVEC MODALE ---
       async function ouvrirModalePartage() {
         try {
-          if (!menusCharges || menusCharges.length === 0) {
-            menusCharges = await apiGet('getMenusSauvegardes') || [];
-          }
-
           let select = document.getElementById('select_partage_menu');
           select.innerHTML = '';
 
@@ -1973,6 +1937,8 @@ Consignes à respecter impérativement :
 
         try {
           const msg = await apiPost('enregistrerRecette', { nom, ingredients: ings });
+          recs.push(nom); // update local optimiste
+          localStorage.setItem('cache_recs', JSON.stringify(recs));
           alert(msg);
           location.reload();
         } catch(e) {
@@ -2027,9 +1993,7 @@ Consignes à respecter impérativement :
 
       async function chargerSuggestionsAdmin() {
         let box = document.getElementById('admin_suggestions_list');
-        box.innerHTML = '<p class="text-sm text-slate-500 animate-pulse text-center">Chargement...</p>';
 
-        await chargerSuggestionsPerso(); // Met à jour suggestionsPersonnalisees
         let categories = mergeCategoriesSuggestions();
 
         let html = '';
@@ -2084,6 +2048,59 @@ Consignes à respecter impérativement :
         if (adminNouvIngRayon) {
           adminNouvIngRayon.innerHTML = optionsRayons;
         }
+
+        let container = document.getElementById('liste_rayons_editables');
+        if (container) {
+          let html = '';
+          listeRayonsActuelle.forEach(r => {
+             let rSafe = r.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+             html += `
+             <div class="flex items-center gap-2">
+               <input type="text" value="${rSafe}" onchange="renommerRayon('${rSafe}', this.value)" class="flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none px-2 text-sm bg-transparent text-slate-800 dark:text-slate-200">
+               <button type="button" onclick="supprimerRayon('${rSafe}')" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>
+             </div>`;
+          });
+          container.innerHTML = html;
+        }
+      }
+
+      function renommerRayon(ancienNom, nouveauNomStr) {
+         let nouveauNom = nouveauNomStr.trim();
+         if(!nouveauNom || nouveauNom === ancienNom) return;
+         if(listeRayonsActuelle.includes(nouveauNom)) {
+            alert("Ce rayon existe déjà.");
+            mettreAJourSelectRayonsGlobal();
+            return;
+         }
+
+         let idx = listeRayonsActuelle.indexOf(ancienNom);
+         if(idx > -1) {
+            listeRayonsActuelle[idx] = nouveauNom;
+            for(let key in mappingRayons) {
+               if(mappingRayons[key] === ancienNom) {
+                  mappingRayons[key] = nouveauNom;
+               }
+            }
+            mettreAJourSelectRayonsGlobal();
+            afficherRayonsIngredients(mappingRayons);
+         }
+      }
+
+      function supprimerRayon(nomRayon) {
+         if(!confirm(`Supprimer le rayon "${nomRayon}" ?`)) return;
+
+         listeRayonsActuelle = listeRayonsActuelle.filter(r => r !== nomRayon);
+         for(let key in mappingRayons) {
+            if(mappingRayons[key] === nomRayon) {
+               mappingRayons[key] = "🛒 Rayon Divers / Épicerie"; // fallback
+            }
+         }
+         if(!listeRayonsActuelle.includes("🛒 Rayon Divers / Épicerie")) {
+            listeRayonsActuelle.push("🛒 Rayon Divers / Épicerie");
+         }
+
+         mettreAJourSelectRayonsGlobal();
+         afficherRayonsIngredients(mappingRayons);
       }
 
       function ajouterNouveauRayonLocal() {
@@ -2115,24 +2132,7 @@ Consignes à respecter impérativement :
       }
 
       async function chargerRayonsAdmin() {
-        let box = document.getElementById('admin_rayons_list');
-        box.innerHTML = '<p class="text-sm text-slate-500 animate-pulse text-center">Chargement...</p>';
         document.getElementById('recherche_rayon_ing').value = '';
-
-        try {
-          // On s'assure d'avoir la dernière version
-          mappingRayons = await apiGet('getTousLesRayons') || {};
-        } catch(e) {
-          console.warn("Erreur chargement rayons depuis API, on utilise le cache.", e);
-        }
-
-        // Mettre à jour la liste des rayons s'il y a de nouveaux rayons dans le mapping
-        for (let r of Object.values(mappingRayons)) {
-          if (r && !listeRayonsActuelle.includes(r)) {
-            listeRayonsActuelle.push(r);
-          }
-        }
-        mettreAJourSelectRayonsGlobal();
         afficherRayonsIngredients(mappingRayons);
       }
 
@@ -2192,10 +2192,12 @@ Consignes à respecter impérativement :
         btn.innerText = "⏳ Sauvegarde...";
         btn.disabled = true;
 
+        mappingRayons = nouveauMapping;
+        localStorage.setItem('cache_mappingRayons', JSON.stringify(mappingRayons));
+
         try {
           const msg = await apiPost('sauvegarderRayons', { mapping: nouveauMapping });
           alert(msg || "Rayons sauvegardés avec succès !");
-          mappingRayons = nouveauMapping;
         } catch(e) {
           alert("Erreur lors de la sauvegarde.");
         } finally {
@@ -2220,13 +2222,12 @@ Consignes à respecter impérativement :
         btn.innerText = "⏳ Sauvegarde...";
         btn.disabled = true;
 
+        suggestionsPersonnalisees = suggestionsFinale;
+        localStorage.setItem('cache_suggestionsPersonnalisees', JSON.stringify(suggestionsPersonnalisees));
+
         try {
           const msg = await apiPost('sauvegarderSuggestions', { suggestions: suggestionsFinale });
           alert(msg || "Suggestions sauvegardées avec succès !");
-
-          // Mettre à jour localement les suggestions par défaut pour éviter de les dupliquer si le backend gère tout
-          suggestionsPersonnalisees = suggestionsFinale;
-
         } catch(e) {
           alert("Erreur lors de la sauvegarde.");
         } finally {
@@ -2253,6 +2254,11 @@ Consignes à respecter impérativement :
 
         try {
           const msg = await apiPost('modifierRecette', { nomOriginal: nomOriginal, nouveauNom: nouveauNom, ingredients: ings });
+          if(nomOriginal !== nouveauNom) {
+             let idx = recs.indexOf(nomOriginal);
+             if(idx > -1) recs[idx] = nouveauNom;
+             localStorage.setItem('cache_recs', JSON.stringify(recs));
+          }
           alert(msg || "Recette mise à jour avec succès !");
           location.reload();
         } catch(e) {
