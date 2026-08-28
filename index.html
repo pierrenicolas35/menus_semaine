@@ -1483,7 +1483,8 @@ Consignes à respecter impérativement :
                           <h3 class="font-black text-slate-700 dark:text-slate-300 text-sm">${titreBloc}</h3>
                           <span class="text-xs text-slate-400 font-medium">${dateAffichee}</span>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center justify-end gap-2">
+                          <button type="button" onclick="ouvrirModalePartage('${lot.id}')" class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-200 active:scale-95 transition-all">📤 Partager</button>
                           <button type="button" onclick="editerMenuExistant('${lot.id}')" class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-indigo-200 active:scale-95 transition-all">✏️ Modifier</button>
                           <button type="button" onclick="supprimerMenuExistant('${lot.id}')" class="bg-red-50 text-red-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-red-200 active:scale-95 transition-all">🗑️ Supprimer</button>
                         </div>
@@ -1627,7 +1628,7 @@ Consignes à respecter impérativement :
       }
 
       // --- GESTION DU PARTAGE AVEC MODALE ---
-      async function ouvrirModalePartage() {
+      async function ouvrirModalePartage(idPreselectionne = null) {
         try {
           let select = document.getElementById('select_partage_menu');
           select.innerHTML = '';
@@ -1643,6 +1644,10 @@ Consignes à respecter impérativement :
               : "Menu " + (idx + 1) + " (" + lot.date + ")";
             select.innerHTML += `<option value="${lot.id}">${labelSemaine}</option>`;
           });
+
+          if (idPreselectionne) {
+            select.value = idPreselectionne;
+          }
 
           document.getElementById('modale_partage').classList.remove('hidden');
         } catch(e) {
