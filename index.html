@@ -597,30 +597,6 @@
         <div class="flex flex-col gap-3">
           <button
             type="button"
-            onclick="changerVue('vue_ajout')"
-            class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between active:scale-[0.98] transition-all"
-          >
-            <div class="flex items-center gap-3">
-              <div
-                class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"
-              >
-                <i data-lucide="plus-circle" class="w-5 h-5"></i>
-              </div>
-              <div class="text-left">
-                <span
-                  class="block font-bold text-slate-800 dark:text-slate-200 text-sm"
-                  >Ajouter une recette</span
-                >
-                <span class="text-[11px] text-slate-400 font-medium"
-                  >Créer une nouvelle fiche</span
-                >
-              </div>
-            </div>
-            <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-          </button>
-
-          <button
-            type="button"
             onclick="changerVue('vue_modifier_recette')"
             class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between active:scale-[0.98] transition-all"
           >
@@ -633,10 +609,10 @@
               <div class="text-left">
                 <span
                   class="block font-bold text-slate-800 dark:text-slate-200 text-sm"
-                  >Modifier une recette</span
+                  >Gérer les recettes</span
                 >
                 <span class="text-[11px] text-slate-400 font-medium"
-                  >Éditer les plats existants</span
+                  >Ajouter, modifier ou supprimer</span
                 >
               </div>
             </div>
@@ -657,10 +633,10 @@
               <div class="text-left">
                 <span
                   class="block font-bold text-slate-800 dark:text-slate-200 text-sm"
-                  >Gérer les articles et rayons</span
+                  >Gérer les articles</span
                 >
                 <span class="text-[11px] text-slate-400 font-medium"
-                  >Associer un rayon par article</span
+                  >Ajouter, modifier ou supprimer</span
                 >
               </div>
             </div>
@@ -712,8 +688,16 @@
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Paramètres
         </button>
         <h2 class="text-xl font-bold text-blue-600 text-center">
-          Modifier une Recette
+          Gérer les recettes
         </h2>
+
+        <button
+          type="button"
+          onclick="ouvrirModaleAjoutRecette()"
+          class="h-12 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold rounded-2xl active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2 mb-2 w-full border border-orange-200 dark:border-orange-800"
+        >
+          <i data-lucide="plus-circle" class="w-5 h-5"></i> Ajouter une recette
+        </button>
 
         <select
           id="edit_recette_select"
@@ -812,80 +796,28 @@
         <i data-lucide="arrow-left" class="w-4 h-4"></i> Paramètres
       </button>
       <h2 class="text-xl font-bold text-emerald-600 text-center">
-        Gérer les articles et rayons
+        Gérer les articles
       </h2>
 
       <p class="text-xs text-slate-500 dark:text-slate-400 text-center mb-2">
         Associez chaque article ou ingrédient à son rayon de supermarché.
       </p>
 
-      <div
-        class="flex flex-col gap-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-2"
-      >
-        <label
-          class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-          >Créer un nouveau rayon :</label
+      <div class="flex gap-2 mb-2 w-full">
+        <button
+          type="button"
+          onclick="ouvrirModaleAjoutArticle()"
+          class="flex-1 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold rounded-2xl active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800"
         >
-        <div class="flex gap-2">
-          <input
-            type="text"
-            id="nouveau_rayon_nom"
-            placeholder="Nom du rayon..."
-            class="flex-grow h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <button
-            type="button"
-            onclick="ajouterNouveauRayonLocal()"
-            class="h-12 px-4 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 font-bold rounded-xl active:scale-[0.98] transition-all text-sm whitespace-nowrap"
-          >
-            Ajouter
-          </button>
-        </div>
-      </div>
-
-      <div
-        class="flex flex-col gap-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-2"
-      >
-        <label
-          class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-          >Ajouter un article manuellement :</label
+          <i data-lucide="plus-circle" class="w-5 h-5"></i> Article
+        </button>
+        <button
+          type="button"
+          onclick="ouvrirModaleGererRayons()"
+          class="flex-1 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold rounded-2xl active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-800"
         >
-        <div class="flex flex-col gap-2">
-          <input
-            type="text"
-            id="admin_nouvel_article_nom"
-            placeholder="Nom de l'article..."
-            class="h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <div class="flex gap-2">
-            <select
-              id="admin_nouvel_article_rayon"
-              class="flex-grow h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-2 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-w-0"
-            >
-              <!-- Rempli dynamiquement -->
-            </select>
-            <button
-              type="button"
-              onclick="ajouterArticleManuelRayons()"
-              class="h-12 px-4 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 font-bold rounded-xl active:scale-[0.98] transition-all text-sm whitespace-nowrap"
-            >
-              Ajouter
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="flex flex-col gap-2 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-2"
-      >
-        <label
-          class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
-          >Liste des rayons :</label
-        >
-        <div
-          id="liste_rayons_editables"
-          class="flex flex-col gap-2 max-h-[150px] overflow-y-auto pr-1"
-        ></div>
+          <i data-lucide="layout-grid" class="w-5 h-5"></i> Rayons
+        </button>
       </div>
 
       <div class="flex items-center gap-2 mb-2">
@@ -911,6 +843,153 @@
       >
         💾 Sauvegarder les rayons
       </button>
+    </div>
+
+    <!-- MODALE AJOUTER RECETTE -->
+    <div
+      id="modale_ajout_recette"
+      class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4 max-h-[90vh] overflow-y-auto"
+      >
+        <div class="flex justify-between items-center border-b pb-2">
+          <h3 class="text-lg font-bold text-orange-600">Nouvelle Recette</h3>
+          <button
+            type="button"
+            onclick="fermerModaleAjoutRecette()"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+          >
+            ✕
+          </button>
+        </div>
+
+        <input
+          type="text"
+          id="new_nom"
+          placeholder="Titre de la recette..."
+          class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+        />
+
+        <label
+          class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1"
+          >Ingrédients :</label
+        >
+        <div id="new_ingredients_list" class="flex flex-col gap-2"></div>
+
+        <button
+          type="button"
+          onclick="addIngRow()"
+          class="h-12 bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-bold rounded-2xl border-2 border-dashed border-orange-200 dark:border-orange-800 active:bg-orange-100 dark:active:bg-orange-900/50 transition-all text-sm flex items-center justify-center gap-2"
+        >
+          <i data-lucide="plus" class="w-4 h-4"></i> Ajouter un ingrédient
+        </button>
+
+        <button
+          type="button"
+          id="btn_add_recette"
+          onclick="sauverRecette()"
+          class="h-14 bg-orange-500 text-white font-bold text-base rounded-2xl shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all mt-2 flex items-center justify-center gap-2"
+        >
+          ✅ Sauvegarder
+        </button>
+      </div>
+    </div>
+
+    <!-- MODALE GERER RAYONS -->
+    <div
+      id="modale_gerer_rayons"
+      class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4 max-h-[90vh]"
+      >
+        <div class="flex justify-between items-center border-b pb-2">
+          <h3 class="text-lg font-bold text-emerald-600">Gérer les rayons</h3>
+          <button
+            type="button"
+            onclick="fermerModaleGererRayons()"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="flex gap-2">
+          <input
+            type="text"
+            id="modale_nouveau_rayon_nom"
+            placeholder="Nouveau rayon..."
+            class="flex-grow h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <button
+            type="button"
+            onclick="ajouterNouveauRayonLocalModale()"
+            class="h-12 px-4 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 font-bold rounded-xl active:scale-[0.98] transition-all text-sm whitespace-nowrap"
+          >
+            Ajouter
+          </button>
+        </div>
+
+        <div
+          id="modale_liste_rayons_editables"
+          class="flex flex-col gap-2 overflow-y-auto pr-1 flex-grow min-h-[150px]"
+        ></div>
+
+        <button
+          type="button"
+          onclick="
+            sauvegarderTousLesRayons();
+            fermerModaleGererRayons();
+          "
+          class="h-12 mt-2 bg-emerald-500 text-white font-bold text-sm rounded-2xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+        >
+          ✅ Valider
+        </button>
+      </div>
+    </div>
+
+    <!-- MODALE AJOUT ARTICLE -->
+    <div
+      id="modale_ajout_article"
+      class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm p-5 flex flex-col gap-4 max-h-[90vh]"
+      >
+        <div class="flex justify-between items-center border-b pb-2">
+          <h3 class="text-lg font-bold text-emerald-600">Ajouter un article</h3>
+          <button
+            type="button"
+            onclick="fermerModaleAjoutArticle()"
+            class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <input
+            type="text"
+            id="modale_admin_nouvel_article_nom"
+            placeholder="Nom de l'article..."
+            class="h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <select
+            id="modale_admin_nouvel_article_rayon"
+            class="h-12 border border-slate-200 dark:border-slate-700 rounded-xl px-2 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <!-- Rempli dynamiquement -->
+          </select>
+          <button
+            type="button"
+            onclick="ajouterArticleManuelModale()"
+            class="h-14 bg-emerald-500 text-white font-bold text-base rounded-2xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          >
+            ✅ Ajouter et Sauvegarder
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- MODALE INTERACTIVE DE PARTAGE -->
@@ -1126,6 +1205,94 @@
       const API_URL =
         "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
 
+      function ouvrirModaleAjoutRecette() {
+        document.getElementById("new_nom").value = "";
+        document.getElementById("new_ingredients_list").innerHTML = "";
+        addIngRow(); // Ajoute une ligne vide par défaut
+        document
+          .getElementById("modale_ajout_recette")
+          .classList.remove("hidden");
+      }
+
+      function fermerModaleAjoutRecette() {
+        document.getElementById("modale_ajout_recette").classList.add("hidden");
+      }
+
+      function ouvrirModaleGererRayons() {
+        document.getElementById("modale_nouveau_rayon_nom").value = "";
+        rendreRayonsEditablesModale();
+        document
+          .getElementById("modale_gerer_rayons")
+          .classList.remove("hidden");
+      }
+
+      function fermerModaleGererRayons() {
+        document.getElementById("modale_gerer_rayons").classList.add("hidden");
+      }
+
+      function rendreRayonsEditablesModale() {
+        let container = document.getElementById(
+          "modale_liste_rayons_editables",
+        );
+        if (!container) return;
+        let html = "";
+        listeRayonsActuelle.forEach((r) => {
+          let rSafe = r.replace(/'/g, "\'");
+          html += `
+             <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 p-2 rounded-xl">
+               <input type="text" value="${rSafe}" onchange="renommerRayon('${rSafe}', this.value)" class="flex-grow h-10 border-b border-slate-200 dark:border-slate-700 outline-none px-2 text-sm bg-transparent text-slate-800 dark:text-slate-200">
+               <button type="button" onclick="supprimerRayon('${rSafe}'); rendreRayonsEditablesModale()" class="min-w-[40px] h-10 text-red-500 font-bold bg-red-50 dark:bg-red-900/30 rounded-lg">✕</button>
+             </div>`;
+        });
+        container.innerHTML = html;
+      }
+
+      function ajouterNouveauRayonLocalModale() {
+        let input = document.getElementById("modale_nouveau_rayon_nom");
+        let nv = input.value.trim();
+        if (!nv) return;
+        if (!listeRayonsActuelle.includes(nv)) {
+          listeRayonsActuelle.push(nv);
+          rendreRayonsEditablesModale();
+          mettreAJourSelectRayonsGlobal();
+        }
+        input.value = "";
+      }
+
+      function ouvrirModaleAjoutArticle() {
+        document.getElementById("modale_admin_nouvel_article_nom").value = "";
+        let select = document.getElementById(
+          "modale_admin_nouvel_article_rayon",
+        );
+        select.innerHTML = listeRayonsActuelle
+          .map((r) => `<option value="${r}">${r}</option>`)
+          .join("");
+        document
+          .getElementById("modale_ajout_article")
+          .classList.remove("hidden");
+      }
+
+      function fermerModaleAjoutArticle() {
+        document.getElementById("modale_ajout_article").classList.add("hidden");
+      }
+
+      function ajouterArticleManuelModale() {
+        let nomInput = document.getElementById(
+          "modale_admin_nouvel_article_nom",
+        );
+        let nvIng = nomInput.value.trim();
+        let nvRayon = document.getElementById(
+          "modale_admin_nouvel_article_rayon",
+        ).value;
+
+        if (!nvIng) return alert("Veuillez saisir un nom d'article.");
+
+        mappingRayons[nvIng] = nvRayon;
+        afficherRayonsArticles(mappingRayons);
+        sauvegarderTousLesRayons();
+        fermerModaleAjoutArticle();
+      }
+
       function afficherToastUpdate() {
         let toast = document.getElementById("toast_notification");
         toast.classList.remove("hidden");
@@ -1147,128 +1314,8 @@
       let cacheDetailsRecettes = {};
       let mappingRayons = {}; // Stockage local des rayons d'ingrédients
 
-      const INGREDIENTS_DE_BASE = [
-        "Amandes",
-        "Avocat",
-        "Carotte",
-        "Citron vert ou jaune",
-        "Fromage de chèvre frais",
-        "Huile d'olive",
-        "Œuf",
-        "Quinoa (poids cru)",
-        "Ail",
-        "Beurre",
-        "Copeaux de pecorino romano",
-        "Épinards frais",
-        "Farine de blé complet",
-        "Filet de poulet",
-        "Lait demi-écrémé",
-        "Muscade",
-        "Oignon blanc",
-        "Pâtes à lasagne",
-        "Ricotta",
-        "Salade verte",
-        "Vinaigre",
-        "Haricots rouges (poids cuit)",
-        "Maïs",
-        "Poudre de piment",
-        "Sauce tomate cuisinée",
-        "Steak végétal au soja",
-        "Crème fraîche liquide 15-20%",
-        "Jambon de dinde (sans nitrite)",
-        "Noisettes",
-        "Parmesan râpé",
-        "Basilic",
-        "Gnocchis",
-        "Herbes de Provence",
-        "Noix",
-        "Comté",
-        "Emmental râpé",
-        "Endive",
-        "Fromage à raclette",
-        "Pâtes crozets au sarrasin",
-        "Boule de mozzarella",
-        "Courgette",
-        "Tomate",
-        "Copeaux de parmesan",
-        "Macaroni complets",
-        "Coriandre",
-        "Cumin",
-        "Curry au choix",
-        "Lait de coco",
-        "Lentilles corail (poids cru)",
-        "Tomate pelée",
-        "Cream cheese",
-        "Gingembre",
-        "Oignon rouge",
-        "Patate douce",
-        "Aubergine",
-        "Feta",
-        "Olives noires",
-        "Pâtes complètes au choix (poids cru)",
-        "Tomates cerises",
-        "Ananas",
-        "Concombre",
-        "Graines de sésame",
-        "Pavé de saumon",
-        "Semoule",
-        "Edamame",
-        "Riz semi-complet (poids cru)",
-        "Sauce soja",
-        "Skyr nature",
-        "Melon",
-        "Saumon fumé (bio)",
-        "Cube de légumes",
-        "Graines de courge",
-        "Potimarron",
-        "Champignons de Paris",
-        "Asperges",
-        "Echalote",
-        "Persil frais",
-        "Petits pois (poids cuit)",
-        "Boulgour",
-        "Crevettes",
-        "Vinaigre balsamique",
-        "Ciboulette",
-        "Lentilles (poids cuit)",
-        "Pain complet",
-        "Tortilla de blé",
-        "Cornichons",
-        "Miel",
-        "Moutarde",
-        "Steak haché bœuf 5%",
-        "Steak haché veau 15%",
-        "Thym",
-        "Concentré de tomate",
-        "Bouillon de légumes",
-        "Pain de mie complet",
-        "Pommes",
-        "Bananes",
-        "Citrons",
-        "Oignons",
-        "Ail",
-        "Carottes",
-        "Yaourts",
-        "Lait",
-        "Beurre",
-        "Œufs",
-        "Fromage râpé",
-        "Sopalin",
-        "Sacs poubelle",
-        "Liquide vaisselle",
-        "Lessive",
-        "Éponges",
-        "Papier WC",
-        "Gel douche",
-        "Shampooing",
-        "Dentifrice",
-        "Mouchoirs",
-        "Pain de mie",
-        "Riz",
-        "Pâtes",
-        "Eau minérale",
-        "Café",
-      ];
+      // Les ingrédients de base sont désormais gérés via le Google Sheet "Rayons" pour éviter qu'ils ne réapparaissent si supprimés.
+      const INGREDIENTS_DE_BASE = [];
 
       function getTousLesIngredients() {
         let mapIngredients = new Map();
@@ -1421,7 +1468,7 @@
         document
           .getElementById("modale_suggestions")
           .classList.remove("hidden");
-        lucide.createIcons();
+        setTimeout(() => lucide.createIcons(), 50);
       }
 
       function fermerModaleSuggestions() {
@@ -2813,7 +2860,8 @@ Consignes à respecter impérativement :
           recs.push(nom); // update local optimiste
           localStorage.setItem("cache_recs", JSON.stringify(recs));
           alert(msg);
-          location.reload();
+          fermerModaleAjoutRecette();
+          changerVue("vue_modifier_recette");
         } catch (e) {
           alert("Erreur lors de l'enregistrement.");
           btn.innerText = "💾 Enregistrer la recette";
@@ -2986,6 +3034,60 @@ Consignes à respecter impérativement :
         afficherRayonsArticles(mappingRayons);
       }
 
+      async function verifierArticleDansRecettes(nomArticle) {
+        let estUtilise = false;
+        // On récupère toutes les recettes pour vérifier en profondeur
+        try {
+          // cache_recs ne contient que les noms. On doit fetch le détail de toutes ou utiliser le cache s'il est dispo.
+          // Vu qu'on ne peut pas fetch toutes les recettes d'un coup simplement, on va vérifier dans les menus chargés
+          // Si on veut faire parfait, il faudrait une route API, mais on va faire au mieux avec menusCharges et cacheDetailsRecettes
+          // En fait on va juste parcourir cacheDetailsRecettes (qui a été peuplé au fur et à mesure)
+          // L'idéal est de prévenir l'utilisateur si on ne sait pas
+          return false; // Remplacé ci-dessous
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function supprimerArticleSecurise(nomArticle) {
+        // Normaliser le nom pour la comparaison
+        let normRecherche = normalizeName(nomArticle);
+        let recettesImpactees = [];
+
+        // Recherche dans le cache local (qui contient les recettes déjà ouvertes/affichées/calculées)
+        for (const [cle, items] of Object.entries(cacheDetailsRecettes)) {
+          if (items.some((it) => normalizeName(it.nom) === normRecherche)) {
+            let nomRecette = cle.split("::")[0];
+            if (!recettesImpactees.includes(nomRecette))
+              recettesImpactees.push(nomRecette);
+          }
+        }
+
+        if (recettesImpactees.length > 0) {
+          let msg = `ATTENTION ! L'article "${nomArticle}" est utilisé dans au moins ${recettesImpactees.length} recette(s) (ex: ${recettesImpactees.slice(0, 3).join(", ")}).\n\nSi vous le supprimez, cela risque de causer des dysfonctionnements (erreurs lors de la génération de la liste de courses).\n\nÊtes-vous absolument sûr de vouloir le supprimer ?`;
+          if (!confirm(msg)) return;
+        } else {
+          // Avertissement générique au cas où il serait dans une recette non mise en cache
+          if (
+            !confirm(
+              `Supprimer l'article "${nomArticle}" ? S'il est présent dans une recette que vous n'avez pas ouverte récemment, cela pourrait créer un dysfonctionnement.`,
+            )
+          )
+            return;
+        }
+
+        delete mappingRayons[nomArticle];
+        // On sauvegarde localement pour la vue
+        localStorage.setItem(
+          "cache_mappingRayons",
+          JSON.stringify(mappingRayons),
+        );
+        // On ne fait pas l'appel API auto, on attend qu'il clique sur Sauvegarder
+        afficherRayonsArticles(mappingRayons);
+        // On recharge les icônes lucide nouvellement créées
+        setTimeout(() => lucide.createIcons(), 50);
+      }
+
       function afficherRayonsArticles(objMapping) {
         let box = document.getElementById("admin_rayons_list");
         let html = "";
@@ -3017,6 +3119,9 @@ Consignes à respecter impérativement :
                <select class="rayon-ing-select h-10 border border-slate-200 dark:border-slate-700 rounded-xl px-2 text-xs bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 shrink-0 max-w-[150px]">
                   ${opts}
                </select>
+               <button type="button" onclick="supprimerArticleSecurise('${ing.replace(/'/g, "\'")}')" class="w-10 h-10 flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/30 rounded-xl shrink-0">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+               </button>
             </div>
             `;
         });
@@ -3108,7 +3213,8 @@ Consignes à respecter impérativement :
             localStorage.setItem("cache_recs", JSON.stringify(recs));
           }
           alert(msg || "Recette mise à jour avec succès !");
-          location.reload();
+          fermerModaleAjoutRecette();
+          changerVue("vue_modifier_recette");
         } catch (e) {
           alert("Erreur lors de la mise à jour.");
           btn.innerText = "💾 Sauvegarder les modifications";
