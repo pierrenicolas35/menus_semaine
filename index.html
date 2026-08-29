@@ -2122,8 +2122,9 @@ Consignes à respecter impérativement :
             derniereCard.querySelector(".couverts-val").innerText =
               donneesRepas.couverts;
           }
-          if (donneesRepas.titre) {
-            let slotsFormates = donneesRepas.titre.toLowerCase();
+          let titreRepas = donneesRepas.titre || donneesRepas.nom;
+          if (titreRepas) {
+            let slotsFormates = titreRepas.toLowerCase();
             derniereCard.querySelectorAll(".slot-btn").forEach((btn) => {
               let val = btn.getAttribute("data-val");
               if (slotsFormates.includes(val)) {
@@ -2263,14 +2264,15 @@ Consignes à respecter impérativement :
                         </div>
                       </div>
                       <div class="flex flex-col gap-2">` +
-              lot.repas
+              (lot.plan || lot.repas || [])
                 .map((r) => {
                   let recSafe = String(r.recette)
                     .replace(/'/g, "\\\'")
                     .replace(/"/g, "&quot;");
+                  let titre = r.nom || r.titre;
                   let titreFormate =
-                    r.titre && r.titre !== "Repas non défini"
-                      ? r.titre
+                    titre && titre !== "Repas non défini"
+                      ? titre
                       : "Repas";
                   return `
                 <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-slate-100 dark:border-slate-700 active:bg-slate-100 active:scale-95 transition-all cursor-pointer">
@@ -2355,7 +2357,7 @@ Consignes à respecter impérativement :
           document.getElementById("date_debut_menu").value = lot.dateDebut;
 
         document.getElementById("form_repas").innerHTML = "";
-        lot.repas.forEach((repas) => {
+        (lot.plan || lot.repas || []).forEach((repas) => {
           ajouterBlocRepas(repas);
         });
 
