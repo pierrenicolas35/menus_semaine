@@ -71,6 +71,7 @@
     class="bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 font-sans w-full overflow-x-hidden box-border flex flex-col justify-between"
   >
     <datalist id="datalist_articles"></datalist>
+    <datalist id="datalist_themes"></datalist>
 
     <!-- MODALE NOUVEL INGRÉDIENT LORS DE LA CRÉATION/MODIFICATION -->
     <div
@@ -719,6 +720,17 @@
             placeholder="Titre de la recette..."
             class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200"
           />
+          <label
+            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1"
+            >Thème :</label
+          >
+          <input
+            type="text"
+            id="edit_recette_theme"
+            placeholder="Thème (ex: salade)..."
+            list="datalist_themes"
+            class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200"
+          />
 
           <label
             class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1"
@@ -763,6 +775,13 @@
           id="new_nom"
           placeholder="Titre de la recette..."
           class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+        />
+        <input
+          type="text"
+          id="new_theme_vue"
+          placeholder="Thème (ex: salade, plat d'hiver)..."
+          list="datalist_themes"
+          class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mt-2"
         />
 
         <div id="new_ingredients_list" class="flex flex-col gap-2"></div>
@@ -869,6 +888,13 @@
           id="new_nom"
           placeholder="Titre de la recette..."
           class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+        />
+        <input
+          type="text"
+          id="new_theme"
+          placeholder="Thème (ex: salade, plat d'hiver)..."
+          list="datalist_themes"
+          class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 mt-2"
         />
 
         <label
@@ -1207,6 +1233,8 @@
 
       function ouvrirModaleAjoutRecette() {
         document.getElementById("new_nom").value = "";
+        if (document.getElementById("new_theme")) document.getElementById("new_theme").value = "";
+        if (document.getElementById("new_theme_vue")) document.getElementById("new_theme_vue").value = "";
         document.getElementById("new_ingredients_list").innerHTML = "";
         addIngRow(); // Ajoute une ligne vide par défaut
         document
@@ -1316,6 +1344,43 @@
 
       // Les ingrédients de base sont désormais gérés via le Google Sheet "Rayons" pour éviter qu'ils ne réapparaissent si supprimés.
       const INGREDIENTS_DE_BASE = [];
+
+      function genererOptionsRecettes(listeRecettes) {
+        if (!listeRecettes || listeRecettes.length === 0) return "";
+
+        let groupes = {};
+
+        listeRecettes.forEach(r => {
+          let nom = typeof r === "object" ? r.nom : String(r);
+          let theme = typeof r === "object" && r.theme ? r.theme : "Sans thème";
+
+          if (!groupes[theme]) {
+            groupes[theme] = [];
+          }
+          groupes[theme].push(nom);
+        });
+
+        // Trier les thèmes alphabétiquement
+        let themesTries = Object.keys(groupes).sort((a, b) => a.localeCompare(b));
+
+        let html = "";
+        themesTries.forEach(theme => {
+          // Trier les recettes au sein du thème
+          let recettesTriees = groupes[theme].sort((a, b) => a.localeCompare(b));
+
+          let themeSafe = theme.replace(/"/g, "&quot;");
+          html += `<optgroup label="${themeSafe}">`;
+
+          recettesTriees.forEach(nom => {
+            let nomSafe = nom.replace(/"/g, "&quot;");
+            html += `<option value="${nomSafe}">${nom}</option>`;
+          });
+
+          html += `</optgroup>`;
+        });
+
+        return html;
+      }
 
       function getTousLesIngredients() {
         let mapIngredients = new Map();
@@ -1904,12 +1969,7 @@ Consignes à respecter impérativement :
         }
 
         if (id === "vue_consult") {
-          let optionsSafe = (recs || [])
-            .map(
-              (r) =>
-                `<option value="${String(r).replace(/"/g, "&quot;")}">${String(r)}</option>`,
-            )
-            .join("");
+          let optionsSafe = genererOptionsRecettes(recs);
           let currentSelect = document.getElementById("select_consult").value;
           document.getElementById("select_consult").innerHTML =
             '<option value="">Sélectionner une recette...</option>' +
@@ -1918,12 +1978,7 @@ Consignes à respecter impérativement :
             document.getElementById("select_consult").value = currentSelect;
         }
         if (id === "vue_modifier_recette") {
-          let optionsSafe = (recs || [])
-            .map(
-              (r) =>
-                `<option value="${String(r).replace(/"/g, "&quot;")}">${String(r)}</option>`,
-            )
-            .join("");
+          let optionsSafe = genererOptionsRecettes(recs);
           document.getElementById("edit_recette_select").innerHTML =
             '<option value="">Sélectionnez une recette...</option>' +
             optionsSafe;
@@ -1936,6 +1991,7 @@ Consignes à respecter impérativement :
         }
         if (id === "vue_ajout" || id === "vue_modifier_recette") {
           mettreAJourDatalistArticles();
+          mettreAJourDatalistThemes();
         }
         setTimeout(() => lucide.createIcons(), 50);
       }
@@ -1949,6 +2005,23 @@ Consignes à respecter impérativement :
               (ing) =>
                 `<option value="${String(ing).replace(/"/g, "&quot;")}">`,
             )
+            .join("");
+        }
+      }
+
+      function mettreAJourDatalistThemes() {
+        let datalist = document.getElementById("datalist_themes");
+        if (datalist && recs) {
+          let themesSet = new Set();
+          recs.forEach(r => {
+            let theme = typeof r === "object" && r.theme ? r.theme : "";
+            if (theme && theme.toLowerCase() !== "sans thème") {
+              themesSet.add(theme);
+            }
+          });
+          let themes = Array.from(themesSet).sort((a, b) => a.localeCompare(b));
+          datalist.innerHTML = themes
+            .map(t => `<option value="${t.replace(/"/g, "&quot;")}">`)
             .join("");
         }
       }
@@ -2051,13 +2124,7 @@ Consignes à respecter impérativement :
       function ajouterBlocRepas(donneesRepas = null) {
         const conteneur = document.getElementById("form_repas");
         const optionsHTML =
-          '<option value="">Sélectionne une recette</option>' +
-          (recs || [])
-            .map(
-              (r) =>
-                `<option value="${String(r).replace(/"/g, "&quot;")}">${String(r)}</option>`,
-            )
-            .join("");
+          '<option value="">Sélectionne une recette</option>' + genererOptionsRecettes(recs);
 
         const joursData = [
           { label: "Lu", val: "lundi" },
@@ -2836,6 +2903,8 @@ Consignes à respecter impérativement :
 
       async function sauverRecette() {
         let nom = document.getElementById("new_nom").value.trim();
+        let themeInput = document.getElementById("new_theme") && document.getElementById("new_theme").offsetParent !== null ? document.getElementById("new_theme") : document.getElementById("new_theme_vue");
+        let theme = themeInput ? themeInput.value.trim() : "";
         let ings = [];
         document
           .querySelectorAll("#new_ingredients_list > div")
@@ -2856,10 +2925,11 @@ Consignes à respecter impérativement :
 
         try {
           const msg = await apiPost("enregistrerRecette", {
+            theme,
             nom,
             ingredients: ings,
           });
-          recs.push(nom); // update local optimiste
+          recs.push({ nom: nom, theme: theme }); // update local optimiste
           localStorage.setItem("cache_recs", JSON.stringify(recs));
           alert(msg);
           fermerModaleAjoutRecette();
@@ -2897,6 +2967,8 @@ Consignes à respecter impérativement :
           '<p class="text-sm text-slate-500 animate-pulse py-2">Chargement des ingrédients...</p>';
         document.getElementById("edit_recette_nom_original").value = nomRecette;
         document.getElementById("edit_recette_nom").value = nomRecette;
+        let currentRec = recs.find(r => (typeof r === "object" ? r.nom : String(r)) === nomRecette);
+        document.getElementById("edit_recette_theme").value = currentRec && typeof currentRec === "object" && currentRec.theme ? currentRec.theme : "";
         document.getElementById("btn_update_recette").disabled = true;
 
         try {
@@ -3180,9 +3252,8 @@ Consignes à respecter impérativement :
         let nomOriginal = document.getElementById(
           "edit_recette_nom_original",
         ).value;
-        let nouveauNom = document
-          .getElementById("edit_recette_nom")
-          .value.trim();
+        let nouveauNom = document.getElementById("edit_recette_nom").value.trim();
+        let nouveauTheme = document.getElementById("edit_recette_theme").value.trim();
         let ings = [];
 
         document
@@ -3205,13 +3276,18 @@ Consignes à respecter impérativement :
 
         try {
           const msg = await apiPost("modifierRecette", {
+            nouveauTheme: nouveauTheme,
             nomOriginal: nomOriginal,
             nouveauNom: nouveauNom,
             ingredients: ings,
           });
           if (nomOriginal !== nouveauNom) {
-            let idx = recs.indexOf(nomOriginal);
-            if (idx > -1) recs[idx] = nouveauNom;
+            let idx = recs.findIndex(r => (typeof r === "object" ? r.nom : String(r)) === nomOriginal);
+            if (idx > -1) {
+              recs[idx] = { nom: nouveauNom, theme: nouveauTheme };
+            } else {
+              recs.push({ nom: nouveauNom, theme: nouveauTheme });
+            }
             localStorage.setItem("cache_recs", JSON.stringify(recs));
           }
           alert(msg || "Recette mise à jour avec succès !");
