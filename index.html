@@ -535,11 +535,16 @@
         <div
           class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3"
         >
-          <select
-            id="select_consult"
-            class="w-full h-12 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-semibold"
-            onchange="afficherDetails()"
-          ></select>
+          <input type="hidden" id="select_consult" onchange="afficherDetails()">
+          <button
+            type="button"
+            id="select_consult_btn"
+            onclick="ouvrirModaleChoixRecette('select_consult')"
+            class="w-full h-12 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-semibold flex items-center justify-between text-slate-400"
+          >
+            Sélectionner une recette...
+            <i data-lucide="chevron-down" class="w-4 h-4 ml-2"></i>
+          </button>
           <div class="flex items-center justify-between gap-4 pt-1">
             <label
               class="font-bold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider"
@@ -700,13 +705,16 @@
           <i data-lucide="plus-circle" class="w-5 h-5"></i> Ajouter une recette
         </button>
 
-        <select
-          id="edit_recette_select"
-          onchange="chargerRecetteEdition()"
-          class="h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200"
+        <input type="hidden" id="edit_recette_select" onchange="chargerRecetteEdition()">
+        <button
+          type="button"
+          id="edit_recette_select_btn"
+          onclick="ouvrirModaleChoixRecette('edit_recette_select')"
+          class="w-full h-14 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white dark:bg-slate-800 text-slate-400 flex items-center justify-between text-left"
         >
-          <option value="">Sélectionnez une recette...</option>
-        </select>
+          Sélectionnez une recette...
+          <i data-lucide="chevron-down" class="w-5 h-5 ml-2 shrink-0"></i>
+        </button>
 
         <div id="edit_recette_zone" class="hidden flex-col gap-3 mt-2">
           <input type="hidden" id="edit_recette_nom_original" />
@@ -862,6 +870,41 @@
       >
         💾 Sauvegarder les rayons
       </button>
+    </div>
+
+    <!-- MODALE CHOIX RECETTE (Remplaçant les selects) -->
+    <div
+      id="modale_choix_recette"
+      class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-5 flex flex-col gap-4 max-h-[90vh] overflow-hidden"
+      >
+        <div class="flex items-center justify-between">
+          <h3 class="font-black text-lg text-slate-800 dark:text-slate-200">
+            Choisir une recette
+          </h3>
+          <button
+            type="button"
+            onclick="fermerModaleChoixRecette()"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          >
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+        <input
+          type="text"
+          id="recherche_choix_recette"
+          placeholder="Rechercher une recette..."
+          onkeyup="filtrerRecettesChoix()"
+          class="w-full h-12 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+        >
+
+        <div id="liste_choix_recette" class="flex flex-col gap-1 overflow-y-auto pr-1 pb-4">
+          <!-- Les recettes seront injectées ici par JS -->
+        </div>
+      </div>
     </div>
 
     <!-- MODALE AJOUTER RECETTE -->
@@ -1345,41 +1388,139 @@
       // Les ingrédients de base sont désormais gérés via le Google Sheet "Rayons" pour éviter qu'ils ne réapparaissent si supprimés.
       const INGREDIENTS_DE_BASE = [];
 
-      function genererOptionsRecettes(listeRecettes) {
-        if (!listeRecettes || listeRecettes.length === 0) return "";
+      // Variables pour stocker l'état de la modale de choix de recette
+      let cibleChoixRecetteId = null;
+      let callbackChoixRecette = null;
+
+      function ouvrirModaleChoixRecette(cibleId, callback = null) {
+        cibleChoixRecetteId = cibleId;
+        callbackChoixRecette = callback;
+
+        document.getElementById('recherche_choix_recette').value = '';
+        genererListeChoixRecette(recs);
+        document.getElementById('modale_choix_recette').classList.remove('hidden');
+        document.getElementById('recherche_choix_recette').focus();
+      }
+
+      function fermerModaleChoixRecette() {
+        document.getElementById('modale_choix_recette').classList.add('hidden');
+        cibleChoixRecetteId = null;
+        callbackChoixRecette = null;
+      }
+
+      function filtrerRecettesChoix() {
+        let terme = document.getElementById('recherche_choix_recette').value.toLowerCase();
+        let listeFiltree = recs.filter(r => {
+          let nom = typeof r === "object" ? r.nom : String(r);
+          let theme = typeof r === "object" && r.theme ? r.theme : "Sans thème";
+          return nom.toLowerCase().includes(terme) || theme.toLowerCase().includes(terme);
+        });
+        genererListeChoixRecette(listeFiltree);
+      }
+
+      function genererListeChoixRecette(listeRecettes) {
+        let conteneur = document.getElementById('liste_choix_recette');
+        if (!listeRecettes || listeRecettes.length === 0) {
+          conteneur.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">Aucune recette trouvée.</p>';
+          return;
+        }
 
         let groupes = {};
-
         listeRecettes.forEach(r => {
           let nom = typeof r === "object" ? r.nom : String(r);
           let theme = typeof r === "object" && r.theme ? r.theme : "Sans thème";
-
-          if (!groupes[theme]) {
-            groupes[theme] = [];
-          }
+          if (!groupes[theme]) groupes[theme] = [];
           groupes[theme].push(nom);
         });
 
-        // Trier les thèmes alphabétiquement
         let themesTries = Object.keys(groupes).sort((a, b) => a.localeCompare(b));
-
         let html = "";
-        themesTries.forEach(theme => {
-          // Trier les recettes au sein du thème
-          let recettesTriees = groupes[theme].sort((a, b) => a.localeCompare(b));
 
-          let themeSafe = theme.replace(/"/g, "&quot;");
-          html += `<optgroup label="${themeSafe}">`;
+        // Générer une couleur de fond en fonction du nom du thème pour le distinguer
+        const getColorForTheme = (themeName) => {
+          let hash = 0;
+          for (let i = 0; i < themeName.length; i++) {
+            hash = themeName.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          // Choisir parmi une palette de couleurs pastel douces
+          const colors = [
+            "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
+            "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200",
+            "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
+            "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200",
+            "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
+            "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-200",
+            "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
+            "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
+            "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200",
+            "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
+            "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200",
+            "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-200",
+            "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-200",
+            "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200",
+          ];
+          return colors[Math.abs(hash) % colors.length];
+        };
+
+        themesTries.forEach(theme => {
+          let recettesTriees = groupes[theme].sort((a, b) => a.localeCompare(b));
+          let themeColorClass = getColorForTheme(theme);
+
+          html += `
+            <div class="mt-3 mb-1 px-3 py-1.5 rounded-lg ${themeColorClass} font-bold text-xs uppercase tracking-wider sticky top-0 z-10 shadow-sm backdrop-blur-md">
+              ${theme}
+            </div>
+          `;
 
           recettesTriees.forEach(nom => {
-            let nomSafe = nom.replace(/"/g, "&quot;");
-            html += `<option value="${nomSafe}">${nom}</option>`;
+            let nomSafe = nom.replace(/"/g, "&quot;").replace(/'/g, "\\'");
+            html += `
+              <button
+                type="button"
+                onclick="selectionnerRecetteDansModale('${nomSafe}')"
+                class="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-sm text-slate-700 dark:text-slate-300 truncate"
+              >
+                ${nom}
+              </button>
+            `;
           });
-
-          html += `</optgroup>`;
         });
 
-        return html;
+        conteneur.innerHTML = html;
+      }
+
+      function selectionnerRecetteDansModale(nomRecette) {
+        if (cibleChoixRecetteId) {
+          // Mettre à jour l'input caché
+          let input = document.getElementById(cibleChoixRecetteId);
+          if (input) {
+            input.value = nomRecette;
+            // Déclencher un événement change pour que les scripts existants s'activent
+            input.dispatchEvent(new Event('change'));
+          }
+
+          // Mettre à jour le texte du bouton affiché (il doit avoir un id spécifique)
+          let btnDisplay = document.getElementById(cibleChoixRecetteId + "_btn");
+          if (btnDisplay) {
+            // S'il y a un span, on met à jour le span, sinon on reconstruit le HTML pour ne pas perdre l'icône
+            let span = btnDisplay.querySelector("span");
+            if (span) {
+                span.innerText = nomRecette;
+            } else {
+                // Les boutons sans span (vue_consult et vue_modifier_recette) utilisent un chevron w-4 h-4 ou w-5 h-5
+                let iconClass = cibleChoixRecetteId === "edit_recette_select" ? "w-5 h-5 shrink-0" : "w-4 h-4";
+                btnDisplay.innerHTML = `${nomRecette} <i data-lucide="chevron-down" class="${iconClass} ml-2"></i>`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+            btnDisplay.classList.remove("text-slate-400"); // Enlever style grisé si placeholder
+          }
+        }
+
+        if (callbackChoixRecette) {
+          callbackChoixRecette(nomRecette);
+        }
+
+        fermerModaleChoixRecette();
       }
 
       function getTousLesIngredients() {
@@ -1634,7 +1775,29 @@
           localStorage.setItem("derniere_vue", "menu_principal");
         }
 
+        // Si une vue est présente dans le hash de l'URL, elle priorise la vue sauvegardée
+        if (window.location.hash) {
+           let hashVue = window.location.hash.substring(1);
+           if (document.getElementById(hashVue)) {
+              vueSauvegardee = hashVue;
+           }
+        }
+
         localStorage.setItem("dernier_acces", maintenant.toString());
+
+        // Initialiser l'état d'historique initial
+        history.replaceState({ vueId: vueSauvegardee }, "", `#${vueSauvegardee}`);
+
+        // Ecouter l'événement popstate pour le retour en arrière (Android back button, swipe)
+        window.addEventListener('popstate', function(event) {
+          if (event.state && event.state.vueId) {
+            // Appeler changerVue sans ajouter un nouvel état dans l'historique
+            changerVue(event.state.vueId, true, false);
+          } else {
+            // S'il n'y a pas d'état, on retourne au menu principal
+            changerVue('menu_principal', true, false);
+          }
+        });
 
         // 1. Charger depuis le cache local (synchrone)
         try {
@@ -1957,7 +2120,7 @@ Consignes à respecter impérativement :
         changerVue("etape2");
       }
 
-      function changerVue(id, sauver = true) {
+      function changerVue(id, sauver = true, pushHistory = true) {
         document
           .querySelectorAll(".etape")
           .forEach((e) => e.classList.add("hidden"));
@@ -1968,22 +2131,34 @@ Consignes à respecter impérativement :
           localStorage.setItem("derniere_vue", id);
         }
 
+        // Gérer l'historique du navigateur pour permettre le retour / swipe Android
+        if (pushHistory) {
+          history.pushState({ vueId: id }, "", `#${id}`);
+        }
+
         if (id === "vue_consult") {
-          let optionsSafe = genererOptionsRecettes(recs);
           let currentSelect = document.getElementById("select_consult").value;
-          document.getElementById("select_consult").innerHTML =
-            '<option value="">Sélectionner une recette...</option>' +
-            optionsSafe;
-          if (currentSelect)
-            document.getElementById("select_consult").value = currentSelect;
+          let btnDisplay = document.getElementById("select_consult_btn");
+          if (currentSelect && btnDisplay) {
+            // Supprime tout le texte (et l'icône), on ne garde que le texte
+            let spanTexte = currentSelect;
+            btnDisplay.innerHTML = `${spanTexte} <i data-lucide="chevron-down" class="w-4 h-4 ml-2"></i>`;
+            btnDisplay.classList.remove("text-slate-400");
+          } else if(btnDisplay) {
+            btnDisplay.innerHTML = `Sélectionner une recette... <i data-lucide="chevron-down" class="w-4 h-4 ml-2"></i>`;
+            btnDisplay.classList.add("text-slate-400");
+          }
+          if (typeof lucide !== 'undefined') lucide.createIcons();
         }
         if (id === "vue_modifier_recette") {
-          let optionsSafe = genererOptionsRecettes(recs);
-          document.getElementById("edit_recette_select").innerHTML =
-            '<option value="">Sélectionnez une recette...</option>' +
-            optionsSafe;
           document.getElementById("edit_recette_zone").classList.add("hidden");
           document.getElementById("edit_recette_select").value = "";
+          let btnDisplay = document.getElementById("edit_recette_select_btn");
+          if(btnDisplay) {
+             btnDisplay.innerHTML = `Sélectionnez une recette... <i data-lucide="chevron-down" class="w-5 h-5 ml-2 shrink-0"></i>`;
+             btnDisplay.classList.add("text-slate-400");
+          }
+          if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         if (id === "vue_gerer_rayons") {
@@ -2123,8 +2298,7 @@ Consignes à respecter impérativement :
 
       function ajouterBlocRepas(donneesRepas = null) {
         const conteneur = document.getElementById("form_repas");
-        const optionsHTML =
-          '<option value="">Sélectionne une recette</option>' + genererOptionsRecettes(recs);
+        // Les optionsHTML ne sont plus nécessaires car on utilise la modale
 
         const joursData = [
           { label: "Lu", val: "lundi" },
@@ -2168,9 +2342,16 @@ Consignes à respecter impérativement :
             </div>
 
             <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 mt-1 w-full">
-              <select onchange="mettreAJourBoutonIngredientsCarte(this)" class="recette w-full min-w-0 min-h-[44px] text-sm px-3 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium">
-                ${optionsHTML}
-              </select>
+              <input type="hidden" class="recette" id="repas_recette_${cardIndex}" onchange="mettreAJourBoutonIngredientsCarte(this)">
+              <button
+                type="button"
+                id="repas_recette_${cardIndex}_btn"
+                onclick="ouvrirModaleChoixRecette('repas_recette_${cardIndex}')"
+                class="w-full min-w-0 min-h-[44px] text-sm px-3 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium flex items-center justify-between text-left text-slate-400"
+              >
+                <span class="truncate">Sélectionne une recette</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 ml-2 shrink-0"></i>
+              </button>
               <button type="button" onclick="ouvrirIngredientsDepuisCarte(this)" class="btn-ingredients-programmation hidden shrink-0 min-h-[44px] whitespace-nowrap px-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-2xl text-xs font-bold shadow-sm active:scale-95 transition-all" disabled>
                 Ingrédients
               </button>
@@ -2179,10 +2360,26 @@ Consignes à respecter impérativement :
 
         conteneur.insertAdjacentHTML("beforeend", cardHTML);
 
+        // Re-initialiser les icones lucide pour le nouveau bouton ajouté
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+
         if (donneesRepas) {
           let derniereCard = conteneur.lastElementChild;
-          if (donneesRepas.recette)
-            derniereCard.querySelector(".recette").value = donneesRepas.recette;
+          if (donneesRepas.recette) {
+            let inputRecette = derniereCard.querySelector(".recette");
+            inputRecette.value = donneesRepas.recette;
+            inputRecette.dispatchEvent(new Event('change')); // Déclencher pour afficher le bouton d'ingrédients
+
+            // Mettre à jour le bouton visuel
+            let btnId = inputRecette.id + "_btn";
+            let btnDisplay = document.getElementById(btnId);
+            if(btnDisplay) {
+                btnDisplay.querySelector('span').innerText = donneesRepas.recette;
+                btnDisplay.classList.remove("text-slate-400");
+            }
+          }
           if (donneesRepas.couverts) {
             derniereCard.querySelector(".couverts").value =
               donneesRepas.couverts;
@@ -2477,6 +2674,13 @@ Consignes à respecter impérativement :
         localStorage.setItem("derniers_couverts", couverts);
         changerVue("vue_consult");
         document.getElementById("select_consult").value = recette;
+        let btnDisplay = document.getElementById("select_consult_btn");
+        if(btnDisplay) {
+            btnDisplay.innerHTML = `${recette} <i data-lucide="chevron-down" class="w-4 h-4 ml-2"></i>`;
+            btnDisplay.classList.remove("text-slate-400");
+        }
+        if(typeof lucide !== 'undefined') lucide.createIcons();
+
         document.getElementById("parts_consult_val").innerText = couverts;
         afficherDetails();
       }
