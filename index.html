@@ -1763,11 +1763,18 @@
         });
       }
 
+      function parseSafeDate(dateStr) {
+          if (!dateStr) return new Date();
+          let isoDate = String(dateStr).split('T')[0];
+          let d = new Date(isoDate + "T12:00:00");
+          if (isNaN(d.getTime())) return new Date(); // fallback
+          return d;
+      }
+
       function formaterPeriodeMenu(dateDebutStr) {
           if (!dateDebutStr) return "Menu sans date";
-          // Append T12:00:00 to avoid timezone parsing issues (it shifts day on negative timezones otherwise)
-          let d1 = new Date(dateDebutStr + "T12:00:00");
-          let d2 = new Date(dateDebutStr + "T12:00:00");
+          let d1 = parseSafeDate(dateDebutStr);
+          let d2 = parseSafeDate(dateDebutStr);
           d2.setDate(d2.getDate() + 6);
 
           let formatOptions = { weekday: 'long', day: 'numeric', month: 'short' };
@@ -1957,7 +1964,7 @@
 
         menusCharges.forEach((lot) => {
           let labelSemaine = lot.dateDebut
-            ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut))
+            ? "Semaine du " + formaterDateLitterale(parseSafeDate(lot.dateDebut))
             : "Menu (" + lot.date + ")";
           select.innerHTML += `<option value="${lot.id}">${labelSemaine}</option>`;
         });
@@ -2133,7 +2140,7 @@ Consignes à respecter impérativement :
         const dateInput = document.getElementById("date_debut_menu");
 
         // S'assurer qu'on ne prend pas l'heure en compte pour eviter les decallages de fuseau
-        let targetDate = dateInitiale ? new Date(dateInitiale) : new Date();
+        let targetDate = dateInitiale ? parseSafeDate(dateInitiale) : new Date();
         const year = targetDate.getFullYear();
         const month = String(targetDate.getMonth() + 1).padStart(2, '0');
         const day = String(targetDate.getDate()).padStart(2, '0');
@@ -2510,8 +2517,7 @@ Consignes à respecter impérativement :
 
       function genererGrilleJours(dateDebutStr, slotsActifsStr = "") {
         if (!dateDebutStr) return "";
-        // Append T12:00:00 to avoid timezone parsing issues
-        let d = new Date(dateDebutStr + "T12:00:00");
+        let d = parseSafeDate(dateDebutStr);
         let html = "";
         const formatterJour = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' });
         const formatterNum = new Intl.DateTimeFormat('fr-FR', { day: 'numeric' });
@@ -2640,8 +2646,8 @@ Consignes à respecter impérativement :
 
           menusCharges.forEach((lot) => {
             if (lot.dateDebut) {
-              let debut = new Date(lot.dateDebut);
-              let fin = new Date(lot.dateDebut);
+              let debut = parseSafeDate(lot.dateDebut);
+              let fin = parseSafeDate(lot.dateDebut);
               fin.setDate(fin.getDate() + 6);
 
               if (aujourdhui >= debut && aujourdhui <= fin) {
@@ -2661,14 +2667,14 @@ Consignes à respecter impérativement :
           menusSuivants.sort((a, b) => {
             if (!a.dateDebut) return 1;
             if (!b.dateDebut) return -1;
-            return new Date(a.dateDebut) - new Date(b.dateDebut);
+            return parseSafeDate(a.dateDebut) - parseSafeDate(b.dateDebut);
           });
 
           // Trier les menus passés par ordre anti-chronologique
           menusPasses.sort((a, b) => {
             if (!a.dateDebut) return 1;
             if (!b.dateDebut) return -1;
-            return new Date(b.dateDebut) - new Date(a.dateDebut);
+            return parseSafeDate(b.dateDebut) - parseSafeDate(a.dateDebut);
           });
 
           let html = "";
@@ -2796,7 +2802,7 @@ Consignes à respecter impérativement :
         if (!lot) return;
 
         let etiquette = lot.dateDebut
-          ? `la semaine du ${formaterDateLitterale(new Date(lot.dateDebut))}`
+          ? `la semaine du ${formaterDateLitterale(parseSafeDate(lot.dateDebut))}`
           : "ce menu";
         if (!confirm(`Supprimer définitivement ${etiquette} ?`)) return;
 
@@ -3014,7 +3020,7 @@ Consignes à respecter impérativement :
         let planTarget = menuCible.repas || [];
         let dateInput = menuCible.dateDebut || "";
         let dateFormatee = dateInput
-          ? formaterDateLitterale(new Date(dateInput))
+          ? formaterDateLitterale(parseSafeDate(dateInput))
           : "sélectionnée";
 
         let txt = "";
@@ -3170,7 +3176,7 @@ Consignes à respecter impérativement :
       function partage(type) {
         let dateInput = document.getElementById("date_debut_menu").value;
         let dateFormatee = dateInput
-          ? formaterDateLitterale(new Date(dateInput))
+          ? formaterDateLitterale(parseSafeDate(dateInput))
           : "la semaine";
 
         let txt = "";
