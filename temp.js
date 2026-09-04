@@ -1,63 +1,283 @@
 
       tailwind.config = {
-        darkMode: 'class',
+        darkMode: "class",
         theme: {
-          extend: {}
-        }
-      }
+          extend: {},
+        },
+      };
 
 
       // Initialisation du thème avant le rendu
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark')
+      if (
+        localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.classList.add("dark");
       } else {
-        document.documentElement.classList.remove('dark')
+        document.documentElement.classList.remove("dark");
       }
 
 
-      const API_URL = "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
+      const API_URL =
+        "https://script.google.com/macros/s/AKfycbySlDdnnMmzGoHjFNWW5wOaSX19E1prYj5DrFXZQg0H-jn_k-7RAsGSNmf_f-rqyCr3vg/exec";
+
+      function ouvrirModaleAjoutRecette() {
+        document.getElementById("new_nom").value = "";
+        if (document.getElementById("new_theme")) document.getElementById("new_theme").value = "";
+        if (document.getElementById("new_theme_vue")) document.getElementById("new_theme_vue").value = "";
+        document.getElementById("new_ingredients_list").innerHTML = "";
+        addIngRow(); // Ajoute une ligne vide par défaut
+        document
+          .getElementById("modale_ajout_recette")
+          .classList.remove("hidden");
+      }
+
+      function fermerModaleAjoutRecette() {
+        document.getElementById("modale_ajout_recette").classList.add("hidden");
+      }
+
+      function ouvrirModaleGererRayons() {
+        document.getElementById("modale_nouveau_rayon_nom").value = "";
+        rendreRayonsEditablesModale();
+        document
+          .getElementById("modale_gerer_rayons")
+          .classList.remove("hidden");
+      }
+
+      function fermerModaleGererRayons() {
+        document.getElementById("modale_gerer_rayons").classList.add("hidden");
+      }
+
+      function rendreRayonsEditablesModale() {
+        let container = document.getElementById(
+          "modale_liste_rayons_editables",
+        );
+        if (!container) return;
+        let html = "";
+        listeRayonsActuelle.forEach((r) => {
+          let rSafe = r.replace(/'/g, "\'");
+          html += `
+             <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 p-2 rounded-xl">
+               <input type="text" value="${rSafe}" onchange="renommerRayon('${rSafe}', this.value)" class="flex-grow h-10 border-b border-slate-200 dark:border-slate-700 outline-none px-2 text-sm bg-transparent text-slate-800 dark:text-slate-200">
+               <button type="button" onclick="supprimerRayon('${rSafe}'); rendreRayonsEditablesModale()" class="min-w-[40px] h-10 text-red-500 font-bold bg-red-50 dark:bg-red-900/30 rounded-lg">✕</button>
+             </div>`;
+        });
+        container.innerHTML = html;
+      }
+
+      function ajouterNouveauRayonLocalModale() {
+        let input = document.getElementById("modale_nouveau_rayon_nom");
+        let nv = input.value.trim();
+        if (!nv) return;
+        if (!listeRayonsActuelle.includes(nv)) {
+          listeRayonsActuelle.push(nv);
+          rendreRayonsEditablesModale();
+          mettreAJourSelectRayonsGlobal();
+        }
+        input.value = "";
+      }
+
+      function ouvrirModaleAjoutArticle() {
+        document.getElementById("modale_admin_nouvel_article_nom").value = "";
+        let select = document.getElementById(
+          "modale_admin_nouvel_article_rayon",
+        );
+        select.innerHTML = listeRayonsActuelle
+          .map((r) => `<option value="${r}">${r}</option>`)
+          .join("");
+        document
+          .getElementById("modale_ajout_article")
+          .classList.remove("hidden");
+      }
+
+      function fermerModaleAjoutArticle() {
+        document.getElementById("modale_ajout_article").classList.add("hidden");
+      }
+
+      function ajouterArticleManuelModale() {
+        let nomInput = document.getElementById(
+          "modale_admin_nouvel_article_nom",
+        );
+        let nvIng = nomInput.value.trim();
+        let nvRayon = document.getElementById(
+          "modale_admin_nouvel_article_rayon",
+        ).value;
+
+        if (!nvIng) return alert("Veuillez saisir un nom d'article.");
+
+        mappingRayons[nvIng] = nvRayon;
+        afficherRayonsArticles(mappingRayons);
+        sauvegarderTousLesRayons();
+        fermerModaleAjoutArticle();
+      }
 
       function afficherToastUpdate() {
-        let toast = document.getElementById('toast_notification');
-        toast.classList.remove('hidden');
+        let toast = document.getElementById("toast_notification");
+        toast.classList.remove("hidden");
         // Trigger reflow
         void toast.offsetWidth;
-        toast.classList.remove('opacity-0', 'translate-y-4');
+        toast.classList.remove("opacity-0", "translate-y-4");
         setTimeout(() => {
-          toast.classList.add('opacity-0', 'translate-y-4');
-          setTimeout(() => toast.classList.add('hidden'), 300);
+          toast.classList.add("opacity-0", "translate-y-4");
+          setTimeout(() => toast.classList.add("hidden"), 300);
         }, 3000);
       }
 
-      let recs = [], plan = [], menusCharges = [], listeCoursesBrute = [];
+      let recs = [],
+        plan = [],
+        menusCharges = [],
+        listeCoursesBrute = [];
       let platsSelectionnesBatch = [];
       let cacheDetailsIngredsBatch = {};
       let cacheDetailsRecettes = {};
-            let mappingRayons = {}; // Stockage local des rayons d'ingrédients
+      let mappingRayons = {}; // Stockage local des rayons d'ingrédients
 
+      // Les ingrédients de base sont désormais gérés via le Google Sheet "Rayons" pour éviter qu'ils ne réapparaissent si supprimés.
+      const INGREDIENTS_DE_BASE = [];
 
+      // Variables pour stocker l'état de la modale de choix de recette
+      let cibleChoixRecetteId = null;
+      let callbackChoixRecette = null;
 
-      const INGREDIENTS_DE_BASE = ["Amandes", "Avocat", "Carotte", "Citron vert ou jaune", "Fromage de chèvre frais", "Huile d'olive", "Œuf", "Quinoa (poids cru)",
-        "Ail", "Beurre", "Copeaux de pecorino romano", "Épinards frais", "Farine de blé complet", "Filet de poulet", "Lait demi-écrémé",
-        "Muscade", "Oignon blanc", "Pâtes à lasagne", "Ricotta", "Salade verte", "Vinaigre", "Haricots rouges (poids cuit)", "Maïs",
-        "Poudre de piment", "Sauce tomate cuisinée", "Steak végétal au soja", "Crème fraîche liquide 15-20%", "Jambon de dinde (sans nitrite)",
-        "Noisettes", "Parmesan râpé", "Basilic", "Gnocchis", "Herbes de Provence", "Noix", "Comté", "Emmental râpé", "Endive",
-        "Fromage à raclette", "Pâtes crozets au sarrasin", "Boule de mozzarella", "Courgette", "Tomate", "Copeaux de parmesan",
-        "Macaroni complets", "Coriandre", "Cumin", "Curry au choix", "Lait de coco", "Lentilles corail (poids cru)", "Tomate pelée",
-        "Cream cheese", "Gingembre", "Oignon rouge", "Patate douce", "Aubergine", "Feta", "Olives noires", "Pâtes complètes au choix (poids cru)",
-        "Tomates cerises", "Ananas", "Concombre", "Graines de sésame", "Pavé de saumon", "Semoule", "Edamame", "Riz semi-complet (poids cru)",
-        "Sauce soja", "Skyr nature", "Melon", "Saumon fumé (bio)", "Cube de légumes", "Graines de courge", "Potimarron",
-        "Champignons de Paris", "Asperges", "Echalote", "Persil frais", "Petits pois (poids cuit)", "Boulgour", "Crevettes",
-        "Vinaigre balsamique", "Ciboulette", "Lentilles (poids cuit)", "Pain complet", "Tortilla de blé", "Cornichons", "Miel",
-        "Moutarde", "Steak haché bœuf 5%", "Steak haché veau 15%", "Thym", "Concentré de tomate", "Bouillon de légumes", "Pain de mie complet", "Pommes", "Bananes", "Citrons", "Oignons", "Ail", "Carottes", "Yaourts", "Lait", "Beurre", "Œufs", "Fromage râpé", "Sopalin", "Sacs poubelle", "Liquide vaisselle", "Lessive", "Éponges", "Papier WC", "Gel douche", "Shampooing", "Dentifrice", "Mouchoirs", "Pain de mie", "Riz", "Pâtes", "Eau minérale", "Café"];
+      function ouvrirModaleChoixRecette(cibleId, callback = null) {
+        cibleChoixRecetteId = cibleId;
+        callbackChoixRecette = callback;
+
+        document.getElementById('recherche_choix_recette').value = '';
+        genererListeChoixRecette(recs);
+        document.getElementById('modale_choix_recette').classList.remove('hidden');
+        document.getElementById('recherche_choix_recette').focus();
+      }
+
+      function fermerModaleChoixRecette() {
+        document.getElementById('modale_choix_recette').classList.add('hidden');
+        cibleChoixRecetteId = null;
+        callbackChoixRecette = null;
+      }
+
+      function filtrerRecettesChoix() {
+        let terme = document.getElementById('recherche_choix_recette').value.toLowerCase();
+        let listeFiltree = recs.filter(r => {
+          let nom = typeof r === "object" ? r.nom : String(r);
+          let theme = typeof r === "object" && r.theme ? r.theme : "Sans thème";
+          return nom.toLowerCase().includes(terme) || theme.toLowerCase().includes(terme);
+        });
+        genererListeChoixRecette(listeFiltree);
+      }
+
+      function genererListeChoixRecette(listeRecettes) {
+        let conteneur = document.getElementById('liste_choix_recette');
+        if (!listeRecettes || listeRecettes.length === 0) {
+          conteneur.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">Aucune recette trouvée.</p>';
+          return;
+        }
+
+        let groupes = {};
+        listeRecettes.forEach(r => {
+          let nom = typeof r === "object" ? r.nom : String(r);
+          let theme = typeof r === "object" && r.theme ? r.theme : "Sans thème";
+          if (!groupes[theme]) groupes[theme] = [];
+          groupes[theme].push(nom);
+        });
+
+        let themesTries = Object.keys(groupes).sort((a, b) => a.localeCompare(b));
+        let html = "";
+
+        // Générer une couleur de fond en fonction du nom du thème pour le distinguer
+        const getColorForTheme = (themeName) => {
+          let hash = 0;
+          for (let i = 0; i < themeName.length; i++) {
+            hash = themeName.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          // Choisir parmi une palette de couleurs pastel douces
+          const colors = [
+            "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
+            "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200",
+            "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
+            "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200",
+            "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
+            "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-200",
+            "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200",
+            "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
+            "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200",
+            "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
+            "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-200",
+            "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/40 dark:text-fuchsia-200",
+            "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-200",
+            "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200",
+          ];
+          return colors[Math.abs(hash) % colors.length];
+        };
+
+        themesTries.forEach(theme => {
+          let recettesTriees = groupes[theme].sort((a, b) => a.localeCompare(b));
+          let themeColorClass = getColorForTheme(theme);
+
+          html += `
+            <div class="shrink-0 mt-3 mb-1 px-3 py-1.5 rounded-lg ${themeColorClass} font-bold text-xs uppercase tracking-wider sticky top-0 z-10 shadow-sm backdrop-blur-md">
+              ${theme}
+            </div>
+          `;
+
+          recettesTriees.forEach(nom => {
+            let nomSafe = nom.replace(/"/g, "&quot;").replace(/'/g, "\\'");
+            html += `
+              <button
+                type="button"
+                onclick="selectionnerRecetteDansModale('${nomSafe}')"
+                class="shrink-0 w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors text-sm text-slate-700 dark:text-slate-300 truncate"
+              >
+                ${nom}
+              </button>
+            `;
+          });
+        });
+
+        conteneur.innerHTML = html;
+      }
+
+      function selectionnerRecetteDansModale(nomRecette) {
+        if (cibleChoixRecetteId) {
+          // Mettre à jour l'input caché
+          let input = document.getElementById(cibleChoixRecetteId);
+          if (input) {
+            input.value = nomRecette;
+            // Déclencher un événement change pour que les scripts existants s'activent
+            input.dispatchEvent(new Event('change'));
+          }
+
+          // Mettre à jour le texte du bouton affiché (il doit avoir un id spécifique)
+          let btnDisplay = document.getElementById(cibleChoixRecetteId + "_btn");
+          if (btnDisplay) {
+            // S'il y a un span, on met à jour le span, sinon on reconstruit le HTML pour ne pas perdre l'icône
+            let span = btnDisplay.querySelector("span");
+            if (span) {
+                span.innerText = nomRecette;
+            } else {
+                // Les boutons sans span (vue_consult et vue_modifier_recette) utilisent un chevron w-4 h-4 ou w-5 h-5
+                let iconClass = cibleChoixRecetteId === "edit_recette_select" ? "w-5 h-5 shrink-0" : "w-4 h-4";
+                btnDisplay.innerHTML = `${nomRecette} <i data-lucide="chevron-down" class="${iconClass} ml-2"></i>`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+            btnDisplay.classList.remove("text-slate-400"); // Enlever style grisé si placeholder
+          }
+        }
+
+        if (callbackChoixRecette) {
+          callbackChoixRecette(nomRecette);
+        }
+
+        fermerModaleChoixRecette();
+      }
 
       function getTousLesIngredients() {
         let mapIngredients = new Map();
 
         const addIngredient = (ing) => {
-          if(!ing) return;
+          if (!ing) return;
           let norm = normalizeName(ing);
-          if(!mapIngredients.has(norm)) {
+          if (!mapIngredients.has(norm)) {
             mapIngredients.set(norm, String(ing));
           }
         };
@@ -68,7 +288,9 @@
           addIngredient(ing);
         }
 
-        return Array.from(mapIngredients.values()).sort((a, b) => a.localeCompare(b));
+        return Array.from(mapIngredients.values()).sort((a, b) =>
+          a.localeCompare(b),
+        );
       }
 
       let listeRayonsActuelle = [
@@ -80,12 +302,16 @@
         "🧼 Hygiène & Soins",
         "❄️ Surgelés",
         "🥤 Boissons",
-        "🛒 Rayon Divers / Épicerie"
+        "🛒 Rayon Divers / Épicerie",
       ];
 
       function normalizeName(name) {
         if (!name) return "";
-        return name.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return name
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
       }
 
       function determinerRayon(nomIngredient) {
@@ -94,16 +320,19 @@
         // mappingRayons est alimenté par la fonction getTousLesRayons()
         // La clé doit correspondre exactement après normalisation.
         for (let [ing, rayon] of Object.entries(mappingRayons)) {
-            if (normalizeName(ing) === nomNormalise) {
-                return rayon;
-            }
+          if (normalizeName(ing) === nomNormalise) {
+            return rayon;
+          }
         }
         // Fallback s'il n'est pas encore assigné
         return "🛒 Rayon Divers / Épicerie";
       }
 
       async function apiGet(action, params = {}) {
-        const queryParams = new URLSearchParams({ action, ...params }).toString();
+        const queryParams = new URLSearchParams({
+          action,
+          ...params,
+        }).toString();
         const response = await fetch(`${API_URL}?${queryParams}`);
         return await response.json();
       }
@@ -111,35 +340,42 @@
       async function apiPost(action, data = {}) {
         const response = await fetch(API_URL, {
           method: "POST",
-          body: JSON.stringify({ action, ...data })
+          body: JSON.stringify({ action, ...data }),
         });
         return await response.json();
       }
 
-
       function ouvrirModaleSuggestions() {
         let tousLesArticles = getTousLesIngredients();
-        let articlesPrevus = listeCoursesBrute.map(item => normalizeName(item.nom));
-        let articlesRestants = tousLesArticles.filter(art => !articlesPrevus.includes(normalizeName(art)));
+        let articlesPrevus = listeCoursesBrute.map((item) =>
+          normalizeName(item.nom),
+        );
+        let articlesRestants = tousLesArticles.filter(
+          (art) => !articlesPrevus.includes(normalizeName(art)),
+        );
 
         let categoriesMap = new Map();
-        articlesRestants.forEach(art => {
-            let rayon = determinerRayon(art);
-            if (!categoriesMap.has(rayon)) {
-                categoriesMap.set(rayon, []);
-            }
-            categoriesMap.get(rayon).push(art);
+        articlesRestants.forEach((art) => {
+          let rayon = determinerRayon(art);
+          if (!categoriesMap.has(rayon)) {
+            categoriesMap.set(rayon, []);
+          }
+          categoriesMap.get(rayon).push(art);
         });
 
-        let categories = Array.from(categoriesMap.keys()).sort().map(rayon => {
+        let categories = Array.from(categoriesMap.keys())
+          .sort()
+          .map((rayon) => {
             return {
-                categorie: rayon,
-                items: categoriesMap.get(rayon).sort((a, b) => a.localeCompare(b))
+              categorie: rayon,
+              items: categoriesMap
+                .get(rayon)
+                .sort((a, b) => a.localeCompare(b)),
             };
-        });
+          });
 
-        let box = document.getElementById('contenu_suggestions_categories');
-        let html = '';
+        let box = document.getElementById("contenu_suggestions_categories");
+        let html = "";
 
         categories.forEach((catGroup, idxCat) => {
           html += `
@@ -152,8 +388,8 @@
 
           catGroup.items.forEach((item, idxItem) => {
             let idUnique = `sug_${idxCat}_${idxItem}`;
-            let itemSafe = String(item).replace(/"/g, '&quot;');
-            let catSafe = catGroup.categorie.replace(/"/g, '&quot;');
+            let itemSafe = String(item).replace(/"/g, "&quot;");
+            let catSafe = catGroup.categorie.replace(/"/g, "&quot;");
 
             html += `
               <div class="flex gap-2 items-center">
@@ -170,28 +406,32 @@
         });
 
         if (categories.length === 0) {
-            html = '<p class="text-sm text-center text-slate-500 dark:text-slate-400">Aucun article supplémentaire disponible.</p>';
+          html =
+            '<p class="text-sm text-center text-slate-500 dark:text-slate-400">Aucun article supplémentaire disponible.</p>';
         }
 
         // Mettre à jour le select d'ajout rapide
-        let selectAjout = document.getElementById('nouvelle_sug_cat');
+        let selectAjout = document.getElementById("nouvelle_sug_cat");
         if (selectAjout) {
-            selectAjout.innerHTML = listeRayonsActuelle.map(r => `<option value="${r}">${r}</option>`).join('');
+          selectAjout.innerHTML = listeRayonsActuelle
+            .map((r) => `<option value="${r}">${r}</option>`)
+            .join("");
         }
 
         box.innerHTML = html;
-        document.getElementById('modale_suggestions').classList.remove('hidden');
-        lucide.createIcons();
+        document
+          .getElementById("modale_suggestions")
+          .classList.remove("hidden");
+        setTimeout(() => lucide.createIcons(), 50);
       }
 
       function fermerModaleSuggestions() {
-        document.getElementById('modale_suggestions').classList.add('hidden');
+        document.getElementById("modale_suggestions").classList.add("hidden");
       }
 
-
       async function ajouterArticleModalePerso() {
-        let inputNom = document.getElementById('nouvelle_sug_nom');
-        let selectCat = document.getElementById('nouvelle_sug_cat');
+        let inputNom = document.getElementById("nouvelle_sug_nom");
+        let selectCat = document.getElementById("nouvelle_sug_cat");
         let nom = inputNom.value.trim();
         let cat = selectCat.value;
 
@@ -204,27 +444,32 @@
         mappingRayons[nom] = cat;
 
         // Mettre à jour localStorage
-        localStorage.setItem('cache_mappingRayons', JSON.stringify(mappingRayons));
+        localStorage.setItem(
+          "cache_mappingRayons",
+          JSON.stringify(mappingRayons),
+        );
 
         // Vider l'input et rafraîchir
-        inputNom.value = '';
+        inputNom.value = "";
         ouvrirModaleSuggestions();
 
         try {
-          await apiPost('sauvegarderRayons', { mapping: mappingRayons });
-        } catch(e) {
+          await apiPost("sauvegarderRayons", { mapping: mappingRayons });
+        } catch (e) {
           console.warn("Erreur lors de la sauvegarde du nouveau rayon.", e);
         }
       }
 
       function validerSuggestionsEtVoirCourses() {
-        let itemsCoches = document.querySelectorAll('.chk-sug-item:checked');
+        let itemsCoches = document.querySelectorAll(".chk-sug-item:checked");
 
-        itemsCoches.forEach(chk => {
-          let nom = chk.getAttribute('data-nom');
-          let cat = chk.getAttribute('data-cat');
-          let parentDiv = chk.closest('div');
-          let inputQte = parentDiv ? parentDiv.querySelector('.input-sug-qte') : null;
+        itemsCoches.forEach((chk) => {
+          let nom = chk.getAttribute("data-nom");
+          let cat = chk.getAttribute("data-cat");
+          let parentDiv = chk.closest("div");
+          let inputQte = parentDiv
+            ? parentDiv.querySelector(".input-sug-qte")
+            : null;
           let qte = inputQte ? inputQte.value.trim() : "";
 
           // Ajouter dans la liste de courses
@@ -232,19 +477,19 @@
             nom: nom,
             quantite: qte,
             unite: "",
-            rayonForce: cat
+            rayonForce: cat,
           });
         });
 
         fermerModaleSuggestions();
         afficherListeCourseTriee();
-        changerVue('etape3');
+        changerVue("etape3");
       }
 
       function passerSuggestions() {
         fermerModaleSuggestions();
         afficherListeCourseTriee();
-        changerVue('etape3');
+        changerVue("etape3");
       }
 
       function getLundiDate(d = new Date()) {
@@ -254,64 +499,122 @@
       }
 
       function formaterDateLitterale(dateObj) {
-        return dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        return dateObj.toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
       }
 
-      document.addEventListener('DOMContentLoaded', async function() {
+      function parseSafeDate(dateStr) {
+          if (!dateStr) return new Date();
+          let isoDate = String(dateStr).split('T')[0];
+          let d = new Date(isoDate + "T12:00:00");
+          if (isNaN(d.getTime())) return new Date(); // fallback
+          return d;
+      }
+
+      function formaterPeriodeMenu(dateDebutStr) {
+          if (!dateDebutStr) return "Menu sans date";
+          let d1 = parseSafeDate(dateDebutStr);
+          let d2 = parseSafeDate(dateDebutStr);
+          d2.setDate(d2.getDate() + 6);
+
+          let formatOptions = { weekday: 'long', day: 'numeric', month: 'short' };
+          let str1 = d1.toLocaleDateString('fr-FR', formatOptions);
+          let str2 = d2.toLocaleDateString('fr-FR', formatOptions);
+
+          return "Du " + str1 + " au " + str2;
+      }
+
+      document.addEventListener("DOMContentLoaded", async function () {
         lucide.createIcons();
 
         const DELAI_EXPIRATION = 30 * 60 * 1000;
-        let dernierAcces = parseInt(localStorage.getItem('dernier_acces') || "0");
+        let dernierAcces = parseInt(
+          localStorage.getItem("dernier_acces") || "0",
+        );
         let maintenant = new Date().getTime();
-        let vueSauvegardee = 'menu_principal';
+        let vueSauvegardee = "menu_principal";
 
         if (maintenant - dernierAcces < DELAI_EXPIRATION) {
-          vueSauvegardee = localStorage.getItem('derniere_vue') || 'menu_principal';
+          vueSauvegardee =
+            localStorage.getItem("derniere_vue") || "menu_principal";
         } else {
-          localStorage.setItem('derniere_vue', 'menu_principal');
+          localStorage.setItem("derniere_vue", "menu_principal");
         }
 
-        localStorage.setItem('dernier_acces', maintenant.toString());
+        // Si une vue est présente dans le hash de l'URL, elle priorise la vue sauvegardée
+        if (window.location.hash) {
+           let hashVue = window.location.hash.substring(1);
+           if (document.getElementById(hashVue)) {
+              vueSauvegardee = hashVue;
+           }
+        }
+
+        localStorage.setItem("dernier_acces", maintenant.toString());
+
+        // Initialiser l'état d'historique initial
+        history.replaceState({ vueId: vueSauvegardee }, "", `#${vueSauvegardee}`);
+
+        // Ecouter l'événement popstate pour le retour en arrière (Android back button, swipe)
+        window.addEventListener('popstate', function(event) {
+          if (event.state && event.state.vueId) {
+            // Appeler changerVue sans ajouter un nouvel état dans l'historique
+            changerVue(event.state.vueId, true, false);
+          } else {
+            // S'il n'y a pas d'état, on retourne au menu principal
+            changerVue('menu_principal', true, false);
+          }
+        });
 
         // 1. Charger depuis le cache local (synchrone)
         try {
-          let cacheRayons = localStorage.getItem('cache_mappingRayons');
+          let cacheRayons = localStorage.getItem("cache_mappingRayons");
           if (cacheRayons) {
-             mappingRayons = JSON.parse(cacheRayons);
-             for (let r of Object.values(mappingRayons)) {
-               if (r && !listeRayonsActuelle.includes(r)) {
-                 listeRayonsActuelle.push(r);
-               }
-             }
-             mettreAJourSelectRayonsGlobal();
+            mappingRayons = JSON.parse(cacheRayons);
+            for (let r of Object.values(mappingRayons)) {
+              if (r && !listeRayonsActuelle.includes(r)) {
+                listeRayonsActuelle.push(r);
+              }
+            }
+            mettreAJourSelectRayonsGlobal();
           }
 
-          let cacheRecettes = localStorage.getItem('cache_recs');
+          let cacheRecettes = localStorage.getItem("cache_recs");
           if (cacheRecettes) recs = JSON.parse(cacheRecettes);
 
-          let cacheMenus = localStorage.getItem('cache_menusCharges');
+          let cacheMenus = localStorage.getItem("cache_menusCharges");
           if (cacheMenus) menusCharges = JSON.parse(cacheMenus);
-
-
-        } catch(e) {
+        } catch (e) {
           console.warn("Erreur de lecture du cache", e);
         }
 
         changerVue(vueSauvegardee, false);
 
-        if (vueSauvegardee === 'vue_menus' && menusCharges && menusCharges.length > 0) {
-            chargerMenus();
+        if (
+          vueSauvegardee === "vue_menus" &&
+          menusCharges &&
+          menusCharges.length > 0
+        ) {
+          chargerMenus();
         }
-        if (vueSauvegardee === 'vue_consult') {
-          let lastRecipe = localStorage.getItem('derniere_recette');
+        if (vueSauvegardee === "vue_consult") {
+          let lastRecipe = localStorage.getItem("derniere_recette");
           if (lastRecipe) {
-            setTimeout(() => cuisinerRaccourci(lastRecipe, localStorage.getItem('derniers_couverts') || 5), 300);
+            setTimeout(
+              () =>
+                cuisinerRaccourci(
+                  lastRecipe,
+                  localStorage.getItem("derniers_couverts") || 5,
+                ),
+              300,
+            );
           }
         }
-        if (vueSauvegardee === 'vue_gerer_rayons') {
-           chargerRayonsAdmin();
+        if (vueSauvegardee === "vue_gerer_rayons") {
+          chargerRayonsAdmin();
         }
-
 
         // 2. Fetch en arrière-plan et comparaison
         fetchDonneesArrierePlan(vueSauvegardee);
@@ -319,71 +622,92 @@
 
       async function fetchDonneesArrierePlan(vueActuelle) {
         try {
+          let syncInd = document.getElementById("sync_indicator");
+          if (syncInd) syncInd.classList.remove("hidden");
+
           let hasUpdates = false;
 
-          let [nouveauxRayons, nouvellesRecettes, nouveauxMenus] = await Promise.all([
-             apiGet('getTousLesRayons').catch(() => null),
-             apiGet('getListeRecettes').catch(() => null),
-             apiGet('getMenusSauvegardes').catch(() => null)
-          ]);
+          let [nouveauxRayons, nouvellesRecettes, nouveauxMenus] =
+            await Promise.all([
+              apiGet("getTousLesRayons").catch(() => null),
+              apiGet("getListeRecettes").catch(() => null),
+              apiGet("getMenusSauvegardes").catch(() => null),
+            ]);
 
-          if (nouveauxRayons && JSON.stringify(nouveauxRayons) !== JSON.stringify(mappingRayons)) {
-             mappingRayons = nouveauxRayons;
-             localStorage.setItem('cache_mappingRayons', JSON.stringify(mappingRayons));
-             hasUpdates = true;
+          if (
+            nouveauxRayons &&
+            JSON.stringify(nouveauxRayons) !== JSON.stringify(mappingRayons)
+          ) {
+            mappingRayons = nouveauxRayons;
+            localStorage.setItem(
+              "cache_mappingRayons",
+              JSON.stringify(mappingRayons),
+            );
+            hasUpdates = true;
           }
-          if (nouvellesRecettes && JSON.stringify(nouvellesRecettes) !== JSON.stringify(recs)) {
-             recs = nouvellesRecettes;
-             localStorage.setItem('cache_recs', JSON.stringify(recs));
-             hasUpdates = true;
+          if (
+            nouvellesRecettes &&
+            JSON.stringify(nouvellesRecettes) !== JSON.stringify(recs)
+          ) {
+            recs = nouvellesRecettes;
+            localStorage.setItem("cache_recs", JSON.stringify(recs));
+            hasUpdates = true;
           }
-          if (nouveauxMenus && JSON.stringify(nouveauxMenus) !== JSON.stringify(menusCharges)) {
-             menusCharges = nouveauxMenus;
-             localStorage.setItem('cache_menusCharges', JSON.stringify(menusCharges));
-             hasUpdates = true;
+          if (
+            nouveauxMenus &&
+            JSON.stringify(nouveauxMenus) !== JSON.stringify(menusCharges)
+          ) {
+            menusCharges = nouveauxMenus;
+            localStorage.setItem(
+              "cache_menusCharges",
+              JSON.stringify(menusCharges),
+            );
+            hasUpdates = true;
           }
-
 
           // Synchroniser listeRayonsActuelle si mappingRayons a changé
           if (hasUpdates && nouveauxRayons) {
-             for (let r of Object.values(nouveauxRayons)) {
-               if (r && !listeRayonsActuelle.includes(r)) {
-                 listeRayonsActuelle.push(r);
-               }
-             }
-             mettreAJourSelectRayonsGlobal();
+            for (let r of Object.values(nouveauxRayons)) {
+              if (r && !listeRayonsActuelle.includes(r)) {
+                listeRayonsActuelle.push(r);
+              }
+            }
+            mettreAJourSelectRayonsGlobal();
           }
 
           if (hasUpdates) {
-             afficherToastUpdate();
-             // Actualiser la vue courante silencieusement si nécessaire
-             if (vueActuelle === 'vue_menus') chargerMenus(false); // pass flag
-             if (vueActuelle === 'vue_gerer_rayons') chargerRayonsAdmin();
-
+            afficherToastUpdate();
+            // Actualiser la vue courante silencieusement si nécessaire
+            if (vueActuelle === "vue_menus") chargerMenus(false); // pass flag
+            if (vueActuelle === "vue_gerer_rayons") chargerRayonsAdmin();
           }
-        } catch(e) {
+        } catch (e) {
           console.warn("Échec de la mise à jour en arrière-plan", e);
+        } finally {
+          let syncInd = document.getElementById("sync_indicator");
+          if (syncInd) syncInd.classList.add("hidden");
         }
       }
 
       // --- BATCH COOKING & GUIDAGE GEMINI ---
       async function ouvrirSelectionBatch() {
-        changerVue('vue_selection_batch');
+        changerVue("vue_selection_batch");
         if (!menusCharges || menusCharges.length === 0) {
-          menusCharges = await apiGet('getMenusSauvegardes') || [];
+          menusCharges = (await apiGet("getMenusSauvegardes")) || [];
         }
 
-        let select = document.getElementById('select_semaine_batch');
-        select.innerHTML = '';
+        let select = document.getElementById("select_semaine_batch");
+        select.innerHTML = "";
 
         if (!menusCharges || menusCharges.length === 0) {
-          document.getElementById('liste_cocher_batch').innerHTML = '<p class="text-center text-xs text-slate-400 py-4">Aucun menu disponible.</p>';
+          document.getElementById("liste_cocher_batch").innerHTML =
+            '<p class="text-center text-xs text-slate-400 py-4">Aucun menu disponible.</p>';
           return;
         }
 
         menusCharges.forEach((lot) => {
           let labelSemaine = lot.dateDebut
-            ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut))
+            ? "Semaine du " + formaterDateLitterale(parseSafeDate(lot.dateDebut))
             : "Menu (" + lot.date + ")";
           select.innerHTML += `<option value="${lot.id}">${labelSemaine}</option>`;
         });
@@ -392,19 +716,25 @@
       }
 
       function chargerPlatsBatchCible() {
-        let idSelected = document.getElementById('select_semaine_batch').value;
-        let menuCible = menusCharges.find(m => String(m.id) === String(idSelected));
-        let conteneur = document.getElementById('liste_cocher_batch');
+        let idSelected = document.getElementById("select_semaine_batch").value;
+        let menuCible = menusCharges.find(
+          (m) => String(m.id) === String(idSelected),
+        );
+        let conteneur = document.getElementById("liste_cocher_batch");
 
         if (!menuCible || !menuCible.repas || menuCible.repas.length === 0) {
-          conteneur.innerHTML = '<p class="text-center text-xs text-slate-400 py-4">Aucun plat dans ce menu.</p>';
+          conteneur.innerHTML =
+            '<p class="text-center text-xs text-slate-400 py-4">Aucun plat dans ce menu.</p>';
           return;
         }
 
-        let html = '';
+        let html = "";
         menuCible.repas.forEach((r, idx) => {
-          let titreFormate = (r.titre && r.titre !== "Repas non défini") ? r.titre : "Repas " + (idx + 1);
-          let recSafe = String(r.recette).replace(/"/g, '&quot;');
+          let titreFormate =
+            r.titre && r.titre !== "Repas non défini"
+              ? r.titre
+              : "Repas " + (idx + 1);
+          let recSafe = String(r.recette).replace(/"/g, "&quot;");
           html += `
             <label class="flex items-center gap-3 p-3.5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer active:bg-slate-50 transition-all">
               <input type="checkbox" class="chk-batch w-5 h-5 rounded-lg text-amber-500 border-slate-300 focus:ring-amber-500" data-recette="${recSafe}" data-couverts="${r.couverts}" data-titre="${titreFormate}" checked>
@@ -418,25 +748,30 @@
       }
 
       async function demarrerSessionCuisine() {
-        let cochés = Array.from(document.querySelectorAll('.chk-batch:checked'));
+        let cochés = Array.from(
+          document.querySelectorAll(".chk-batch:checked"),
+        );
         if (cochés.length === 0) {
           alert("⚠️ Coche au moins 1 plat à cuisiner !");
           return;
         }
 
-        platsSelectionnesBatch = cochés.map(c => ({
-          recette: c.getAttribute('data-recette'),
-          couverts: parseInt(c.getAttribute('data-couverts')) || 5,
-          titre: c.getAttribute('data-titre')
+        platsSelectionnesBatch = cochés.map((c) => ({
+          recette: c.getAttribute("data-recette"),
+          couverts: parseInt(c.getAttribute("data-couverts")) || 5,
+          titre: c.getAttribute("data-titre"),
         }));
 
         cacheDetailsIngredsBatch = {};
-        changerVue('vue_session_cuisine');
+        changerVue("vue_session_cuisine");
 
-        let ongletsBox = document.getElementById('onglets_batch');
-        let htmlOnglets = '';
+        let ongletsBox = document.getElementById("onglets_batch");
+        let htmlOnglets = "";
         platsSelectionnesBatch.forEach((p, idx) => {
-          let activeClass = idx === 0 ? "bg-amber-500 text-white shadow-md shadow-amber-500/20" : "bg-white text-slate-600 border border-slate-200";
+          let activeClass =
+            idx === 0
+              ? "bg-amber-500 text-white shadow-md shadow-amber-500/20"
+              : "bg-white text-slate-600 border border-slate-200";
           htmlOnglets += `
             <button type="button" onclick="afficherOngletBatch(${idx})" class="btn-tab-batch font-bold text-xs px-3.5 py-2 rounded-2xl whitespace-nowrap transition-all ${activeClass}" data-idx="${idx}">
               ${p.recette}
@@ -448,36 +783,54 @@
       }
 
       async function afficherOngletBatch(index) {
-        document.querySelectorAll('.btn-tab-batch').forEach((btn, i) => {
+        document.querySelectorAll(".btn-tab-batch").forEach((btn, i) => {
           if (i === index) {
-            btn.className = "btn-tab-batch font-bold text-xs px-3.5 py-2 rounded-2xl whitespace-nowrap transition-all bg-amber-500 text-white shadow-md shadow-amber-500/20";
+            btn.className =
+              "btn-tab-batch font-bold text-xs px-3.5 py-2 rounded-2xl whitespace-nowrap transition-all bg-amber-500 text-white shadow-md shadow-amber-500/20";
           } else {
-            btn.className = "btn-tab-batch font-bold text-xs px-3.5 py-2 rounded-2xl whitespace-nowrap transition-all bg-white text-slate-600 border border-slate-200";
+            btn.className =
+              "btn-tab-batch font-bold text-xs px-3.5 py-2 rounded-2xl whitespace-nowrap transition-all bg-white text-slate-600 border border-slate-200";
           }
         });
 
         let plat = platsSelectionnesBatch[index];
-        document.getElementById('batch_titre_plat').innerText = plat.recette;
-        document.getElementById('batch_parts_plat').innerText = plat.couverts;
-        document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-slate-400 italic text-sm animate-pulse">Chargement de la fiche...</p>';
+        document.getElementById("batch_titre_plat").innerText = plat.recette;
+        document.getElementById("batch_parts_plat").innerText = plat.couverts;
+        document.getElementById("batch_details_recette").innerHTML =
+          '<p class="p-4 text-center text-slate-400 italic text-sm animate-pulse">Chargement de la fiche...</p>';
 
         try {
-          const items = await apiGet('getDetailsRecette', { nomRecette: plat.recette, nbParts: plat.couverts });
+          const items = await apiGet("getDetailsRecette", {
+            nomRecette: plat.recette,
+            nbParts: plat.couverts,
+          });
           cacheDetailsIngredsBatch[plat.recette] = items || [];
-          cacheDetailsRecettes[getCleCacheRecette(plat.recette, plat.couverts)] = items || [];
+          cacheDetailsRecettes[
+            getCleCacheRecette(plat.recette, plat.couverts)
+          ] = items || [];
 
-          if (!items || items.length === 0) return document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-sm">Introuvable.</p>';
-          let h = '<ul class="divide-y divide-slate-100">';
-          items.forEach(it => h += `<li class="py-2.5 px-1 flex justify-between bg-white dark:bg-slate-800 text-sm"><span class="font-bold text-slate-800 dark:text-slate-200">${it.nom}</span><span class="text-amber-600 font-semibold">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
-          document.getElementById('batch_details_recette').innerHTML = h + '</ul>';
-        } catch(e) {
-          document.getElementById('batch_details_recette').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
+          if (!items || items.length === 0)
+            return (document.getElementById("batch_details_recette").innerHTML =
+              '<p class="p-4 text-center text-sm">Introuvable.</p>');
+
+          document.getElementById("batch_details_recette").innerHTML =
+            '<ul class="divide-y divide-slate-100">' +
+            items
+              .map(
+                (it) =>
+                  `<li class="py-2.5 px-1 flex justify-between bg-white dark:bg-slate-800 text-sm"><span class="font-bold text-slate-800 dark:text-slate-200">${it.nom}</span><span class="text-amber-600 font-semibold">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`
+              )
+              .join("") +
+            "</ul>";
+        } catch (e) {
+          document.getElementById("batch_details_recette").innerHTML =
+            '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
         }
       }
 
       // --- LEMENTATION DE LA REQUÊTE BATCH COOKING GEMINI AVEC INGRÉDIENTS DÉTAILLÉS ---
       async function lancerAssistantGeminiBatch() {
-        let btn = document.getElementById('btn_gemini_batch');
+        let btn = document.getElementById("btn_gemini_batch");
         let texteOriginal = btn.innerHTML;
         btn.innerHTML = `<span>⏳ Récupération de tous les ingrédients...</span>`;
         btn.disabled = true;
@@ -488,13 +841,17 @@
           for (let p of platsSelectionnesBatch) {
             let items = cacheDetailsIngredsBatch[p.recette];
             if (!items) {
-              items = await apiGet('getDetailsRecette', { nomRecette: p.recette, nbParts: p.couverts }) || [];
+              items =
+                (await apiGet("getDetailsRecette", {
+                  nomRecette: p.recette,
+                  nbParts: p.couverts,
+                })) || [];
               cacheDetailsIngredsBatch[p.recette] = items;
             }
 
             listeCompleteIngredsText += `\n📌 Plat : ${p.recette} (${p.couverts} parts)\nIngrédients :\n`;
-            items.forEach(it => {
-              let qte = it.quantite > 0 ? `${it.quantite} ${it.unite}` : '';
+            items.forEach((it) => {
+              let qte = it.quantite > 0 ? `${it.quantite} ${it.unite}` : "";
               listeCompleteIngredsText += `- ${it.nom} ${qte}\n`;
             });
           }
@@ -511,10 +868,11 @@ Consignes à respecter impérativement :
 
           await navigator.clipboard.writeText(promptGemini);
 
-          alert("✅ Le plan de préparation avec la liste des ingrédients a été copié !\n\nGemini va s'ouvrir : colle simplement le texte dans la zone de saisie (Ctrl+V ou appui long -> Coller).");
+          alert(
+            "✅ Le plan de préparation avec la liste des ingrédients a été copié !\n\nGemini va s'ouvrir : colle simplement le texte dans la zone de saisie (Ctrl+V ou appui long -> Coller).",
+          );
           window.open("https://gemini.google.com/app", "_blank");
-
-        } catch(e) {
+        } catch (e) {
           alert("Erreur lors de la préparation de la requête Gemini.");
         } finally {
           btn.innerHTML = texteOriginal;
@@ -522,59 +880,198 @@ Consignes à respecter impérativement :
         }
       }
 
+
+      function initQuickDateSelector(dateInitiale = null) {
+        const conteneur = document.getElementById("quick_date_selector");
+        const dateInput = document.getElementById("date_debut_menu");
+
+        // S'assurer qu'on ne prend pas l'heure en compte pour eviter les decallages de fuseau
+        let targetDate = dateInitiale ? parseSafeDate(dateInitiale) : new Date();
+        const year = targetDate.getFullYear();
+        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const day = String(targetDate.getDate()).padStart(2, '0');
+        let initialDateStr = `${year}-${month}-${day}`;
+
+        let html = '';
+        let today = new Date();
+        today.setHours(0,0,0,0);
+
+        const formatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric' });
+
+        // Generer les 7 prochains jours
+        for (let i = 0; i < 7; i++) {
+            let d = new Date(today);
+            d.setDate(d.getDate() + i);
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const dayNum = String(d.getDate()).padStart(2, '0');
+            let dateStr = `${y}-${m}-${dayNum}`;
+            let label = formatter.format(d);
+            label = label.charAt(0).toUpperCase() + label.slice(1);
+            if (i === 0) label = "Auj.";
+            if (i === 1) label = "Dem.";
+
+            let isActive = (dateStr === initialDateStr) ? "bg-indigo-500 text-white shadow-md shadow-indigo-500/30" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600";
+
+            html += `
+              <button type="button" onclick="setQuickDate('${dateStr}')" class="shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-all ${isActive} quick-date-btn" data-date="${dateStr}">
+                ${label}
+              </button>
+            `;
+        }
+
+        // Bouton "Autre"
+        html += `
+          <button type="button" onclick="document.getElementById('date_debut_menu').showPicker ? document.getElementById('date_debut_menu').showPicker() : document.getElementById('date_debut_menu').classList.remove('hidden')" class="shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 quick-date-btn" id="btn_quick_autre">
+            📅 Autre
+          </button>
+        `;
+
+        conteneur.innerHTML = html;
+
+        if (dateInitiale) {
+           dateInput.value = initialDateStr;
+        }
+
+        gererChangementDateDebut(initialDateStr, false);
+      }
+
+      function setQuickDate(dateStr) {
+         let dateInput = document.getElementById("date_debut_menu");
+         dateInput.value = dateStr;
+         gererChangementDateDebut(dateStr, true);
+      }
+
+      function updateQuickDateUI(dateStr) {
+         document.querySelectorAll('.quick-date-btn').forEach(btn => {
+            btn.className = "shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 quick-date-btn";
+            if (btn.getAttribute('data-date') === dateStr) {
+               btn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-600');
+               btn.classList.add('bg-indigo-500', 'text-white', 'shadow-md', 'shadow-indigo-500/30');
+            }
+         });
+
+         // S'il n'est pas dans les boutons rapides, on surligne le bouton "Autre"
+         let btnAutre = document.getElementById('btn_quick_autre');
+         if (btnAutre && !document.querySelector(`.quick-date-btn[data-date="${dateStr}"]`)) {
+             btnAutre.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-600', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-600');
+             btnAutre.classList.add('bg-indigo-500', 'text-white', 'shadow-md', 'shadow-indigo-500/30');
+             document.getElementById("date_debut_menu").classList.remove("hidden");
+         } else {
+             document.getElementById("date_debut_menu").classList.add("hidden");
+         }
+      }
+
+      function gererChangementDateDebut(dateStr, fromQuickBtn = false) {
+         if (!dateStr) return;
+         updateQuickDateUI(dateStr);
+         // Mettre à jour toutes les grilles
+         mettreAJourToutesLesGrilles();
+      }
+
       function getProchainLundi() {
         let d = new Date();
         let day = d.getDay();
         let diff = d.getDate() - day + (day === 0 ? -6 : 1);
         let lundi = new Date(d.setDate(diff));
-        return lundi.toISOString().split('T')[0];
+        return lundi.toISOString().split("T")[0];
       }
 
       function ouvrirPlanification() {
-        document.getElementById('edit_menu_id').value = '';
-        document.getElementById('titre_edition_menu').innerText = 'Composer le menu';
-        document.getElementById('date_debut_menu').value = getProchainLundi();
-        document.getElementById('form_repas').innerHTML = '';
+        document.getElementById("edit_menu_id").value = "";
+        document.getElementById("titre_edition_menu").innerText =
+          "Composer le menu";
+
+        let dateDepart = getProchainLundi();
+
+        // Initialiser l'input de date D'ABORD, pour que ajouterBlocRepas -> mettreAJourToutesLesGrilles fonctionne.
+        document.getElementById("date_debut_menu").value = dateDepart;
+
+        document.getElementById("form_repas").innerHTML = "";
         ajouterBlocRepas();
-        changerVue('etape2');
+
+        initQuickDateSelector(dateDepart);
+        changerVue("etape2");
       }
 
-      function changerVue(id, sauver = true) {
-        document.querySelectorAll('.etape').forEach(e => e.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
+      function changerVue(id, sauver = true, pushHistory = true) {
+        document
+          .querySelectorAll(".etape")
+          .forEach((e) => e.classList.add("hidden"));
+        document.getElementById(id).classList.remove("hidden");
 
-        localStorage.setItem('dernier_acces', new Date().getTime().toString());
+        localStorage.setItem("dernier_acces", new Date().getTime().toString());
         if (sauver) {
-          localStorage.setItem('derniere_vue', id);
+          localStorage.setItem("derniere_vue", id);
         }
 
-        if(id === 'vue_consult') {
-          let optionsSafe = (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
-          let currentSelect = document.getElementById('select_consult').value;
-          document.getElementById('select_consult').innerHTML = '<option value="">Sélectionner une recette...</option>' + optionsSafe;
-          if (currentSelect) document.getElementById('select_consult').value = currentSelect;
-        }
-        if(id === 'vue_modifier_recette') {
-          let optionsSafe = (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
-          document.getElementById('edit_recette_select').innerHTML = '<option value="">Sélectionnez une recette...</option>' + optionsSafe;
-          document.getElementById('edit_recette_zone').classList.add('hidden');
-          document.getElementById('edit_recette_select').value = "";
+        // Gérer l'historique du navigateur pour permettre le retour / swipe Android
+        if (pushHistory) {
+          history.pushState({ vueId: id }, "", `#${id}`);
         }
 
-        if(id === 'vue_gerer_rayons') {
+        if (id === "vue_consult") {
+          let currentSelect = document.getElementById("select_consult").value;
+          let btnDisplay = document.getElementById("select_consult_btn");
+          if (currentSelect && btnDisplay) {
+            // Supprime tout le texte (et l'icône), on ne garde que le texte
+            let spanTexte = currentSelect;
+            btnDisplay.innerHTML = `${spanTexte} <i data-lucide="chevron-down" class="w-4 h-4 ml-2"></i>`;
+            btnDisplay.classList.remove("text-slate-400");
+          } else if(btnDisplay) {
+            btnDisplay.innerHTML = `Sélectionner une recette... <i data-lucide="chevron-down" class="w-4 h-4 ml-2"></i>`;
+            btnDisplay.classList.add("text-slate-400");
+          }
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        if (id === "vue_modifier_recette") {
+          document.getElementById("edit_recette_zone").classList.add("hidden");
+          document.getElementById("edit_recette_select").value = "";
+          let btnDisplay = document.getElementById("edit_recette_select_btn");
+          if(btnDisplay) {
+             btnDisplay.innerHTML = `Sélectionnez une recette... <i data-lucide="chevron-down" class="w-5 h-5 ml-2 shrink-0"></i>`;
+             btnDisplay.classList.add("text-slate-400");
+          }
+          if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        if (id === "vue_gerer_rayons") {
           chargerRayonsAdmin();
         }
-        if (id === 'vue_ajout' || id === 'vue_modifier_recette') {
+        if (id === "vue_ajout" || id === "vue_modifier_recette") {
           mettreAJourDatalistArticles();
+          mettreAJourDatalistThemes();
         }
         setTimeout(() => lucide.createIcons(), 50);
       }
 
       function mettreAJourDatalistArticles() {
-        let datalist = document.getElementById('datalist_articles');
+        let datalist = document.getElementById("datalist_articles");
         if (datalist) {
           let ingredients = getTousLesIngredients();
-          datalist.innerHTML = ingredients.map(ing => `<option value="${String(ing).replace(/"/g, '&quot;')}">`).join('');
+          datalist.innerHTML = ingredients
+            .map(
+              (ing) =>
+                `<option value="${String(ing).replace(/"/g, "&quot;")}">`,
+            )
+            .join("");
+        }
+      }
+
+      function mettreAJourDatalistThemes() {
+        let datalist = document.getElementById("datalist_themes");
+        if (datalist && recs) {
+          let themesSet = new Set();
+          recs.forEach(r => {
+            let theme = typeof r === "object" && r.theme ? r.theme : "";
+            if (theme && theme.toLowerCase() !== "sans thème") {
+              themesSet.add(theme);
+            }
+          });
+          let themes = Array.from(themesSet).sort((a, b) => a.localeCompare(b));
+          datalist.innerHTML = themes
+            .map(t => `<option value="${t.replace(/"/g, "&quot;")}">`)
+            .join("");
         }
       }
 
@@ -585,97 +1082,105 @@ Consignes à respecter impérativement :
         let ingredients = getTousLesIngredients();
         let valNormalisee = normalizeName(val);
 
-        let existeDeja = ingredients.some(ing => normalizeName(ing) === valNormalisee);
+        let existeDeja = ingredients.some(
+          (ing) => normalizeName(ing) === valNormalisee,
+        );
 
         if (!existeDeja) {
           // L'article n'existe pas, on ouvre la modale
-          document.getElementById('nouvel_ing_rapide_nom_display').innerText = val;
-          document.getElementById('nouvel_ing_rapide_nom_val').value = val;
-          document.getElementById('nouvel_ing_rapide_input_ref').value = inputElement.id;
+          document.getElementById("nouvel_ing_rapide_nom_display").innerText =
+            val;
+          document.getElementById("nouvel_ing_rapide_nom_val").value = val;
+          document.getElementById("nouvel_ing_rapide_input_ref").value =
+            inputElement.id;
 
-          let selectRayon = document.getElementById('nouvel_ing_rapide_rayon');
-          selectRayon.innerHTML = listeRayonsActuelle.map(r => `<option value="${r}">${r}</option>`).join('');
+          let selectRayon = document.getElementById("nouvel_ing_rapide_rayon");
+          selectRayon.innerHTML = listeRayonsActuelle
+            .map((r) => `<option value="${r}">${r}</option>`)
+            .join("");
 
-          document.getElementById('modale_nouvel_ing_rapide').classList.remove('hidden');
+          document
+            .getElementById("modale_nouvel_ing_rapide")
+            .classList.remove("hidden");
         }
       }
 
       function annulerNouvelIngRapide() {
-        document.getElementById('modale_nouvel_ing_rapide').classList.add('hidden');
-        let ref = document.getElementById('nouvel_ing_rapide_input_ref').value;
+        document
+          .getElementById("modale_nouvel_ing_rapide")
+          .classList.add("hidden");
+        let ref = document.getElementById("nouvel_ing_rapide_input_ref").value;
         if (ref) {
           let input = document.getElementById(ref);
-          if (input) input.value = ''; // On efface la valeur puisqu'elle a été annulée
+          if (input) input.value = ""; // On efface la valeur puisqu'elle a été annulée
         }
       }
 
       function validerNouvelIngRapide() {
-        let nom = document.getElementById('nouvel_ing_rapide_nom_val').value.trim();
-        let rayon = document.getElementById('nouvel_ing_rapide_rayon').value;
+        let nom = document
+          .getElementById("nouvel_ing_rapide_nom_val")
+          .value.trim();
+        let rayon = document.getElementById("nouvel_ing_rapide_rayon").value;
 
         if (nom && rayon) {
           mappingRayons[nom] = rayon;
           mettreAJourDatalistArticles();
-          alert(`L'article "${nom}" a bien été associé au rayon "${rayon}". (N'oubliez pas de sauvegarder les rayons plus tard si besoin)`);
+          alert(
+            `L'article "${nom}" a bien été associé au rayon "${rayon}". (N'oubliez pas de sauvegarder les rayons plus tard si besoin)`,
+          );
         }
-        document.getElementById('modale_nouvel_ing_rapide').classList.add('hidden');
+        document
+          .getElementById("modale_nouvel_ing_rapide")
+          .classList.add("hidden");
       }
 
       function getCleCacheRecette(recette, couverts) {
-        return `${String(recette || '').trim().toLowerCase()}::${parseInt(couverts) || 1}`;
+        return `${String(recette || "")
+          .trim()
+          .toLowerCase()}::${parseInt(couverts) || 1}`;
       }
 
       function mettreAJourBoutonIngredientsCarte(selectEl) {
-        let card = selectEl.closest('.repas-card');
+        let card = selectEl.closest(".repas-card");
         if (!card) return;
 
-        let btn = card.querySelector('.btn-ingredients-programmation');
+        let btn = card.querySelector(".btn-ingredients-programmation");
         if (!btn) return;
 
         if (selectEl.value) {
-          btn.classList.remove('hidden');
+          btn.classList.remove("hidden");
           btn.disabled = false;
         } else {
-          btn.classList.add('hidden');
+          btn.classList.add("hidden");
           btn.disabled = true;
         }
       }
 
       function ouvrirIngredientsDepuisCarte(btn) {
-        let card = btn.closest('.repas-card');
+        let card = btn.closest(".repas-card");
         if (!card) return;
 
-        let select = card.querySelector('.recette');
-        let couvertsInput = card.querySelector('.couverts');
+        let select = card.querySelector(".recette");
+        let couvertsInput = card.querySelector(".couverts");
         if (!select || !select.value) return;
 
-        ouvrirPopupIngredientsMenu(select.value, parseInt(couvertsInput?.value) || 1);
+        ouvrirPopupIngredientsMenu(
+          select.value,
+          parseInt(couvertsInput?.value) || 1,
+        );
       }
 
       function ajouterBlocRepas(donneesRepas = null) {
-        const conteneur = document.getElementById('form_repas');
-        const optionsHTML = '<option value="">Sélectionne une recette</option>' + (recs || []).map(r => `<option value="${String(r).replace(/"/g, '&quot;')}">${String(r)}</option>`).join('');
+        const conteneur = document.getElementById("form_repas");
+        // Les optionsHTML ne sont plus nécessaires car on utilise la modale
 
-        const joursData = [
-          { label: 'Lu', val: 'lundi' }, { label: 'Ma', val: 'mardi' }, { label: 'Me', val: 'mercredi' },
-          { label: 'Je', val: 'jeudi' }, { label: 'Ve', val: 'vendredi' }, { label: 'Sa', val: 'samedi' }, { label: 'Di', val: 'dimanche' }
-        ];
-
-        let gridHTML = '<div class="grid grid-cols-7 gap-1 mt-3 mb-2">';
-        joursData.forEach(j => {
-          gridHTML += `
-            <div class="flex flex-col gap-1 items-center">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${j.label}</span>
-              <button type="button" class="slot-btn w-full aspect-square min-h-[40px] rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-400 text-base border border-slate-200 dark:border-slate-700 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} midi" onclick="toggleSlot(this)">☀️</button>
-              <button type="button" class="slot-btn w-full aspect-square min-h-[40px] rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-400 text-base border border-slate-200 dark:border-slate-700 active:scale-90 transition-all flex items-center justify-center" data-val="${j.val} soir" onclick="toggleSlot(this)">🌙</button>
-            </div>`;
-        });
-        gridHTML += '</div>';
+        // La grille est generique a la creation, elle sera mise a jour ensuite via mettreAJourToutesLesGrilles
+        let gridHTML = '<div class="grid grid-cols-7 gap-1 mt-3 mb-2 grid-jours-dynamique"></div>';
 
         let cardIndex = conteneur.children.length + 1;
         let cardHTML = `
           <div class="repas-card bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 border-l-4 border-l-indigo-600 flex flex-col gap-2 relative">
-            ${cardIndex > 1 ? `<button type="button" onclick="this.closest('.repas-card').remove()" class="absolute top-2 right-2 w-8 h-8 text-slate-400 hover:text-red-500 flex items-center justify-center text-sm font-bold">✕</button>` : ''}
+            ${cardIndex > 1 ? `<button type="button" onclick="this.closest('.repas-card').remove()" class="absolute top-2 right-2 w-8 h-8 text-slate-400 hover:text-red-500 flex items-center justify-center text-sm font-bold">✕</button>` : ""}
             <div class="flex flex-col mb-1 border-b border-dashed border-slate-200 dark:border-slate-700 pb-2">
               <span class="titre-display text-sm font-bold text-slate-400 leading-tight">Sélectionne les créneaux 👇</span>
               <input type="hidden" class="titre" value="Repas non défini">
@@ -693,41 +1198,126 @@ Consignes à respecter impérativement :
             </div>
 
             <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 mt-1 w-full">
-              <select onchange="mettreAJourBoutonIngredientsCarte(this)" class="recette w-full min-w-0 min-h-[44px] text-sm px-3 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium">
-                ${optionsHTML}
-              </select>
+              <input type="hidden" class="recette" id="repas_recette_${cardIndex}" onchange="mettreAJourBoutonIngredientsCarte(this)">
+              <button
+                type="button"
+                id="repas_recette_${cardIndex}_btn"
+                onclick="ouvrirModaleChoixRecette('repas_recette_${cardIndex}')"
+                class="w-full min-w-0 min-h-[44px] text-sm px-3 border border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium flex items-center justify-between text-left text-slate-400"
+              >
+                <span class="truncate">Sélectionne une recette</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 ml-2 shrink-0"></i>
+              </button>
               <button type="button" onclick="ouvrirIngredientsDepuisCarte(this)" class="btn-ingredients-programmation hidden shrink-0 min-h-[44px] whitespace-nowrap px-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-2xl text-xs font-bold shadow-sm active:scale-95 transition-all" disabled>
                 Ingrédients
               </button>
             </div>
           </div>`;
 
-        conteneur.insertAdjacentHTML('beforeend', cardHTML);
+        conteneur.insertAdjacentHTML("beforeend", cardHTML);
+
+        // Re-initialiser les icones lucide pour le nouveau bouton ajouté
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
 
         if (donneesRepas) {
           let derniereCard = conteneur.lastElementChild;
-          if (donneesRepas.recette) derniereCard.querySelector('.recette').value = donneesRepas.recette;
+          if (donneesRepas.recette) {
+            let inputRecette = derniereCard.querySelector(".recette");
+            inputRecette.value = donneesRepas.recette;
+            inputRecette.dispatchEvent(new Event('change')); // Déclencher pour afficher le bouton d'ingrédients
+
+            // Mettre à jour le bouton visuel
+            let btnId = inputRecette.id + "_btn";
+            let btnDisplay = document.getElementById(btnId);
+            if(btnDisplay) {
+                btnDisplay.querySelector('span').innerText = donneesRepas.recette;
+                btnDisplay.classList.remove("text-slate-400");
+            }
+          }
           if (donneesRepas.couverts) {
-            derniereCard.querySelector('.couverts').value = donneesRepas.couverts;
-            derniereCard.querySelector('.couverts-val').innerText = donneesRepas.couverts;
+            derniereCard.querySelector(".couverts").value =
+              donneesRepas.couverts;
+            derniereCard.querySelector(".couverts-val").innerText =
+              donneesRepas.couverts;
           }
-          if (donneesRepas.titre) {
-            let slotsFormates = donneesRepas.titre.toLowerCase();
-            derniereCard.querySelectorAll('.slot-btn').forEach(btn => {
-              let val = btn.getAttribute('data-val');
-              if (slotsFormates.includes(val)) {
-                toggleSlot(btn);
-              }
-            });
+          let titreRepas = donneesRepas.titre || donneesRepas.nom;
+          if (titreRepas) {
+            let titleInput = derniereCard.querySelector(".titre");
+            let titleDisplay = derniereCard.querySelector(".titre-display");
+            titleInput.value = titreRepas;
+            titleDisplay.innerText = titreRepas;
+            titleDisplay.classList.remove("text-slate-400");
+            titleDisplay.classList.add("text-indigo-700");
           }
-          mettreAJourBoutonIngredientsCarte(derniereCard.querySelector('.recette'));
+          mettreAJourBoutonIngredientsCarte(
+            derniereCard.querySelector(".recette"),
+          );
         }
+
+        // Forcer la maj de la grille pour la nouvelle card
+        mettreAJourToutesLesGrilles();
+      }
+
+
+      function genererGrilleJours(dateDebutStr, slotsActifsStr = "") {
+        if (!dateDebutStr) return "";
+        let d = parseSafeDate(dateDebutStr);
+        let html = "";
+        const formatterJour = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' });
+        const formatterNum = new Intl.DateTimeFormat('fr-FR', { day: 'numeric' });
+
+        let slotsFormates = (slotsActifsStr || "").toLowerCase();
+
+        for(let i=0; i<7; i++) {
+           let current = new Date(d);
+           current.setDate(current.getDate() + i);
+
+           let labelJour = formatterJour.format(current);
+           labelJour = labelJour.charAt(0).toUpperCase() + labelJour.slice(1, 2); // Ex: Lu, Ma
+           let numJour = formatterNum.format(current);
+
+           // Noms de jours complets pour la data-val (historique)
+           const joursComplets = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+           let valJourStr = joursComplets[current.getDay()];
+
+           let isActiveMidi = slotsFormates.includes(valJourStr + " midi");
+           let isActiveSoir = slotsFormates.includes(valJourStr + " soir");
+
+           let classBtnBase = "slot-btn w-full aspect-square min-h-[40px] rounded-lg text-base active:scale-90 transition-all flex items-center justify-center border";
+
+           let classMidi = classBtnBase + (isActiveMidi ? " bg-blue-100 border-blue-400 text-slate-800" : " bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 dark:border-slate-700");
+           let classSoir = classBtnBase + (isActiveSoir ? " bg-blue-100 border-blue-400 text-slate-800" : " bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 dark:border-slate-700");
+
+           html += `
+            <div class="flex flex-col gap-1 items-center">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter text-center leading-none">${labelJour}<br/>${numJour}</span>
+              <button type="button" class="${classMidi}" data-val="${valJourStr} midi" onclick="toggleSlot(this)">☀️</button>
+              <button type="button" class="${classSoir}" data-val="${valJourStr} soir" onclick="toggleSlot(this)">🌙</button>
+            </div>`;
+        }
+        return html;
+      }
+
+      function mettreAJourToutesLesGrilles() {
+         let dateDebutStr = document.getElementById("date_debut_menu").value;
+         if (!dateDebutStr) return;
+
+         document.querySelectorAll('.repas-card').forEach(card => {
+             let titleInput = card.querySelector(".titre");
+             let currentSlots = titleInput ? titleInput.value : "";
+             let container = card.querySelector(".grid-jours-dynamique");
+             if (container) {
+                 container.innerHTML = genererGrilleJours(dateDebutStr, currentSlots);
+             }
+         });
       }
 
       function modifierPartsCard(btn, delta) {
-        let parent = btn.closest('div');
-        let valSpan = parent.querySelector('.couverts-val');
-        let inputHidden = parent.querySelector('.couverts');
+        let parent = btn.closest("div");
+        let valSpan = parent.querySelector(".couverts-val");
+        let inputHidden = parent.querySelector(".couverts");
         let valActuelle = parseInt(inputHidden.value) || 5;
         let nouvelleVal = Math.max(1, valActuelle + delta);
         valSpan.innerText = nouvelleVal;
@@ -735,7 +1325,7 @@ Consignes à respecter impérativement :
       }
 
       function modifierPartsConsult(delta) {
-        let valSpan = document.getElementById('parts_consult_val');
+        let valSpan = document.getElementById("parts_consult_val");
         let valActuelle = parseInt(valSpan.innerText) || 5;
         let nouvelleVal = Math.max(1, valActuelle + delta);
         valSpan.innerText = nouvelleVal;
@@ -743,55 +1333,58 @@ Consignes à respecter impérativement :
       }
 
       function toggleSlot(btn) {
-        btn.classList.toggle('bg-blue-100');
-        btn.classList.toggle('border-blue-400');
-        btn.classList.toggle('bg-slate-100');
-        btn.classList.toggle('border-slate-200');
+        btn.classList.toggle("bg-blue-100");
+        btn.classList.toggle("border-blue-400");
+        btn.classList.toggle("bg-slate-100");
+        btn.classList.toggle("border-slate-200");
 
-        let card = btn.closest('.repas-card');
-        let actives = card.querySelectorAll('.slot-btn.bg-blue-100');
-        let titleDisplay = card.querySelector('.titre-display');
-        let titleInput = card.querySelector('.titre');
+        let card = btn.closest(".repas-card");
+        let actives = card.querySelectorAll(".slot-btn.bg-blue-100");
+        let titleDisplay = card.querySelector(".titre-display");
+        let titleInput = card.querySelector(".titre");
 
         if (actives.length > 0) {
-            let slotsArr = Array.from(actives).map(b => b.getAttribute('data-val'));
-            let slotsFormates = "";
+          let slotsArr = Array.from(actives).map((b) =>
+            b.getAttribute("data-val"),
+          );
+          let slotsFormates = "";
 
-            if (slotsArr.length === 1) {
-              slotsFormates = slotsArr[0];
-            } else {
-              let dernier = slotsArr.pop();
-              slotsFormates = slotsArr.join(', ') + ' et ' + dernier;
-            }
+          if (slotsArr.length === 1) {
+            slotsFormates = slotsArr[0];
+          } else {
+            let dernier = slotsArr.pop();
+            slotsFormates = slotsArr.join(", ") + " et " + dernier;
+          }
 
-            slotsFormates = slotsFormates.charAt(0).toUpperCase() + slotsFormates.slice(1);
-            titleDisplay.innerText = slotsFormates;
-            titleInput.value = slotsFormates;
-            titleDisplay.classList.remove('text-slate-400');
-            titleDisplay.classList.add('text-indigo-700');
+          slotsFormates =
+            slotsFormates.charAt(0).toUpperCase() + slotsFormates.slice(1);
+          titleDisplay.innerText = slotsFormates;
+          titleInput.value = slotsFormates;
+          titleDisplay.classList.remove("text-slate-400");
+          titleDisplay.classList.add("text-indigo-700");
         } else {
-            titleDisplay.innerText = "Sélectionne les créneaux 👇";
-            titleInput.value = "Repas non défini";
-            titleDisplay.classList.add('text-slate-400');
-            titleDisplay.classList.remove('text-indigo-700');
+          titleDisplay.innerText = "Sélectionne les créneaux 👇";
+          titleInput.value = "Repas non défini";
+          titleDisplay.classList.add("text-slate-400");
+          titleDisplay.classList.remove("text-indigo-700");
         }
       }
 
-
       async function chargerMenus(shouldChangeVue = true) {
         if (shouldChangeVue) {
-            changerVue('vue_menus');
+          changerVue("vue_menus");
         }
 
         try {
-          let box = document.getElementById('conteneur_menus');
-          if(!menusCharges || menusCharges.length === 0) {
-            box.innerHTML = '<p class="text-center text-slate-500 dark:text-slate-400 mt-4 text-sm">Aucun menu planifié.</p>';
+          let box = document.getElementById("conteneur_menus");
+          if (!menusCharges || menusCharges.length === 0) {
+            box.innerHTML =
+              '<p class="text-center text-slate-500 dark:text-slate-400 mt-4 text-sm">Aucun menu planifié.</p>';
             return;
           }
 
           const aujourdhui = new Date();
-          aujourdhui.setHours(0,0,0,0);
+          aujourdhui.setHours(0, 0, 0, 0);
 
           let menuCourant = [];
           let menusSuivants = [];
@@ -799,8 +1392,8 @@ Consignes à respecter impérativement :
 
           menusCharges.forEach((lot) => {
             if (lot.dateDebut) {
-              let debut = new Date(lot.dateDebut);
-              let fin = new Date(lot.dateDebut);
+              let debut = parseSafeDate(lot.dateDebut);
+              let fin = parseSafeDate(lot.dateDebut);
               fin.setDate(fin.getDate() + 6);
 
               if (aujourdhui >= debut && aujourdhui <= fin) {
@@ -820,20 +1413,21 @@ Consignes à respecter impérativement :
           menusSuivants.sort((a, b) => {
             if (!a.dateDebut) return 1;
             if (!b.dateDebut) return -1;
-            return new Date(a.dateDebut) - new Date(b.dateDebut);
+            return parseSafeDate(a.dateDebut) - parseSafeDate(b.dateDebut);
           });
 
           // Trier les menus passés par ordre anti-chronologique
           menusPasses.sort((a, b) => {
             if (!a.dateDebut) return 1;
             if (!b.dateDebut) return -1;
-            return new Date(b.dateDebut) - new Date(a.dateDebut);
+            return parseSafeDate(b.dateDebut) - parseSafeDate(a.dateDebut);
           });
 
-          let html = '';
+          let html = "";
 
           const renderMenu = (lot, titreBloc, badgeColor, dateAffichee) => {
-            return `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border-2 ${badgeColor}">
+            return (
+              `<div class="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border-2 ${badgeColor}">
                       <div class="flex justify-between items-center border-b pb-2 mb-3">
                         <div>
                           <h3 class="font-black text-slate-700 dark:text-slate-300 text-sm">${titreBloc}</h3>
@@ -846,10 +1440,17 @@ Consignes à respecter impérativement :
                         </div>
                       </div>
                       <div class="flex flex-col gap-2">` +
-            lot.repas.map(r => {
-              let recSafe = String(r.recette).replace(/'/g, "\\\'").replace(/"/g, '&quot;');
-              let titreFormate = (r.titre && r.titre !== "Repas non défini") ? r.titre : "Repas";
-              return `
+              (lot.plan || lot.repas || [])
+                .map((r) => {
+                  let recSafe = String(r.recette)
+                    .replace(/'/g, "\\\'")
+                    .replace(/"/g, "&quot;");
+                  let titre = r.nom || r.titre;
+                  let titreFormate =
+                    titre && titre !== "Repas non défini"
+                      ? titre
+                      : "Repas";
+                  return `
                 <div onclick="cuisinerRaccourci('${recSafe}', ${r.couverts})" class="bg-slate-50 dark:bg-slate-900 p-3 rounded-2xl border border-slate-100 dark:border-slate-700 active:bg-slate-100 active:scale-95 transition-all cursor-pointer">
                   <p class="font-bold text-indigo-700 text-xs mb-1">${titreFormate}</p>
                   <p class="text-slate-600 dark:text-slate-300 text-xs flex justify-between items-center">
@@ -859,17 +1460,34 @@ Consignes à respecter impérativement :
                     </span>
                   </p>
                 </div>`;
-            }).join('') + `</div></div>`;
+                })
+                .join("") +
+              `</div></div>`
+            );
           };
 
           menuCourant.forEach((lot) => {
-            let dateAffichee = lot.dateDebut ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut)) : "Créé le " + lot.date;
-            html += renderMenu(lot, "🟢 Menu de la semaine en cours", "border-emerald-500", dateAffichee);
+            let dateAffichee = lot.dateDebut
+              ? formaterPeriodeMenu(lot.dateDebut)
+              : "Créé le " + lot.date;
+            html += renderMenu(
+              lot,
+              "🟢 Menu en cours",
+              "border-emerald-500",
+              dateAffichee,
+            );
           });
 
           menusSuivants.forEach((lot) => {
-            let dateAffichee = lot.dateDebut ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut)) : "Créé le " + lot.date;
-            html += renderMenu(lot, "🔵 Menu de la semaine prochaine", "border-blue-500", dateAffichee);
+            let dateAffichee = lot.dateDebut
+              ? formaterPeriodeMenu(lot.dateDebut)
+              : "Créé le " + lot.date;
+            html += renderMenu(
+              lot,
+              "🔵 Menu programmé",
+              "border-blue-500",
+              dateAffichee,
+            );
           });
 
           if (menusPasses.length > 0) {
@@ -881,8 +1499,15 @@ Consignes à respecter impérativement :
                        <div class="p-4 flex flex-col gap-4 bg-slate-50/50">`;
 
             menusPasses.forEach((lot) => {
-              let dateAffichee = lot.dateDebut ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut)) : "Créé le " + lot.date;
-              html += renderMenu(lot, "⚪ Menu passé", "border-slate-300", dateAffichee);
+              let dateAffichee = lot.dateDebut
+                ? formaterPeriodeMenu(lot.dateDebut)
+                : "Créé le " + lot.date;
+              html += renderMenu(
+                lot,
+                "⚪ Menu passé",
+                "border-slate-300",
+                dateAffichee,
+              );
             });
 
             html += `  </div>
@@ -891,94 +1516,155 @@ Consignes à respecter impérativement :
 
           box.innerHTML = html;
           setTimeout(() => lucide.createIcons(), 50); // Mettre à jour les icônes lucide dans le details
-        } catch(e) {
-          document.getElementById('conteneur_menus').innerHTML = '<p class="text-center text-red-500 mt-4 text-sm">Erreur lors du chargement.</p>';
+        } catch (e) {
+          document.getElementById("conteneur_menus").innerHTML =
+            '<p class="text-center text-red-500 mt-4 text-sm">Erreur lors du chargement.</p>';
         }
       }
 
       function editerMenuExistant(idMenu) {
-        let lot = menusCharges.find(m => String(m.id) === String(idMenu));
+        let lot = menusCharges.find((m) => String(m.id) === String(idMenu));
         if (!lot) return;
 
-        document.getElementById('edit_menu_id').value = lot.id;
-        document.getElementById('titre_edition_menu').innerText = 'Modifier le menu';
-        if (lot.dateDebut) document.getElementById('date_debut_menu').value = lot.dateDebut;
+        document.getElementById("edit_menu_id").value = lot.id;
+        document.getElementById("titre_edition_menu").innerText =
+          "Modifier le menu";
 
-        document.getElementById('form_repas').innerHTML = '';
-        lot.repas.forEach(repas => {
+        let initialDate = lot.dateDebut || getProchainLundi();
+        document.getElementById("date_debut_menu").value = initialDate;
+
+        document.getElementById("form_repas").innerHTML = "";
+        (lot.plan || lot.repas || []).forEach((repas) => {
           ajouterBlocRepas(repas);
         });
 
-        changerVue('etape2');
+        initQuickDateSelector(initialDate);
+
+        changerVue("etape2");
       }
 
       async function supprimerMenuExistant(idMenu) {
-        let lot = menusCharges.find(m => String(m.id) === String(idMenu));
+        let lot = menusCharges.find((m) => String(m.id) === String(idMenu));
         if (!lot) return;
 
-        let etiquette = lot.dateDebut ? `la semaine du ${formaterDateLitterale(new Date(lot.dateDebut))}` : "ce menu";
+        let etiquette = lot.dateDebut
+          ? `la semaine du ${formaterDateLitterale(parseSafeDate(lot.dateDebut))}`
+          : "ce menu";
         if (!confirm(`Supprimer définitivement ${etiquette} ?`)) return;
 
         try {
-          await apiPost('sauvegarderMenu', { plan: [], dateDebutStr: lot.dateDebut || '', idMenuExistant: lot.id });
-          menusCharges = menusCharges.filter(m => String(m.id) !== String(idMenu));
-          localStorage.setItem('cache_menusCharges', JSON.stringify(menusCharges));
+          await apiPost("sauvegarderMenu", {
+            plan: [],
+            dateDebutStr: lot.dateDebut || "",
+            idMenuExistant: lot.id,
+          });
+          menusCharges = menusCharges.filter(
+            (m) => String(m.id) !== String(idMenu),
+          );
+          localStorage.setItem(
+            "cache_menusCharges",
+            JSON.stringify(menusCharges),
+          );
 
-          if (String(document.getElementById('edit_menu_id').value) === String(idMenu)) {
-            document.getElementById('edit_menu_id').value = '';
-            document.getElementById('titre_edition_menu').innerText = 'Composer le menu';
-            document.getElementById('date_debut_menu').value = getProchainLundi();
-            document.getElementById('form_repas').innerHTML = '';
+          if (
+            String(document.getElementById("edit_menu_id").value) ===
+            String(idMenu)
+          ) {
+            document.getElementById("edit_menu_id").value = "";
+            document.getElementById("titre_edition_menu").innerText =
+              "Composer le menu";
+            document.getElementById("date_debut_menu").value =
+              getProchainLundi();
+            document.getElementById("form_repas").innerHTML = "";
           }
 
           await chargerMenus();
-        } catch(e) {
+        } catch (e) {
           alert("Erreur lors de la suppression du menu.");
         }
       }
 
       function cuisinerRaccourci(recette, couverts) {
-        localStorage.setItem('derniere_recette', recette);
-        localStorage.setItem('derniers_couverts', couverts);
-        changerVue('vue_consult');
-        document.getElementById('select_consult').value = recette;
-        document.getElementById('parts_consult_val').innerText = couverts;
+        localStorage.setItem("derniere_recette", recette);
+        localStorage.setItem("derniers_couverts", couverts);
+        changerVue("vue_consult");
+        document.getElementById("select_consult").value = recette;
+        let btnDisplay = document.getElementById("select_consult_btn");
+        if(btnDisplay) {
+            btnDisplay.innerHTML = `${recette} <i data-lucide="chevron-down" class="w-4 h-4 ml-2"></i>`;
+            btnDisplay.classList.remove("text-slate-400");
+        }
+        if(typeof lucide !== 'undefined') lucide.createIcons();
+
+        document.getElementById("parts_consult_val").innerText = couverts;
         afficherDetails();
       }
 
       async function calcul() {
-        let blocks = document.querySelectorAll('.repas-card');
+        let blocks = document.querySelectorAll(".repas-card");
         let err = false;
         plan = [];
 
-        blocks.forEach(b => {
-          let sel = b.querySelector('.recette');
-          let couv = b.querySelector('.couverts');
-          if(!sel || !sel.value) {
-            if(sel) sel.classList.add('input-error');
+        blocks.forEach((b) => {
+          let sel = b.querySelector(".recette");
+          let couv = b.querySelector(".couverts");
+          if (!sel || !sel.value) {
+            if (sel) sel.classList.add("input-error");
             err = true;
           } else {
-            if(sel) sel.classList.remove('input-error');
-            plan.push({ nom: b.querySelector('.titre').value, recette: sel.value, couverts: parseInt(couv.value) || 1 });
+            if (sel) sel.classList.remove("input-error");
+            plan.push({
+              nom: b.querySelector(".titre").value,
+              recette: sel.value,
+              couverts: parseInt(couv.value) || 1,
+            });
           }
         });
 
-        let msgBox = document.getElementById('msg_erreur');
-        if(err) { msgBox.classList.remove('hidden'); return; } else { msgBox.classList.add('hidden'); }
+        let msgBox = document.getElementById("msg_erreur");
+        if (err) {
+          msgBox.classList.remove("hidden");
+          return;
+        } else {
+          msgBox.classList.add("hidden");
+        }
 
-        const dateDebutStr = document.getElementById('date_debut_menu').value;
-        const idMenuExistant = document.getElementById('edit_menu_id').value;
+        const dateDebutStr = document.getElementById("date_debut_menu").value;
+        const idMenuExistant = document.getElementById("edit_menu_id").value;
 
-        apiPost('sauvegarderMenu', { plan: plan, dateDebutStr: dateDebutStr, idMenuExistant: idMenuExistant });
 
-        // Mettre à jour le cache local pour le nouveau menu créé en optimiste ? Pas de retour d'ID du backend ici, on va laisser le fetch background s'en occuper
-        // ou on relance le fetch
-        fetchDonneesArrierePlan('etape2');
+        // Optimistic update
+        let tempId = idMenuExistant || "temp_" + Date.now();
+        let newMenu = {
+            id: tempId,
+            dateDebut: dateDebutStr,
+            plan: plan,
+            repas: plan, // backwards compatibility
+            date: new Date().toLocaleDateString('fr-FR')
+        };
+
+        let existingIndex = menusCharges.findIndex(m => String(m.id) === String(idMenuExistant));
+        if (existingIndex > -1) {
+            menusCharges[existingIndex] = newMenu;
+        } else {
+            menusCharges.push(newMenu);
+        }
+        localStorage.setItem("cache_menusCharges", JSON.stringify(menusCharges));
+
+        apiPost("sauvegarderMenu", {
+          plan: plan,
+          dateDebutStr: dateDebutStr,
+          idMenuExistant: idMenuExistant,
+        }).then(() => {
+          // Relancer le fetch une fois sauvegardé pour avoir le vrai ID
+          fetchDonneesArrierePlan("etape2");
+        });
 
         try {
-          listeCoursesBrute = await apiPost('calculerCourses', { planification: plan }) || [];
+          listeCoursesBrute =
+            (await apiPost("calculerCourses", { planification: plan })) || [];
           ouvrirModaleSuggestions();
-        } catch(e) {
+        } catch (e) {
           alert("Erreur lors du calcul du menu.");
         }
       }
@@ -986,8 +1672,8 @@ Consignes à respecter impérativement :
       // --- GESTION DU PARTAGE AVEC MODALE ---
       async function ouvrirModalePartage(idPreselectionne = null) {
         try {
-          let select = document.getElementById('select_partage_menu');
-          select.innerHTML = '';
+          let select = document.getElementById("select_partage_menu");
+          select.innerHTML = "";
 
           if (!menusCharges || menusCharges.length === 0) {
             alert("Aucun menu planifié n'est disponible pour le partage.");
@@ -996,7 +1682,7 @@ Consignes à respecter impérativement :
 
           menusCharges.forEach((lot, idx) => {
             let labelSemaine = lot.dateDebut
-              ? "Semaine du " + formaterDateLitterale(new Date(lot.dateDebut))
+              ? formaterPeriodeMenu(lot.dateDebut)
               : "Menu " + (idx + 1) + " (" + lot.date + ")";
             select.innerHTML += `<option value="${lot.id}">${labelSemaine}</option>`;
           });
@@ -1005,55 +1691,72 @@ Consignes à respecter impérativement :
             select.value = idPreselectionne;
           }
 
-          document.getElementById('modale_partage').classList.remove('hidden');
-        } catch(e) {
+          document.getElementById("modale_partage").classList.remove("hidden");
+        } catch (e) {
           alert("Erreur lors de la récupération des menus.");
         }
       }
 
       function fermerModalePartage() {
-        document.getElementById('modale_partage').classList.add('hidden');
+        document.getElementById("modale_partage").classList.add("hidden");
       }
 
       function fermerPopupIngredientsMenu() {
-        document.getElementById('modale_ingredients_programme').classList.add('hidden');
+        document
+          .getElementById("modale_ingredients_programme")
+          .classList.add("hidden");
       }
 
       function afficherIngredientsProgramme(items) {
         if (!items || items.length === 0) {
-          document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">Aucun ingrédient trouvé.</p>';
+          document.getElementById("contenu_ingredients_programme").innerHTML =
+            '<p class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">Aucun ingrédient trouvé.</p>';
           return;
         }
 
         let h = '<ul class="divide-y divide-slate-100">';
-        items.forEach(it => h += `<li class="p-3 flex justify-between bg-white dark:bg-slate-800"><span class="font-bold text-slate-800 dark:text-slate-200 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
-        document.getElementById('contenu_ingredients_programme').innerHTML = h + '</ul>';
+        items.forEach(
+          (it) =>
+            (h += `<li class="p-3 flex justify-between bg-white dark:bg-slate-800"><span class="font-bold text-slate-800 dark:text-slate-200 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`),
+        );
+        document.getElementById("contenu_ingredients_programme").innerHTML =
+          h + "</ul>";
       }
 
       async function ouvrirPopupIngredientsMenu(recette, couverts) {
         const cleCache = getCleCacheRecette(recette, couverts);
-        document.getElementById('titre_ingredients_programme').innerText = `Ingrédients • ${recette}`;
-        document.getElementById('modale_ingredients_programme').classList.remove('hidden');
+        document.getElementById("titre_ingredients_programme").innerText =
+          `Ingrédients • ${recette}`;
+        document
+          .getElementById("modale_ingredients_programme")
+          .classList.remove("hidden");
 
         if (cacheDetailsRecettes[cleCache]) {
           afficherIngredientsProgramme(cacheDetailsRecettes[cleCache]);
           return;
         }
 
-        document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-slate-500 dark:text-slate-400 font-bold animate-pulse text-sm">Chargement...</p>';
+        document.getElementById("contenu_ingredients_programme").innerHTML =
+          '<p class="p-4 text-center text-slate-500 dark:text-slate-400 font-bold animate-pulse text-sm">Chargement...</p>';
 
         try {
-          const items = await apiGet('getDetailsRecette', { nomRecette: recette, nbParts: couverts || 1 });
+          const items = await apiGet("getDetailsRecette", {
+            nomRecette: recette,
+            nbParts: couverts || 1,
+          });
           cacheDetailsRecettes[cleCache] = items || [];
           afficherIngredientsProgramme(items || []);
-        } catch(e) {
-          document.getElementById('contenu_ingredients_programme').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
+        } catch (e) {
+          document.getElementById("contenu_ingredients_programme").innerHTML =
+            '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
         }
       }
 
       async function executerPartageModale(type) {
-        let idSelected = document.getElementById('select_partage_menu').value;
-        let menuCible = menusCharges.find(m => String(m.id) === String(idSelected));
+        let idSelected = document.getElementById("select_partage_menu").value;
+        let menuCible = menusCharges.find(
+          (m) => String(m.id) === String(idSelected),
+        );
 
         if (!menuCible) {
           alert("Menu introuvable.");
@@ -1062,35 +1765,44 @@ Consignes à respecter impérativement :
 
         let planTarget = menuCible.repas || [];
         let dateInput = menuCible.dateDebut || "";
-        let dateFormatee = dateInput ? formaterDateLitterale(new Date(dateInput)) : "sélectionnée";
+        let dateFormatee = dateInput
+          ? formaterDateLitterale(parseSafeDate(dateInput))
+          : "sélectionnée";
 
         let txt = "";
 
-        if (type === 'Menu') {
+        if (type === "Menu") {
           txt = `🍽️ MENUS POUR LA SEMAINE DU ${dateFormatee.toUpperCase()} :\n\n`;
-          planTarget.forEach(p => {
-            let titreFormate = (p.nom && p.nom !== "Repas non défini") ? p.nom : "Repas";
+          planTarget.forEach((p) => {
+            let titreFormate =
+              p.nom && p.nom !== "Repas non défini" ? p.nom : "Repas";
             txt += `🗓️ ${titreFormate}\n👉 ${p.recette} (${p.couverts} parts)\n\n`;
           });
           finaliserEnvoiTexte(txt);
         } else {
           try {
             let coursesExport = [];
-            let dateKey = dateInput || 'sans_date';
-            let savedCourses = localStorage.getItem('courses_' + dateKey);
+            let dateKey = dateInput || "sans_date";
+            let savedCourses = localStorage.getItem("courses_" + dateKey);
             if (savedCourses) {
-                try {
-                    coursesExport = JSON.parse(savedCourses);
-                } catch(e) {
-                    coursesExport = await apiPost('calculerCourses', { planification: planTarget }) || [];
-                }
+              try {
+                coursesExport = JSON.parse(savedCourses);
+              } catch (e) {
+                coursesExport =
+                  (await apiPost("calculerCourses", {
+                    planification: planTarget,
+                  })) || [];
+              }
             } else {
-                coursesExport = await apiPost('calculerCourses', { planification: planTarget }) || [];
+              coursesExport =
+                (await apiPost("calculerCourses", {
+                  planification: planTarget,
+                })) || [];
             }
             txt = `🛒 LISTE DE COURSES POUR LA SEMAINE DU ${dateFormatee.toUpperCase()} :\n\n`;
 
             let groupes = {};
-            coursesExport.forEach(item => {
+            coursesExport.forEach((item) => {
               let rayon = item.rayonForce || determinerRayon(item.nom);
               if (!groupes[rayon]) groupes[rayon] = [];
               groupes[rayon].push(item);
@@ -1098,14 +1810,16 @@ Consignes à respecter impérativement :
 
             for (let [rayon, items] of Object.entries(groupes)) {
               txt += `--- ${rayon.toUpperCase()} ---\n`;
-              items.forEach(item => {
-                let qte = item.quantite ? ` (${item.quantite} ${item.unite})` : '';
+              items.forEach((item) => {
+                let qte = item.quantite
+                  ? ` (${item.quantite} ${item.unite})`
+                  : "";
                 txt += `- ${item.nom}${qte}\n`;
               });
               txt += `\n`;
             }
             finaliserEnvoiTexte(txt);
-          } catch(e) {
+          } catch (e) {
             alert("Erreur lors de la génération de la liste de courses.");
           }
         }
@@ -1116,28 +1830,35 @@ Consignes à respecter impérativement :
         if (navigator.share) {
           navigator.share({ title: "Chef Perso - Partage", text: txt });
         } else {
-          navigator.clipboard.writeText(txt).then(() => alert("Copié dans le presse-papier !"));
+          navigator.clipboard
+            .writeText(txt)
+            .then(() => alert("Copié dans le presse-papier !"));
         }
       }
 
       function afficherListeCourseTriee() {
-        let dateInput = document.getElementById('date_debut_menu').value || "sans_date";
-        localStorage.setItem('courses_' + dateInput, JSON.stringify(listeCoursesBrute));
-        let conteneur = document.getElementById('conteneur_rayons');
+        let dateInput =
+          document.getElementById("date_debut_menu").value || "sans_date";
+        localStorage.setItem(
+          "courses_" + dateInput,
+          JSON.stringify(listeCoursesBrute),
+        );
+        let conteneur = document.getElementById("conteneur_rayons");
 
         if (!listeCoursesBrute || listeCoursesBrute.length === 0) {
-          conteneur.innerHTML = '<p class="p-4 text-center text-slate-500 dark:text-slate-400 text-sm bg-white dark:bg-slate-800 rounded-2xl shadow-sm">Aucun ingrédient trouvé.</p>';
+          conteneur.innerHTML =
+            '<p class="p-4 text-center text-slate-500 dark:text-slate-400 text-sm bg-white dark:bg-slate-800 rounded-2xl shadow-sm">Aucun ingrédient trouvé.</p>';
           return;
         }
 
         let groupes = {};
-        listeCoursesBrute.forEach(item => {
+        listeCoursesBrute.forEach((item) => {
           let rayon = item.rayonForce || determinerRayon(item.nom);
           if (!groupes[rayon]) groupes[rayon] = [];
           groupes[rayon].push(item);
         });
 
-        let html = '';
+        let html = "";
         for (let [rayon, items] of Object.entries(groupes)) {
           html += `
             <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -1146,10 +1867,17 @@ Consignes à respecter impérativement :
               </div>
               <ul class="divide-y divide-slate-100">`;
 
-          items.forEach(item => {
-            let qteAffichee = (item.quantite !== undefined && item.quantite !== null && item.quantite !== 0) ? item.quantite : "";
+          items.forEach((item) => {
+            let qteAffichee =
+              item.quantite !== undefined &&
+              item.quantite !== null &&
+              item.quantite !== 0
+                ? item.quantite
+                : "";
             let uniteAffichee = item.unite ? item.unite : "";
-            let nomSafe = String(item.nom).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            let nomSafe = String(item.nom)
+              .replace(/'/g, "\\'")
+              .replace(/"/g, "&quot;");
             html += `
               <li class="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors w-full">
                 <div class="flex-grow pr-2 min-w-0">
@@ -1167,39 +1895,49 @@ Consignes à respecter impérativement :
       }
 
       function supprimerIngredientListe(btn, nomIngredient) {
-        listeCoursesBrute = listeCoursesBrute.filter(i => i.nom !== nomIngredient);
+        listeCoursesBrute = listeCoursesBrute.filter(
+          (i) => i.nom !== nomIngredient,
+        );
         afficherListeCourseTriee();
       }
 
       function ajouterIngredient() {
-        let input = document.getElementById('ajout_manuel');
-        let selectRayon = document.getElementById('ajout_manuel_rayon');
+        let input = document.getElementById("ajout_manuel");
+        let selectRayon = document.getElementById("ajout_manuel_rayon");
         let valeur = input.value.trim();
         let rayon = selectRayon ? selectRayon.value : "";
-        if(valeur !== "") {
-          listeCoursesBrute.push({ nom: valeur, quantite: "", unite: "", rayonForce: rayon });
+        if (valeur !== "") {
+          listeCoursesBrute.push({
+            nom: valeur,
+            quantite: "",
+            unite: "",
+            rayonForce: rayon,
+          });
           afficherListeCourseTriee();
           input.value = "";
-          if(selectRayon) selectRayon.value = "";
+          if (selectRayon) selectRayon.value = "";
         }
       }
 
       function partage(type) {
-        let dateInput = document.getElementById('date_debut_menu').value;
-        let dateFormatee = dateInput ? formaterDateLitterale(new Date(dateInput)) : "la semaine";
+        let dateInput = document.getElementById("date_debut_menu").value;
+        let dateFormatee = dateInput
+          ? formaterDateLitterale(parseSafeDate(dateInput))
+          : "la semaine";
 
         let txt = "";
 
-        if (type === 'Menu') {
+        if (type === "Menu") {
           txt = `🍽️ MENUS POUR LA SEMAINE DU ${dateFormatee.toUpperCase()} :\n\n`;
-          plan.forEach(p => {
-            let titreFormate = (p.nom && p.nom !== "Repas non défini") ? p.nom : "Repas";
+          plan.forEach((p) => {
+            let titreFormate =
+              p.nom && p.nom !== "Repas non défini" ? p.nom : "Repas";
             txt += `🗓️ ${titreFormate}\n👉 ${p.recette} (${p.couverts} parts)\n\n`;
           });
         } else {
           txt = `🛒 LISTE DE COURSES POUR LA SEMAINE DU ${dateFormatee.toUpperCase()} :\n\n`;
           let groupes = {};
-          listeCoursesBrute.forEach(item => {
+          listeCoursesBrute.forEach((item) => {
             let rayon = item.rayonForce || determinerRayon(item.nom);
             if (!groupes[rayon]) groupes[rayon] = [];
             groupes[rayon].push(item);
@@ -1207,8 +1945,10 @@ Consignes à respecter impérativement :
 
           for (let [rayon, items] of Object.entries(groupes)) {
             txt += `--- ${rayon.toUpperCase()} ---\n`;
-            items.forEach(item => {
-              let qte = item.quantite ? ` (${item.quantite} ${item.unite})` : '';
+            items.forEach((item) => {
+              let qte = item.quantite
+                ? ` (${item.quantite} ${item.unite})`
+                : "";
               txt += `- ${item.nom}${qte}\n`;
             });
             txt += `\n`;
@@ -1218,160 +1958,205 @@ Consignes à respecter impérativement :
         if (navigator.share) {
           navigator.share({ title: "Chef Perso", text: txt });
         } else {
-          navigator.clipboard.writeText(txt).then(() => alert("Copié dans le presse-papier !"));
+          navigator.clipboard
+            .writeText(txt)
+            .then(() => alert("Copié dans le presse-papier !"));
         }
       }
 
       async function afficherDetails() {
-        let r = document.getElementById('select_consult').value;
-        let p = parseInt(document.getElementById('parts_consult_val').innerText) || 5;
-        if(!r) return;
+        let r = document.getElementById("select_consult").value;
+        let p =
+          parseInt(document.getElementById("parts_consult_val").innerText) || 5;
+        if (!r) return;
 
-        localStorage.setItem('derniere_recette', r);
-        localStorage.setItem('derniers_couverts', p);
+        localStorage.setItem("derniere_recette", r);
+        localStorage.setItem("derniers_couverts", p);
 
-        document.getElementById('details_recette').innerHTML = '<p class="p-4 text-center text-slate-500 dark:text-slate-400 font-bold animate-pulse text-sm">Calcul...</p>';
+        document.getElementById("details_recette").innerHTML =
+          '<p class="p-4 text-center text-slate-500 dark:text-slate-400 font-bold animate-pulse text-sm">Calcul...</p>';
 
         try {
-          const items = await apiGet('getDetailsRecette', { nomRecette: r, nbParts: p });
-          if (!items || items.length === 0) return document.getElementById('details_recette').innerHTML = '<p class="p-4 text-center text-sm">Introuvable.</p>';
+          const items = await apiGet("getDetailsRecette", {
+            nomRecette: r,
+            nbParts: p,
+          });
+          if (!items || items.length === 0)
+            return (document.getElementById("details_recette").innerHTML =
+              '<p class="p-4 text-center text-sm">Introuvable.</p>');
           let h = '<ul class="divide-y divide-slate-100">';
-          items.forEach(it => h += `<li class="p-3 flex justify-between bg-white dark:bg-slate-800"><span class="font-bold text-slate-800 dark:text-slate-200 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`);
-          document.getElementById('details_recette').innerHTML = h + '</ul>';
-        } catch(e) {
-          document.getElementById('details_recette').innerHTML = '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
+          items.forEach(
+            (it) =>
+              (h += `<li class="p-3 flex justify-between bg-white dark:bg-slate-800"><span class="font-bold text-slate-800 dark:text-slate-200 text-sm">${it.nom}</span><span class="text-emerald-600 font-semibold text-sm">${it.quantite > 0 ? it.quantite : ""} ${it.unite}</span></li>`),
+          );
+          document.getElementById("details_recette").innerHTML = h + "</ul>";
+        } catch (e) {
+          document.getElementById("details_recette").innerHTML =
+            '<p class="p-4 text-center text-red-500 text-sm">Erreur lors du chargement.</p>';
         }
       }
 
       function addIngRow() {
-        let div = document.createElement('div');
-        div.className = "flex gap-2 items-center bg-white p-2 rounded-2xl border border-orange-200";
+        let div = document.createElement("div");
+        div.className =
+          "flex gap-2 items-center bg-white p-2 rounded-2xl border border-orange-200";
         // Générer un ID unique pour le champ input pour pouvoir le retrouver
         let inputId = "ing_new_" + Math.random().toString(36).substr(2, 9);
         div.innerHTML = `<input type="text" id="${inputId}" placeholder="Ingrédient" list="datalist_articles" class="ing-nom flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm px-1" onchange="verifierIngredientExistant(this)"><input type="text" placeholder="Qté" class="ing-qte w-20 h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm text-center px-1"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
-        document.getElementById('new_ingredients_list').appendChild(div);
+        document.getElementById("new_ingredients_list").appendChild(div);
       }
 
       function initThemeSelector() {
-        let select = document.getElementById('select_theme');
-        if (localStorage.theme === 'dark') {
-          select.value = 'dark';
-        } else if (localStorage.theme === 'light') {
-          select.value = 'light';
+        let select = document.getElementById("select_theme");
+        if (localStorage.theme === "dark") {
+          select.value = "dark";
+        } else if (localStorage.theme === "light") {
+          select.value = "light";
         } else {
-          select.value = 'system';
+          select.value = "system";
         }
       }
 
       function changerTheme() {
-        let select = document.getElementById('select_theme');
+        let select = document.getElementById("select_theme");
         let val = select.value;
-        if (val === 'dark') {
-          localStorage.theme = 'dark';
-          document.documentElement.classList.add('dark');
-        } else if (val === 'light') {
-          localStorage.theme = 'light';
-          document.documentElement.classList.remove('dark');
+        if (val === "dark") {
+          localStorage.theme = "dark";
+          document.documentElement.classList.add("dark");
+        } else if (val === "light") {
+          localStorage.theme = "light";
+          document.documentElement.classList.remove("dark");
         } else {
-          localStorage.removeItem('theme');
-          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
+          localStorage.removeItem("theme");
+          if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
           } else {
-            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.remove("dark");
           }
         }
       }
 
-      document.addEventListener('DOMContentLoaded', initThemeSelector);
+      document.addEventListener("DOMContentLoaded", initThemeSelector);
 
       async function sauverRecette() {
-        let nom = document.getElementById('new_nom').value.trim();
+        let nom = document.getElementById("new_nom").value.trim();
+        let themeInput = document.getElementById("new_theme") && document.getElementById("new_theme").offsetParent !== null ? document.getElementById("new_theme") : document.getElementById("new_theme_vue");
+        let theme = themeInput ? themeInput.value.trim() : "";
         let ings = [];
-        document.querySelectorAll('#new_ingredients_list > div').forEach(l => {
-          let n = l.querySelector('.ing-nom').value.trim();
-          if(n) ings.push({nom: n, qte: l.querySelector('.ing-qte').value.trim()});
-        });
-        if(!nom || ings.length === 0) return alert("⚠️ Nom et ingrédients requis.");
+        document
+          .querySelectorAll("#new_ingredients_list > div")
+          .forEach((l) => {
+            let n = l.querySelector(".ing-nom").value.trim();
+            if (n)
+              ings.push({
+                nom: n,
+                qte: l.querySelector(".ing-qte").value.trim(),
+              });
+          });
+        if (!nom || ings.length === 0)
+          return alert("⚠️ Nom et ingrédients requis.");
 
-        let btn = document.getElementById('btn_save');
-        btn.innerText = "⏳ Enregistrement..."; btn.disabled = true;
+        let btn = document.getElementById("btn_save");
+        btn.innerText = "⏳ Enregistrement...";
+        btn.disabled = true;
 
         try {
-          const msg = await apiPost('enregistrerRecette', { nom, ingredients: ings });
-          recs.push(nom); // update local optimiste
-          localStorage.setItem('cache_recs', JSON.stringify(recs));
+          const msg = await apiPost("enregistrerRecette", {
+            theme,
+            nom,
+            ingredients: ings,
+          });
+          recs.push({ nom: nom, theme: theme }); // update local optimiste
+          localStorage.setItem("cache_recs", JSON.stringify(recs));
           alert(msg);
-          location.reload();
-        } catch(e) {
+          fermerModaleAjoutRecette();
+          changerVue("vue_modifier_recette");
+        } catch (e) {
           alert("Erreur lors de l'enregistrement.");
-          btn.innerText = "💾 Enregistrer la recette"; btn.disabled = false;
+          btn.innerText = "💾 Enregistrer la recette";
+          btn.disabled = false;
         }
       }
 
       function addEditIngRow(nom = "", qte = "") {
-        let div = document.createElement('div');
-        div.className = "flex gap-2 items-center bg-white dark:bg-slate-800 p-2 rounded-2xl border border-blue-200 dark:border-blue-800";
-        let nomSafe = nom.replace(/"/g, '&quot;');
-        let qteSafe = qte.replace(/"/g, '&quot;');
+        let div = document.createElement("div");
+        div.className =
+          "flex gap-2 items-center bg-white dark:bg-slate-800 p-2 rounded-2xl border border-blue-200 dark:border-blue-800";
+        let nomSafe = nom.replace(/"/g, "&quot;");
+        let qteSafe = qte.replace(/"/g, "&quot;");
         let inputId = "ing_edit_" + Math.random().toString(36).substr(2, 9);
         div.innerHTML = `<input type="text" id="${inputId}" placeholder="Ingrédient" value="${nomSafe}" list="datalist_articles" class="ing-nom flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm px-1 bg-transparent text-slate-800 dark:text-slate-200" onchange="verifierIngredientExistant(this)"><input type="text" placeholder="Qté" value="${qteSafe}" class="ing-qte w-20 h-10 border-b border-slate-100 dark:border-slate-700 outline-none text-sm text-center px-1 bg-transparent text-slate-800 dark:text-slate-200"><button type="button" onclick="this.parentElement.remove()" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>`;
-        document.getElementById('edit_ingredients_list').appendChild(div);
+        document.getElementById("edit_ingredients_list").appendChild(div);
       }
 
       async function chargerRecetteEdition() {
-        let nomRecette = document.getElementById('edit_recette_select').value;
-        let zone = document.getElementById('edit_recette_zone');
-        let list = document.getElementById('edit_ingredients_list');
+        let nomRecette = document.getElementById("edit_recette_select").value;
+        let zone = document.getElementById("edit_recette_zone");
+        let list = document.getElementById("edit_ingredients_list");
 
         if (!nomRecette) {
-          zone.classList.add('hidden');
+          zone.classList.add("hidden");
           return;
         }
 
-        zone.classList.remove('hidden');
-        list.innerHTML = '<p class="text-sm text-slate-500 animate-pulse py-2">Chargement des ingrédients...</p>';
-        document.getElementById('edit_recette_nom_original').value = nomRecette;
-        document.getElementById('edit_recette_nom').value = nomRecette;
-        document.getElementById('btn_update_recette').disabled = true;
+        zone.classList.remove("hidden");
+        list.innerHTML =
+          '<p class="text-sm text-slate-500 animate-pulse py-2">Chargement des ingrédients...</p>';
+        document.getElementById("edit_recette_nom_original").value = nomRecette;
+        document.getElementById("edit_recette_nom").value = nomRecette;
+        let currentRec = recs.find(r => (typeof r === "object" ? r.nom : String(r)) === nomRecette);
+        document.getElementById("edit_recette_theme").value = currentRec && typeof currentRec === "object" && currentRec.theme ? currentRec.theme : "";
+        document.getElementById("btn_update_recette").disabled = true;
 
         try {
-          const items = await apiGet('getDetailsRecette', { nomRecette: nomRecette, nbParts: 1 });
-          list.innerHTML = '';
+          const items = await apiGet("getDetailsRecette", {
+            nomRecette: nomRecette,
+            nbParts: 1,
+          });
+          list.innerHTML = "";
           if (items && items.length > 0) {
-            items.forEach(it => {
-              let qte = it.quantite ? (it.unite ? `${it.quantite} ${it.unite}` : it.quantite) : "";
+            items.forEach((it) => {
+              let qte = it.quantite
+                ? it.unite
+                  ? `${it.quantite} ${it.unite}`
+                  : it.quantite
+                : "";
               addEditIngRow(it.nom, String(qte));
             });
           } else {
             addEditIngRow(); // Ajoute une ligne vide
           }
-        } catch(e) {
-          list.innerHTML = '<p class="text-sm text-red-500">Erreur lors du chargement.</p>';
+        } catch (e) {
+          list.innerHTML =
+            '<p class="text-sm text-red-500">Erreur lors du chargement.</p>';
         } finally {
-          document.getElementById('btn_update_recette').disabled = false;
+          document.getElementById("btn_update_recette").disabled = false;
         }
       }
 
-
-
       function mettreAJourSelectRayonsGlobal() {
-        let optionsRayons = listeRayonsActuelle.map(r => `<option value="${r}">${r}</option>`).join('');
+        let optionsRayons = listeRayonsActuelle
+          .map((r) => `<option value="${r}">${r}</option>`)
+          .join("");
 
-        let selectAjoutManuel = document.getElementById('ajout_manuel_rayon');
+        let selectAjoutManuel = document.getElementById("ajout_manuel_rayon");
         if (selectAjoutManuel) {
-          selectAjoutManuel.innerHTML = '<option value="">🛒 Détecter Auto.</option>' + optionsRayons;
+          selectAjoutManuel.innerHTML =
+            '<option value="">🛒 Détecter Auto.</option>' + optionsRayons;
         }
-        let adminNouvIngRayon = document.getElementById('admin_nouvel_article_rayon');
+        let adminNouvIngRayon = document.getElementById(
+          "admin_nouvel_article_rayon",
+        );
         if (adminNouvIngRayon) {
           adminNouvIngRayon.innerHTML = optionsRayons;
         }
 
-        let container = document.getElementById('liste_rayons_editables');
+        let container = document.getElementById("liste_rayons_editables");
         if (container) {
-          let html = '';
-          listeRayonsActuelle.forEach(r => {
-             let rSafe = r.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-             html += `
+          let html = "";
+          listeRayonsActuelle.forEach((r) => {
+            let rSafe = r.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            html += `
              <div class="flex items-center gap-2">
                <input type="text" value="${rSafe}" onchange="renommerRayon('${rSafe}', this.value)" class="flex-grow h-10 border-b border-slate-100 dark:border-slate-700 outline-none px-2 text-sm bg-transparent text-slate-800 dark:text-slate-200">
                <button type="button" onclick="supprimerRayon('${rSafe}')" class="min-w-[40px] h-10 text-red-500 font-bold">✕</button>
@@ -1382,62 +2167,67 @@ Consignes à respecter impérativement :
       }
 
       function renommerRayon(ancienNom, nouveauNomStr) {
-         let nouveauNom = nouveauNomStr.trim();
-         if(!nouveauNom || nouveauNom === ancienNom) return;
-         if(listeRayonsActuelle.includes(nouveauNom)) {
-            alert("Ce rayon existe déjà.");
-            mettreAJourSelectRayonsGlobal();
-            return;
-         }
+        let nouveauNom = nouveauNomStr.trim();
+        if (!nouveauNom || nouveauNom === ancienNom) return;
+        if (listeRayonsActuelle.includes(nouveauNom)) {
+          alert("Ce rayon existe déjà.");
+          mettreAJourSelectRayonsGlobal();
+          return;
+        }
 
-         let idx = listeRayonsActuelle.indexOf(ancienNom);
-         if(idx > -1) {
-            listeRayonsActuelle[idx] = nouveauNom;
-            for(let key in mappingRayons) {
-               if(mappingRayons[key] === ancienNom) {
-                  mappingRayons[key] = nouveauNom;
-               }
+        let idx = listeRayonsActuelle.indexOf(ancienNom);
+        if (idx > -1) {
+          listeRayonsActuelle[idx] = nouveauNom;
+          for (let key in mappingRayons) {
+            if (mappingRayons[key] === ancienNom) {
+              mappingRayons[key] = nouveauNom;
             }
-            mettreAJourSelectRayonsGlobal();
-            afficherRayonsArticles(mappingRayons);
-         }
+          }
+          mettreAJourSelectRayonsGlobal();
+          afficherRayonsArticles(mappingRayons);
+        }
       }
 
       function supprimerRayon(nomRayon) {
-         if(!confirm(`Supprimer le rayon "${nomRayon}" ?`)) return;
+        if (!confirm(`Supprimer le rayon "${nomRayon}" ?`)) return;
 
-         listeRayonsActuelle = listeRayonsActuelle.filter(r => r !== nomRayon);
-         for(let key in mappingRayons) {
-            if(mappingRayons[key] === nomRayon) {
-               mappingRayons[key] = "🛒 Rayon Divers / Épicerie"; // fallback
-            }
-         }
-         if(!listeRayonsActuelle.includes("🛒 Rayon Divers / Épicerie")) {
-            listeRayonsActuelle.push("🛒 Rayon Divers / Épicerie");
-         }
+        listeRayonsActuelle = listeRayonsActuelle.filter((r) => r !== nomRayon);
+        for (let key in mappingRayons) {
+          if (mappingRayons[key] === nomRayon) {
+            mappingRayons[key] = "🛒 Rayon Divers / Épicerie"; // fallback
+          }
+        }
+        if (!listeRayonsActuelle.includes("🛒 Rayon Divers / Épicerie")) {
+          listeRayonsActuelle.push("🛒 Rayon Divers / Épicerie");
+        }
 
-         mettreAJourSelectRayonsGlobal();
-         afficherRayonsArticles(mappingRayons);
+        mettreAJourSelectRayonsGlobal();
+        afficherRayonsArticles(mappingRayons);
       }
 
       function ajouterNouveauRayonLocal() {
-        let nomInput = document.getElementById('nouveau_rayon_nom');
+        let nomInput = document.getElementById("nouveau_rayon_nom");
         let nvRayon = nomInput.value.trim();
         if (!nvRayon) return alert("Veuillez saisir un nom de rayon.");
-        if (listeRayonsActuelle.includes(nvRayon)) return alert("Ce rayon existe déjà.");
+        if (listeRayonsActuelle.includes(nvRayon))
+          return alert("Ce rayon existe déjà.");
 
         listeRayonsActuelle.push(nvRayon);
         nomInput.value = "";
 
         mettreAJourSelectRayonsGlobal();
         afficherRayonsArticles(mappingRayons);
-        alert(`Rayon "${nvRayon}" ajouté ! N'oubliez pas de le sauvegarder (via le bouton Sauvegarder) pour le conserver pour la prochaine fois.`);
+        alert(
+          `Rayon "${nvRayon}" ajouté ! N'oubliez pas de le sauvegarder (via le bouton Sauvegarder) pour le conserver pour la prochaine fois.`,
+        );
       }
 
       function ajouterArticleManuelRayons() {
-        let nomInput = document.getElementById('admin_nouvel_article_nom');
+        let nomInput = document.getElementById("admin_nouvel_article_nom");
         let nvIng = nomInput.value.trim();
-        let nvRayon = document.getElementById('admin_nouvel_article_rayon').value;
+        let nvRayon = document.getElementById(
+          "admin_nouvel_article_rayon",
+        ).value;
 
         if (!nvIng) return alert("Veuillez saisir un nom d'ingrédient.");
 
@@ -1445,39 +2235,104 @@ Consignes à respecter impérativement :
         nomInput.value = "";
 
         afficherRayonsArticles(mappingRayons);
-        alert(`Article "${nvIng}" ajouté au rayon "${nvRayon}" ! N'oubliez pas de sauvegarder.`);
+        alert(
+          `Article "${nvIng}" ajouté au rayon "${nvRayon}" ! N'oubliez pas de sauvegarder.`,
+        );
       }
 
       async function chargerRayonsAdmin() {
-        document.getElementById('recherche_rayon_article').value = '';
+        document.getElementById("recherche_rayon_article").value = "";
         afficherRayonsArticles(mappingRayons);
       }
 
+      async function verifierArticleDansRecettes(nomArticle) {
+        let estUtilise = false;
+        // On récupère toutes les recettes pour vérifier en profondeur
+        try {
+          // cache_recs ne contient que les noms. On doit fetch le détail de toutes ou utiliser le cache s'il est dispo.
+          // Vu qu'on ne peut pas fetch toutes les recettes d'un coup simplement, on va vérifier dans les menus chargés
+          // Si on veut faire parfait, il faudrait une route API, mais on va faire au mieux avec menusCharges et cacheDetailsRecettes
+          // En fait on va juste parcourir cacheDetailsRecettes (qui a été peuplé au fur et à mesure)
+          // L'idéal est de prévenir l'utilisateur si on ne sait pas
+          return false; // Remplacé ci-dessous
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function supprimerArticleSecurise(nomArticle) {
+        // Normaliser le nom pour la comparaison
+        let normRecherche = normalizeName(nomArticle);
+        let recettesImpactees = [];
+
+        // Recherche dans le cache local (qui contient les recettes déjà ouvertes/affichées/calculées)
+        for (const [cle, items] of Object.entries(cacheDetailsRecettes)) {
+          if (items.some((it) => normalizeName(it.nom) === normRecherche)) {
+            let nomRecette = cle.split("::")[0];
+            if (!recettesImpactees.includes(nomRecette))
+              recettesImpactees.push(nomRecette);
+          }
+        }
+
+        if (recettesImpactees.length > 0) {
+          let msg = `ATTENTION ! L'article "${nomArticle}" est utilisé dans au moins ${recettesImpactees.length} recette(s) (ex: ${recettesImpactees.slice(0, 3).join(", ")}).\n\nSi vous le supprimez, cela risque de causer des dysfonctionnements (erreurs lors de la génération de la liste de courses).\n\nÊtes-vous absolument sûr de vouloir le supprimer ?`;
+          if (!confirm(msg)) return;
+        } else {
+          // Avertissement générique au cas où il serait dans une recette non mise en cache
+          if (
+            !confirm(
+              `Supprimer l'article "${nomArticle}" ? S'il est présent dans une recette que vous n'avez pas ouverte récemment, cela pourrait créer un dysfonctionnement.`,
+            )
+          )
+            return;
+        }
+
+        delete mappingRayons[nomArticle];
+        // On sauvegarde localement pour la vue
+        localStorage.setItem(
+          "cache_mappingRayons",
+          JSON.stringify(mappingRayons),
+        );
+        // On ne fait pas l'appel API auto, on attend qu'il clique sur Sauvegarder
+        afficherRayonsArticles(mappingRayons);
+        // On recharge les icônes lucide nouvellement créées
+        setTimeout(() => lucide.createIcons(), 50);
+      }
+
       function afficherRayonsArticles(objMapping) {
-        let box = document.getElementById('admin_rayons_list');
-        let html = '';
+        let box = document.getElementById("admin_rayons_list");
+        let html = "";
 
         let ingredients = getTousLesIngredients();
 
         if (ingredients.length === 0) {
-           box.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">Aucun ingrédient trouvé. Calculez un menu pour que les ingrédients soient enregistrés.</p>';
-           return;
+          box.innerHTML =
+            '<p class="text-sm text-slate-500 text-center py-4">Aucun ingrédient trouvé. Calculez un menu pour que les ingrédients soient enregistrés.</p>';
+          return;
         }
 
-        let optionsRayons = listeRayonsActuelle.map(r => `<option value="${r}">${r}</option>`).join('');
+        let optionsRayons = listeRayonsActuelle
+          .map((r) => `<option value="${r}">${r}</option>`)
+          .join("");
 
-        ingredients.forEach(ing => {
-            let valActuelle = determinerRayon(ing);
-            // On preselectionne l'option
-            let opts = optionsRayons.replace(`value="${valActuelle}"`, `value="${valActuelle}" selected`);
-            let id = "rayon_ing_" + ing.replace(/[^a-zA-Z0-9]/g, "_");
+        ingredients.forEach((ing) => {
+          let valActuelle = determinerRayon(ing);
+          // On preselectionne l'option
+          let opts = optionsRayons.replace(
+            `value="${valActuelle}"`,
+            `value="${valActuelle}" selected`,
+          );
+          let id = "rayon_ing_" + ing.replace(/[^a-zA-Z0-9]/g, "_");
 
-            html += `
+          html += `
             <div class="rayon-ing-row flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm gap-2" data-nom="${ing}">
                <span class="text-sm font-bold text-slate-800 dark:text-slate-200 flex-grow min-w-0 break-words">${ing}</span>
                <select class="rayon-ing-select h-10 border border-slate-200 dark:border-slate-700 rounded-xl px-2 text-xs bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 shrink-0 max-w-[150px]">
                   ${opts}
                </select>
+               <button type="button" onclick="supprimerArticleSecurise('${ing.replace(/'/g, "\'")}')" class="w-10 h-10 flex items-center justify-center text-red-500 bg-red-50 dark:bg-red-900/30 rounded-xl shrink-0">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+               </button>
             </div>
             `;
         });
@@ -1486,36 +2341,43 @@ Consignes à respecter impérativement :
       }
 
       function filtrerRayonsArticles() {
-        let terme = document.getElementById('recherche_rayon_article').value.toLowerCase();
-        document.querySelectorAll('.rayon-ing-row').forEach(row => {
-          let nom = row.getAttribute('data-nom').toLowerCase();
+        let terme = document
+          .getElementById("recherche_rayon_article")
+          .value.toLowerCase();
+        document.querySelectorAll(".rayon-ing-row").forEach((row) => {
+          let nom = row.getAttribute("data-nom").toLowerCase();
           if (nom.includes(terme)) {
-            row.style.display = 'flex';
+            row.style.display = "flex";
           } else {
-            row.style.display = 'none';
+            row.style.display = "none";
           }
         });
       }
 
       async function sauvegarderTousLesRayons() {
         let nouveauMapping = {};
-        document.querySelectorAll('.rayon-ing-row').forEach(row => {
-           let nom = row.getAttribute('data-nom');
-           let rayon = row.querySelector('.rayon-ing-select').value;
-           nouveauMapping[nom] = rayon;
+        document.querySelectorAll(".rayon-ing-row").forEach((row) => {
+          let nom = row.getAttribute("data-nom");
+          let rayon = row.querySelector(".rayon-ing-select").value;
+          nouveauMapping[nom] = rayon;
         });
 
-        let btn = document.getElementById('btn_save_rayons');
+        let btn = document.getElementById("btn_save_rayons");
         btn.innerText = "⏳ Sauvegarde...";
         btn.disabled = true;
 
         mappingRayons = nouveauMapping;
-        localStorage.setItem('cache_mappingRayons', JSON.stringify(mappingRayons));
+        localStorage.setItem(
+          "cache_mappingRayons",
+          JSON.stringify(mappingRayons),
+        );
 
         try {
-          const msg = await apiPost('sauvegarderRayons', { mapping: nouveauMapping });
+          const msg = await apiPost("sauvegarderRayons", {
+            mapping: nouveauMapping,
+          });
           alert(msg || "Rayons sauvegardés avec succès !");
-        } catch(e) {
+        } catch (e) {
           alert("Erreur lors de la sauvegarde.");
         } finally {
           btn.innerText = "💾 Sauvegarder les rayons";
@@ -1524,31 +2386,51 @@ Consignes à respecter impérativement :
       }
 
       async function mettreAJourRecette() {
-        let nomOriginal = document.getElementById('edit_recette_nom_original').value;
-        let nouveauNom = document.getElementById('edit_recette_nom').value.trim();
+        let nomOriginal = document.getElementById(
+          "edit_recette_nom_original",
+        ).value;
+        let nouveauNom = document.getElementById("edit_recette_nom").value.trim();
+        let nouveauTheme = document.getElementById("edit_recette_theme").value.trim();
         let ings = [];
 
-        document.querySelectorAll('#edit_ingredients_list > div').forEach(l => {
-          let n = l.querySelector('.ing-nom').value.trim();
-          if(n) ings.push({nom: n, qte: l.querySelector('.ing-qte').value.trim()});
-        });
+        document
+          .querySelectorAll("#edit_ingredients_list > div")
+          .forEach((l) => {
+            let n = l.querySelector(".ing-nom").value.trim();
+            if (n)
+              ings.push({
+                nom: n,
+                qte: l.querySelector(".ing-qte").value.trim(),
+              });
+          });
 
-        if(!nouveauNom || ings.length === 0) return alert("⚠️ Nom et ingrédients requis.");
+        if (!nouveauNom || ings.length === 0)
+          return alert("⚠️ Nom et ingrédients requis.");
 
-        let btn = document.getElementById('btn_update_recette');
+        let btn = document.getElementById("btn_update_recette");
         btn.innerText = "⏳ Sauvegarde...";
         btn.disabled = true;
 
         try {
-          const msg = await apiPost('modifierRecette', { nomOriginal: nomOriginal, nouveauNom: nouveauNom, ingredients: ings });
-          if(nomOriginal !== nouveauNom) {
-             let idx = recs.indexOf(nomOriginal);
-             if(idx > -1) recs[idx] = nouveauNom;
-             localStorage.setItem('cache_recs', JSON.stringify(recs));
+          const msg = await apiPost("modifierRecette", {
+            nouveauTheme: nouveauTheme,
+            nomOriginal: nomOriginal,
+            nouveauNom: nouveauNom,
+            ingredients: ings,
+          });
+          if (nomOriginal !== nouveauNom) {
+            let idx = recs.findIndex(r => (typeof r === "object" ? r.nom : String(r)) === nomOriginal);
+            if (idx > -1) {
+              recs[idx] = { nom: nouveauNom, theme: nouveauTheme };
+            } else {
+              recs.push({ nom: nouveauNom, theme: nouveauTheme });
+            }
+            localStorage.setItem("cache_recs", JSON.stringify(recs));
           }
           alert(msg || "Recette mise à jour avec succès !");
-          location.reload();
-        } catch(e) {
+          fermerModaleAjoutRecette();
+          changerVue("vue_modifier_recette");
+        } catch (e) {
           alert("Erreur lors de la mise à jour.");
           btn.innerText = "💾 Sauvegarder les modifications";
           btn.disabled = false;
